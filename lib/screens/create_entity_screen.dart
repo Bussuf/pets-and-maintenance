@@ -9,6 +9,7 @@ import '../providers/database_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/items_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
+import '../theme/app_icons.dart';
 
 enum EntityType { task, item, category }
 
@@ -16,7 +17,7 @@ class CreateEntityScreen extends ConsumerStatefulWidget {
   final EntityType initialType;
   final String? preselectedCategoryId;
   final String? preselectedItemId;
-  final Map<String, dynamic>? initialDuplicateData; // נתונים מועברים לשכפול
+  final Map<String, dynamic>? initialDuplicateData;
 
   const CreateEntityScreen({
     Key? key,
@@ -75,16 +76,8 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
   DateTime? _endConditionDate;
 
   final List<Color> _availableColors = [
-    Colors.blue, Colors.red, Colors.green, Colors.orange, Colors.purple, Colors.teal
+    Colors.blue, Colors.indigo, Colors.teal, Colors.green, Colors.orange, Colors.deepOrange, Colors.red, Colors.purple, Colors.pink, Colors.brown, Colors.blueGrey,
   ];
-  final Map<String, IconData> _availableIcons = {
-    'folder': Icons.folder,
-    'pets': Icons.pets,
-    'home': Icons.home,
-    'car': Icons.directions_car,
-    'fitness': Icons.fitness_center,
-    'work': Icons.work,
-  };
 
   @override
   void initState() {
@@ -93,7 +86,6 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
     _selectedCategoryId = widget.preselectedCategoryId;
     _selectedItemId = widget.preselectedItemId;
 
-    // טעינת נתוני שכפול אם קיימים
     final dup = widget.initialDuplicateData;
     _nameController = TextEditingController(text: dup?['name'] ?? '');
     _descController = TextEditingController(text: dup?['description'] ?? '');
@@ -118,6 +110,74 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
     _intervalAmountController.dispose();
     _endConditionCountController.dispose();
     super.dispose();
+  }
+
+  // בורר אייקונים מלא עם תיקון אופסט SafeArea
+  void _openIconPickerSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.65,
+          maxChildSize: 0.9,
+          minChildSize: 0.4,
+          expand: false,
+          builder: (_, scrollController) => Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Text(
+                'בחר סמל לקבוצה (מלאים וקוויים)',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: GridView.builder(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 5,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: AppIcons.catalog.length,
+                  itemBuilder: (_, index) {
+                    final key = AppIcons.catalog.keys.elementAt(index);
+                    final icon = AppIcons.catalog.values.elementAt(index);
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        setState(() => _selectedIcon = key);
+                        Navigator.pop(ctx);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(icon, size: 28),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _showQuickAddCategory(AppLocalizations l10n) async {
@@ -278,6 +338,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
         );
         await db.createTask(task);
         ref.invalidate(dashboardTasksProvider);
+        ref.invalidate(tasksByCategoryProvider(_selectedCategoryId!));
         ref.invalidate(tasksByItemProvider(_selectedItemId!));
       }
 
@@ -483,22 +544,25 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
               const SizedBox(height: 16),
             ],
 
+            // קטגוריה: בורר סמל עשיר מתוך AppIcons + בורר צבע עם runSpacing
             if (_currentType == EntityType.category) ...[
-              Text(l10n.icon, style: const TextStyle(color: Colors.grey)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 12,
-                children: _availableIcons.entries.map((entry) => ChoiceChip(
-                  label: Icon(entry.value),
-                  selected: _selectedIcon == entry.key,
-                  onSelected: (val) => setState(() => _selectedIcon = val ? entry.key : null),
-                )).toList(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(l10n.icon, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
+                  OutlinedButton.icon(
+                    onPressed: _openIconPickerSheet,
+                    icon: Icon(AppIcons.getIcon(_selectedIcon), size: 20),
+                    label: Text(_selectedIcon != null ? 'החלף סמל' : 'בחר סמל'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              Text(l10n.color, style: const TextStyle(color: Colors.grey)),
-              const SizedBox(height: 8),
+              const SizedBox(height: 20),
+              Text(l10n.color, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
+              const SizedBox(height: 10),
               Wrap(
                 spacing: 12,
+                runSpacing: 12,
                 children: _availableColors.map((color) => GestureDetector(
                   onTap: () => setState(() => _selectedColor = color.value),
                   child: CircleAvatar(

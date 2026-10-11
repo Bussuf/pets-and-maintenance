@@ -47,9 +47,13 @@ class AppDrawer extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               children: [
+                // יעד ראשי: כל הקבוצות (אייקון מלא)
                 ListTile(
-                  leading: const Icon(Icons.dashboard_outlined),
-                  title: const Text('דאשבורד', style: TextStyle(fontWeight: FontWeight.bold)),
+                  leading: Icon(
+                    Icons.grid_view,
+                    color: isDashboardActive ? theme.colorScheme.primary : null,
+                  ),
+                  title: const Text('כל הקבוצות', style: TextStyle(fontWeight: FontWeight.bold)),
                   selected: isDashboardActive,
                   selectedColor: theme.colorScheme.onPrimaryContainer,
                   selectedTileColor: theme.colorScheme.primaryContainer,
@@ -88,7 +92,6 @@ class AppDrawer extends ConsumerWidget {
                     return categories.map((cat) {
                       final isSelected = currentCategoryId == cat.id;
                       final catColor = cat.color != null ? Color(cat.color!) : theme.colorScheme.primary;
-                      // שימוש בקטלוג המרכזי לסנכרון מלא של סמלים מלאים וקוויים
                       final catIcon = AppIcons.getIcon(cat.icon);
 
                       return ListTile(

@@ -115,15 +115,21 @@ class DatabaseHelper {
     return null;
   }
 
+  /// שליפת משימות דאשבורד כולל פרטי הפריט והקבוצה (מניעת NULL)
   Future<List<Map<String, dynamic>>> getDashboardTasks() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.rawQuery('''
-      SELECT tasks.*, items.name AS item_name 
-      FROM tasks 
-      INNER JOIN items ON tasks.item_id = items.id 
-      ORDER BY tasks.next_due_date ASC
+    return await db.rawQuery('''
+      SELECT t.*, 
+             i.name AS item_name, 
+             i.category_id AS category_id,
+             c.name AS category_name, 
+             c.color AS category_color, 
+             c.icon AS category_icon
+      FROM tasks t
+      JOIN items i ON t.item_id = i.id
+      JOIN categories c ON i.category_id = c.id
+      ORDER BY t.next_due_date ASC
     ''');
-    return maps;
   }
 
   // בדיקה למניעת כפילות בשם קבוצה (למעט הקבוצה הנוכחית אם אנחנו בעריכה)
@@ -227,5 +233,50 @@ class DatabaseHelper {
     final db = await database;
     final maps = await db.query('task_logs', where: 'task_id = ?', whereArgs: [taskId], orderBy: 'completed_at DESC');
     return maps.map((map) => TaskLog.fromMap(map)).toList();
+  }
+
+  /// חיפוש גלובלי בכל המאגר (משימות, פריטים וקבוצות) כולל מידע הקשרי
+  Future<Map<String, List<Map<String, dynamic>>>> searchAll(String query) async {
+    final db = await database;
+    final sanitized = '%$query%';
+
+    // 1. קבוצות
+    final categories = await db.rawQuery('''
+      SELECT id, name, description, color, icon, 'category' as type
+      FROM categories
+      WHERE name LIKE ? OR (description IS NOT NULL AND description LIKE ?)
+      ORDER BY name ASC
+    ''', [sanitized, sanitized]);
+
+    // 2. פריטים עם שיוך לקבוצה
+    final items = await db.rawQuery('''
+      SELECT i.id, i.name, i.description, i.category_id,
+             c.name as category_name, c.color as category_color, c.icon as category_icon,
+             'item' as type
+      FROM items i
+      JOIN categories c ON i.category_id = c.id
+      WHERE i.name LIKE ? OR (i.description IS NOT NULL AND i.description LIKE ?)
+      ORDER BY i.name ASC
+    ''', [sanitized, sanitized]);
+
+    // 3. משימות עם שיוך לפריט ולקבוצה
+    final tasks = await db.rawQuery('''
+      SELECT t.id, t.name, t.description, t.item_id, t.next_due_date,
+             t.interval_amount, t.interval_unit, t.end_condition, t.end_condition_value,
+             i.name as item_name, i.category_id,
+             c.name as category_name, c.color as category_color, c.icon as category_icon,
+             'task' as type
+      FROM tasks t
+      JOIN items i ON t.item_id = i.id
+      JOIN categories c ON i.category_id = c.id
+      WHERE t.name LIKE ? OR (t.description IS NOT NULL AND t.description LIKE ?)
+      ORDER BY t.name ASC
+    ''', [sanitized, sanitized]);
+
+    return {
+      'categories': categories,
+      'items': items,
+      'tasks': tasks,
+    };
   }
 }

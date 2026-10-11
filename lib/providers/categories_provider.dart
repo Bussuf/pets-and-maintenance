@@ -6,20 +6,25 @@ import 'database_provider.dart';
 class CategoriesNotifier extends AsyncNotifier<List<Category>> {
   @override
   FutureOr<List<Category>> build() async {
-    // שליפה ראשונית של כל הקטגוריות
     final db = ref.watch(databaseProvider);
     return await db.readAllCategories();
   }
 
-  // פונקציית עזר להוספת קטגוריה וריענון המסך
+  // הוספת קבוצה וריענון
   Future<void> addCategory(Category category) async {
     final db = ref.read(databaseProvider);
     await db.createCategory(category);
-    // פקודה זו אומרת ל-Riverpod לטעון את הנתונים מחדש ולעדכן את ה-UI
-    ref.invalidateSelf(); 
+    ref.invalidateSelf();
   }
 
-  // פונקציית עזר למחיקת קטגוריה
+  // עדכון קבוצה (שם, צבע, סמל, תיאור) וריענון כל המסכים
+  Future<void> updateCategory(Category category) async {
+    final db = ref.read(databaseProvider);
+    await db.updateCategory(category);
+    ref.invalidateSelf();
+  }
+
+  // מחיקת קבוצה וריענון
   Future<void> removeCategory(String id) async {
     final db = ref.read(databaseProvider);
     await db.deleteCategory(id);
@@ -27,7 +32,6 @@ class CategoriesNotifier extends AsyncNotifier<List<Category>> {
   }
 }
 
-// ה-Provider שאליו ה-UI יאזין
 final categoriesProvider = AsyncNotifierProvider<CategoriesNotifier, List<Category>>(() {
   return CategoriesNotifier();
 });
