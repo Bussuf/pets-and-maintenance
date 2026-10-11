@@ -10,6 +10,7 @@ import '../providers/categories_provider.dart';
 import '../providers/items_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
 import '../theme/app_icons.dart';
+import '../services/notification_service.dart'; // <--- הוספנו את ייבוא השירות
 
 enum EntityType { task, item, category }
 
@@ -75,6 +76,9 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
   String _endCondition = 'always';
   DateTime? _endConditionDate;
 
+  // Task specific state - Notifications
+  bool _isReminderEnabled = false; // מתג ההתראות
+
   final List<Color> _availableColors = [
     Colors.blue, Colors.indigo, Colors.teal, Colors.green, Colors.orange, Colors.deepOrange, Colors.red, Colors.purple, Colors.pink, Colors.brown, Colors.blueGrey,
   ];
@@ -100,6 +104,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
       if (_endCondition == 'until_date' && dup['end_condition_value'] != null) {
         _endConditionDate = DateTime.tryParse(dup['end_condition_value']);
       }
+      _isReminderEnabled = (dup['is_reminder_enabled'] == 1);
     }
   }
 
@@ -335,8 +340,14 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
           endCondition: _endCondition,
           endConditionValue: endVal,
           nextDueDate: initialDueDate,
+          isReminderEnabled: _isReminderEnabled,
+          reminderTime: _isReminderEnabled ? '09:00' : null, // הזנת השעה הגלובלית האחידה
         );
         await db.createTask(task);
+
+        // --- הפעלת התזמון במנוע ההתראות המקומיות ---
+        await NotificationService.instance.scheduleTaskReminder(task);
+
         ref.invalidate(dashboardTasksProvider);
         ref.invalidate(tasksByCategoryProvider(_selectedCategoryId!));
         ref.invalidate(tasksByItemProvider(_selectedItemId!));
@@ -604,6 +615,26 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
+
+              // --- מתג הפעלת התזכורות ---
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: SwitchListTile(
+                  title: const Text('קבל תזכורת ביום המשימה', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('התראה תופיע בהתאם להגדרות המערכת'),
+                  secondary: Icon(
+                    _isReminderEnabled ? Icons.notifications_active : Icons.notifications_off_outlined,
+                    color: _isReminderEnabled ? theme.colorScheme.primary : Colors.grey,
+                  ),
+                  value: _isReminderEnabled,
+                  onChanged: (bool value) => setState(() => _isReminderEnabled = value),
+                ),
+              ),
+
               const SizedBox(height: 32),
 
               Column(

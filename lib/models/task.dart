@@ -1,16 +1,19 @@
-// מודל משימה מעודכן הכולל תנאי סיום, ערך סיום ומונה ביצועים
 class AppTask {
   final String id;
   final String itemId;
   final String name;
   final String? description;
   final int intervalAmount;
-  final String intervalUnit; // 'days', 'weeks', 'months', 'years'
-  final String endCondition; // 'always', 'count', 'until_date'
-  final String? endConditionValue; // תאריך ISO8601 או כמות מספר פעמים
-  final int completedCount; // כמה פעמים בוצעה בפועל
+  final String intervalUnit;
+  final String endCondition;
+  final String? endConditionValue;
+  final int completedCount;
   final DateTime? lastCompletedDate;
   final DateTime? nextDueDate;
+
+  // -- שדות התראות חדשים --
+  final bool isReminderEnabled;
+  final String? reminderTime; // נשמר בפורמט "HH:mm", למשל "09:00"
 
   AppTask({
     required this.id,
@@ -24,6 +27,8 @@ class AppTask {
     this.completedCount = 0,
     this.lastCompletedDate,
     this.nextDueDate,
+    this.isReminderEnabled = false,
+    this.reminderTime,
   });
 
   Map<String, dynamic> toMap() {
@@ -39,6 +44,8 @@ class AppTask {
       'completed_count': completedCount,
       'last_completed_date': lastCompletedDate?.toIso8601String(),
       'next_due_date': nextDueDate?.toIso8601String(),
+      'is_reminder_enabled': isReminderEnabled ? 1 : 0,
+      'reminder_time': reminderTime,
     };
   }
 
@@ -59,6 +66,8 @@ class AppTask {
       nextDueDate: map['next_due_date'] != null
           ? DateTime.parse(map['next_due_date'] as String)
           : null,
+      isReminderEnabled: (map['is_reminder_enabled'] as int?) == 1,
+      reminderTime: map['reminder_time'] as String?,
     );
   }
 
@@ -74,6 +83,8 @@ class AppTask {
     int? completedCount,
     DateTime? lastCompletedDate,
     DateTime? nextDueDate,
+    bool? isReminderEnabled,
+    String? reminderTime,
   }) {
     return AppTask(
       id: id ?? this.id,
@@ -87,6 +98,8 @@ class AppTask {
       completedCount: completedCount ?? this.completedCount,
       lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
       nextDueDate: nextDueDate ?? this.nextDueDate,
+      isReminderEnabled: isReminderEnabled ?? this.isReminderEnabled,
+      reminderTime: reminderTime ?? this.reminderTime,
     );
   }
 }

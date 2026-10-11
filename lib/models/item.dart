@@ -4,6 +4,7 @@ class Item {
   String name;
   String? description;
   String? imageUrl;
+  int sortOrder;
 
   Item({
     required this.id,
@@ -11,6 +12,7 @@ class Item {
     required this.name,
     this.description,
     this.imageUrl,
+    this.sortOrder = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class Item {
       'name': name,
       'description': description,
       'image_url': imageUrl,
+      'sort_order': sortOrder,
     };
   }
 
@@ -30,11 +33,30 @@ class Item {
       name: map['name'],
       description: map['description'],
       imageUrl: map['image_url'],
+      sortOrder: (map['sort_order'] as int?) ?? 0,
+    );
+  }
+
+  Item copyWith({
+    String? id,
+    String? categoryId,
+    String? name,
+    String? description,
+    String? imageUrl,
+    int? sortOrder,
+  }) {
+    return Item(
+      id: id ?? this.id,
+      categoryId: categoryId ?? this.categoryId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 
   @override
   String toString() {
-    return 'Item{id: $id, categoryId: $categoryId, name: $name, description: $description, imageUrl: $imageUrl}';
+    return 'Item{id: $id, categoryId: $categoryId, name: $name, description: $description, imageUrl: $imageUrl, sortOrder: $sortOrder}';
   }
 }

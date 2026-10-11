@@ -21,10 +21,10 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    // שדרוג לגרסה 3 לתמיכה בשדה התמונה בפריטים
+    // שדרוג לגרסה 5 לתמיכה בהתראות מקומיות למשימות
     return await openDatabase(
       path,
-      version: 3,
+      version: 5,
       onConfigure: _onConfigure,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
@@ -44,7 +44,8 @@ class DatabaseHelper {
         description TEXT,
         created_at TEXT NOT NULL,
         color INTEGER,
-        icon TEXT
+        icon TEXT,
+        sort_order INTEGER DEFAULT 0
       )
     ''');
 
@@ -55,6 +56,7 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         description TEXT,
         image_url TEXT,
+        sort_order INTEGER DEFAULT 0,
         FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
       )
     ''');
@@ -72,6 +74,8 @@ class DatabaseHelper {
         completed_count INTEGER DEFAULT 0,
         last_completed_date TEXT,
         next_due_date TEXT,
+        is_reminder_enabled INTEGER DEFAULT 0,
+        reminder_time TEXT,
         FOREIGN KEY (item_id) REFERENCES items (id) ON DELETE CASCADE
       )
     ''');
@@ -90,13 +94,30 @@ class DatabaseHelper {
   // מיגרציה בטוחה ושמירת נתונים קיימים
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      await db.execute('ALTER TABLE categories ADD COLUMN color INTEGER;');
-      await db.execute('ALTER TABLE categories ADD COLUMN icon TEXT;');
-      await db.execute('ALTER TABLE tasks ADD COLUMN end_condition_value TEXT;');
-      await db.execute('ALTER TABLE tasks ADD COLUMN completed_count INTEGER DEFAULT 0;');
+      try { await db.execute('ALTER TABLE categories ADD COLUMN color INTEGER;'); } catch (_) {}
+      try { await db.execute('ALTER TABLE categories ADD COLUMN icon TEXT;'); } catch (_) {}
+      try { await db.execute('ALTER TABLE tasks ADD COLUMN end_condition_value TEXT;'); } catch (_) {}
+      try { await db.execute('ALTER TABLE tasks ADD COLUMN completed_count INTEGER DEFAULT 0;'); } catch (_) {}
     }
     if (oldVersion < 3) {
-      await db.execute('ALTER TABLE items ADD COLUMN image_url TEXT;');
+      try { await db.execute('ALTER TABLE items ADD COLUMN image_url TEXT;'); } catch (_) {}
+    }
+    if (oldVersion < 4) {
+      // מיגרציה בטוחה לגרסה 4 עם התעלמות משגיאה במקרה שהעמודה כבר קיימת מניסיון קודם
+      try {
+        await db.execute('ALTER TABLE categories ADD COLUMN sort_order INTEGER DEFAULT 0;');
+      } catch (e) {
+        print('Column sort_order already exists in categories or error: $e');
+      }
+      try {
+        await db.execute('ALTER TABLE items ADD COLUMN sort_order INTEGER DEFAULT 0;');
+      } catch (e) {
+        print('Column sort_order already exists in items or error: $e');
+      }
+    }
+    if (oldVersion < 5) {
+      try { await db.execute('ALTER TABLE tasks ADD COLUMN is_reminder_enabled INTEGER DEFAULT 0;'); } catch (_) {}
+      try { await db.execute('ALTER TABLE tasks ADD COLUMN reminder_time TEXT;'); } catch (_) {}
     }
   }
 
@@ -164,7 +185,8 @@ class DatabaseHelper {
 
   Future<List<Category>> getCategories() async {
     final db = await database;
-    final maps = await db.query('categories', orderBy: 'created_at ASC');
+    // שליפה לפי סדר המיון הידני, ובתוך כך לפי מועד יצירה
+    final maps = await db.query('categories', orderBy: 'sort_order ASC, created_at ASC');
     return maps.map((map) => Category.fromMap(map)).toList();
   }
 
@@ -186,8 +208,49 @@ class DatabaseHelper {
 
   Future<List<Item>> getItemsByCategory(String categoryId) async {
     final db = await database;
-    final maps = await db.query('items', where: 'category_id = ?', whereArgs: [categoryId]);
+    // שליפה לפי סדר המיון הידני
+    final maps = await db.query(
+      'items',
+      where: 'category_id = ?',
+      whereArgs: [categoryId],
+      orderBy: 'sort_order ASC',
+    );
     return maps.map((map) => Item.fromMap(map)).toList();
+  }
+
+  Future<void> updateItem(Item item) async {
+    final db = await database;
+    await db.update('items', item.toMap(), where: 'id = ?', whereArgs: [item.id]);
+  }
+
+  /// עדכון סדר קבוצות באצווה אחת בטוחה ומהירה
+  Future<void> reorderCategories(List<String> orderedIds) async {
+    final db = await database;
+    final batch = db.batch();
+    for (int i = 0; i < orderedIds.length; i++) {
+      batch.update(
+        'categories',
+        {'sort_order': i},
+        where: 'id = ?',
+        whereArgs: [orderedIds[i]],
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  /// עדכון סדר פריטים באצווה אחת בטוחה ומהירה
+  Future<void> reorderItems(List<String> orderedIds) async {
+    final db = await database;
+    final batch = db.batch();
+    for (int i = 0; i < orderedIds.length; i++) {
+      batch.update(
+        'items',
+        {'sort_order': i},
+        where: 'id = ?',
+        whereArgs: [orderedIds[i]],
+      );
+    }
+    await batch.commit(noResult: true);
   }
 
   Future<void> deleteItem(String id) async {

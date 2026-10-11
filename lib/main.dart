@@ -5,7 +5,16 @@ import 'theme/app_theme.dart';
 import 'screens/main_layout.dart';
 import 'providers/theme_provider.dart';
 
-void main() {
+import 'services/notification_service.dart';
+
+void main() async {
+  // חובה לאתחל את ה-Binding לפני הרצת פקודות אסינכרוניות (כמו התראות ו-SQLite) באתחול
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // אתחול מנוע ההתראות המקומיות ובקשת הרשאות מאנדרואיד
+  await NotificationService.instance.init();
+  await NotificationService.instance.requestPermissions();
+
   runApp(
     const ProviderScope(
       child: MyApp(),

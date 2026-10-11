@@ -4,11 +4,17 @@ import '../models/category.dart';
 import '../providers/database_provider.dart';
 import '../screens/category_screen.dart';
 import '../theme/app_icons.dart';
+import '../screens/settings_screen.dart';
 
 class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
+  final bool showSettingsMenu;
 
-  const GlobalSearchBar({Key? key, this.actions}) : super(key: key);
+  const GlobalSearchBar({
+    Key? key,
+    this.actions,
+    this.showSettingsMenu = false,
+  }) : super(key: key);
 
   @override
   Size get preferredSize => const Size.fromHeight(68);
@@ -27,10 +33,8 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
   }
 
   void _navigateToTarget(SearchController controller, Map<String, dynamic> itemData) {
-    // 1. סגירת חלונית החיפוש ואיפוס הטקסט
     controller.closeView('');
 
-    // 2. הכנת מסך היעד לפי סוג הרשומה
     final type = itemData['type'];
     Widget destination;
 
@@ -57,7 +61,6 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
         initialItemId: itemData['id'],
       );
     } else {
-      // משימה (task)
       destination = CategoryScreen(
         category: Category(
           id: itemData['category_id'],
@@ -71,7 +74,6 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
       );
     }
 
-    // 3. ניווט מתוך הקונטקסט של המסך הראשי מיד עם סגירת החלונית
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         Navigator.of(this.context).push(
@@ -90,7 +92,6 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
         child: SearchAnchor(
-          // חיבור מפורש של הקונטרולר לסגירה אמינה
           searchController: _searchController,
           builder: (context, controller) {
             return SearchBar(
@@ -103,7 +104,39 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
               hintText: 'חיפוש משימות, פריטים או קבוצות...',
-              trailing: widget.actions,
+              trailing: [
+                if (widget.actions != null) ...widget.actions!,
+                if (widget.showSettingsMenu)
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    tooltip: 'הגדרות מערכת',
+                    onSelected: (value) {
+                      if (value == 'settings') {
+                        // סוגרים את החיפוש אך ורק אם הוא פתוח כרגע
+                        if (controller.isOpen) {
+                          controller.closeView('');
+                        }
+
+                        // ניווט טבעי ובטוח
+                        Navigator.push(
+                          context, // שימוש בקונטקסט המקומי של ה-SearchBar המבטיח שמירה על היסטוריית הניווט
+                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                        );
+                      }
+                    },                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'settings',
+                        child: Row(
+                          children: [
+                            Icon(Icons.settings_outlined, size: 20),
+                            SizedBox(width: 12),
+                            Text('הגדרות מערכת'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
               onTap: () => controller.openView(),
               onChanged: (_) => controller.openView(),
             );
@@ -144,7 +177,6 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
 
             final List<Widget> tiles = [];
 
-            // 1. משימות (אייקון task_alt)
             if (tasks.isNotEmpty) {
               tiles.add(
                 const Padding(
@@ -167,7 +199,6 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
               }
             }
 
-            // 2. פריטים (אייקון inventory_2_outlined)
             if (items.isNotEmpty) {
               tiles.add(
                 const Padding(
@@ -190,7 +221,6 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
               }
             }
 
-            // 3. קבוצות (סמל וצבע מקוריים)
             if (categories.isNotEmpty) {
               tiles.add(
                 const Padding(
