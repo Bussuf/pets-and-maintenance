@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- הערה: USE_EXACT_ALARM נדרש לאנדרואיד 13+. שים לב לזה אם תרצה להעלות ל-Google Play -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:label="Pets &amp; Maintenance"

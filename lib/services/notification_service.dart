@@ -14,7 +14,7 @@ class NotificationService {
     tz.initializeTimeZones();
 
     // הגדרות לאנדרואיד בלבד
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidInit = AndroidInitializationSettings('@mipmap/launcher_icon');
     const initSettings = InitializationSettings(android: androidInit);
 
     await _notificationsPlugin.initialize(initSettings);
