@@ -11,9 +11,12 @@ class AppTask {
   final DateTime? lastCompletedDate;
   final DateTime? nextDueDate;
 
-  // -- שדות התראות חדשים --
+  // -- שדות התראות --
   final bool isReminderEnabled;
-  final String? reminderTime; // נשמר בפורמט "HH:mm", למשל "09:00"
+  final String? reminderTime;
+
+  // -- סנכרון יומן גוגל --
+  final String? googleEventId;
 
   AppTask({
     required this.id,
@@ -29,6 +32,7 @@ class AppTask {
     this.nextDueDate,
     this.isReminderEnabled = false,
     this.reminderTime,
+    this.googleEventId,
   });
 
   Map<String, dynamic> toMap() {
@@ -46,6 +50,7 @@ class AppTask {
       'next_due_date': nextDueDate?.toIso8601String(),
       'is_reminder_enabled': isReminderEnabled ? 1 : 0,
       'reminder_time': reminderTime,
+      'google_event_id': googleEventId,
     };
   }
 
@@ -68,6 +73,7 @@ class AppTask {
           : null,
       isReminderEnabled: (map['is_reminder_enabled'] as int?) == 1,
       reminderTime: map['reminder_time'] as String?,
+      googleEventId: map['google_event_id'] as String?,
     );
   }
 
@@ -85,6 +91,7 @@ class AppTask {
     DateTime? nextDueDate,
     bool? isReminderEnabled,
     String? reminderTime,
+    String? googleEventId,
   }) {
     return AppTask(
       id: id ?? this.id,
@@ -100,6 +107,7 @@ class AppTask {
       nextDueDate: nextDueDate ?? this.nextDueDate,
       isReminderEnabled: isReminderEnabled ?? this.isReminderEnabled,
       reminderTime: reminderTime ?? this.reminderTime,
+      googleEventId: googleEventId ?? this.googleEventId,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/theme_provider.dart';
 import '../providers/settings_provider.dart';
 import 'organization_screen.dart';
+import '../providers/google_auth_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -12,6 +13,7 @@ class SettingsScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeProvider);
     final settings = ref.watch(settingsProvider);
     final theme = Theme.of(context);
+    final googleUser = ref.watch(googleAuthProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -153,6 +155,67 @@ class SettingsScreen extends ConsumerWidget {
                   }
                 }
               },
+            ),
+          ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.0),
+            child: Divider(),
+          ),
+
+          // --- מקטע סנכרון ושירותים ---
+          Text(
+            'סנכרון ושירותים',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: googleUser != null
+                    ? theme.colorScheme.primary.withOpacity(0.5)
+                    : theme.colorScheme.outlineVariant.withOpacity(0.5),
+              ),
+              borderRadius: BorderRadius.circular(12),
+              color: googleUser != null
+                  ? theme.colorScheme.primaryContainer.withOpacity(0.2)
+                  : Colors.transparent,
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              leading: CircleAvatar(
+                backgroundColor: googleUser != null ? Colors.white : theme.colorScheme.surfaceContainerHighest,
+                backgroundImage: googleUser?.photoUrl != null ? NetworkImage(googleUser!.photoUrl!) : null,
+                child: googleUser?.photoUrl == null
+                    ? Icon(Icons.calendar_month, color: googleUser != null ? theme.colorScheme.primary : Colors.grey)
+                    : null,
+              ),
+              title: const Text('סנכרון יומן גוגל', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(
+                googleUser != null ? 'מחובר: ${googleUser.email}' : 'לא מחובר ליומן גוגל',
+                style: TextStyle(
+                  color: googleUser != null ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
+              ),
+              trailing: FilledButton.tonal(
+                onPressed: () async {
+                  if (googleUser != null) {
+                    await ref.read(googleAuthProvider.notifier).signOut();
+                  } else {
+                    await ref.read(googleAuthProvider.notifier).signIn();
+                  }
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: googleUser != null ? theme.colorScheme.errorContainer : null,
+                  foregroundColor: googleUser != null ? theme.colorScheme.onErrorContainer : null,
+                ),
+                child: Text(googleUser != null ? 'ניתוק' : 'התחבר'),
+              ),
             ),
           ),
 

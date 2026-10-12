@@ -45,8 +45,13 @@ dependencies:
   timezone: ^0.9.2
   permission_handler: ^11.3.1
   shared_preferences: ^2.5.6
+  google_sign_in: ^6.2.1
+  googleapis: ^17.0.0
+  googleapis_auth: ^2.3.4
 
 dev_dependencies:
+  flutter_native_splash: "^2.4.0"
+  flutter_launcher_icons: "^0.13.1"
   flutter_test:
     sdk: flutter
 
@@ -99,3 +104,15 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon.png"
+
+flutter_native_splash:
+  color: "#2E2F33" # צבע הרקע של המסך
+  image: "assets/splash_logo.png" # הנתיב ללוגו
+  android_12:
+    color: "#2E2F33"
+    image: "assets/splash_logo.png"

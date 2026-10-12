@@ -104,7 +104,7 @@ class _FabMenuOverlay extends StatelessWidget {
           onPressed: () {
             Navigator.pop(context);
             // העברת ההקשר המלא (גם קבוצה וגם פריט אם נבחר) מבלי לנעול אפשרות לשינוי
-            CreateEntityScreen.open(
+            CreateEntityScreen.show(
               context,
               type: type,
               categoryId: currentCategoryId,

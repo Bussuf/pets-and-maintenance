@@ -21,10 +21,10 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    // שדרוג לגרסה 5 לתמיכה בהתראות מקומיות למשימות
+    // שדרוג לגרסה 6 לתמיכה בסנכרון מול גוגל יומן
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onConfigure: _onConfigure,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
@@ -61,6 +61,7 @@ class DatabaseHelper {
       )
     ''');
 
+    // תוקן סדר העמודות: FOREIGN KEY חייב להופיע בסוף ההגדרה
     await db.execute('''
       CREATE TABLE tasks (
         id TEXT PRIMARY KEY,
@@ -76,6 +77,7 @@ class DatabaseHelper {
         next_due_date TEXT,
         is_reminder_enabled INTEGER DEFAULT 0,
         reminder_time TEXT,
+        google_event_id TEXT,
         FOREIGN KEY (item_id) REFERENCES items (id) ON DELETE CASCADE
       )
     ''');
@@ -118,6 +120,10 @@ class DatabaseHelper {
     if (oldVersion < 5) {
       try { await db.execute('ALTER TABLE tasks ADD COLUMN is_reminder_enabled INTEGER DEFAULT 0;'); } catch (_) {}
       try { await db.execute('ALTER TABLE tasks ADD COLUMN reminder_time TEXT;'); } catch (_) {}
+    }
+    if (oldVersion < 6) {
+      // מיגרציה לגרסה 6: הוספת עמודה למזהה אירוע יומן גוגל
+      try { await db.execute('ALTER TABLE tasks ADD COLUMN google_event_id TEXT;'); } catch (_) {}
     }
   }
 

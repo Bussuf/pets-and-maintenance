@@ -6,11 +6,12 @@ import '../providers/database_provider.dart';
 import '../providers/categories_provider.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../theme/app_icons.dart';
-import 'create_entity_screen.dart'; 
+import 'create_entity_screen.dart';
+import '../widgets/edit_category_sheet.dart';
+import '../widgets/edit_item_sheet.dart';
 
 class OrganizationScreen extends ConsumerStatefulWidget {
-  // אם שווה null, מציגים קבוצות. אם מועבר - מציגים את הפריטים של אותה קבוצה.
-  final Category? parentCategory; 
+  final Category? parentCategory;
 
   const OrganizationScreen({Key? key, this.parentCategory}) : super(key: key);
 
@@ -33,13 +34,13 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final db = ref.read(databaseProvider);
-    
+
     if (widget.parentCategory == null) {
       _categories = await db.getCategories();
     } else {
       _items = await db.getItemsByCategory(widget.parentCategory!.id);
     }
-    
+
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -48,7 +49,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
     if (widget.parentCategory == null) {
       final ids = _categories.map((c) => c.id).toList();
       await db.reorderCategories(ids);
-      ref.invalidate(categoriesProvider); // רענון עץ הנתונים הגלובלי
+      ref.invalidate(categoriesProvider);
     } else {
       final ids = _items.map((i) => i.id).toList();
       await db.reorderItems(ids);
@@ -94,19 +95,22 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
   }
 
   void _navigateToEdit({Category? categoryToEdit, Item? itemToEdit}) async {
-    // TODO: התאם לשם הקונסטרקטור המדויק שיש לך ב-CreateEntityScreen
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CreateEntityScreen(
-          // בהנחה שיש פרמטרים כאלו, אם לא - שנה לפי הקוד הקיים שלך
-          // category: categoryToEdit, 
-          // item: itemToEdit,
-          // initialParentCategory: widget.parentCategory,
-        ),
-      ),
-    );
-    _loadData(); // רענון אחרי חזרה ממסך עריכה
+    if (categoryToEdit != null) {
+      await EditCategorySheet.show(context, categoryToEdit);
+      _loadData();
+    } else if (itemToEdit != null) {
+      await EditItemSheet.show(context, itemToEdit, widget.parentCategory!.id);
+      _loadData();
+    } else {
+      // פתיחת טופס ליצירת קבוצה/פריט חדש בלבד (ללא משימה)
+      await CreateEntityScreen.show(
+        context,
+        type: widget.parentCategory == null ? EntityType.category : EntityType.item,
+        allowedTypes: const [EntityType.category, EntityType.item],
+        categoryId: widget.parentCategory?.id,
+      );
+      _loadData();
+    }
   }
 
   @override
@@ -133,8 +137,8 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _isReordering
-              ? _buildReorderableList()
-              : _buildStandardList(theme),
+          ? _buildReorderableList()
+          : _buildStandardList(theme),
     );
   }
 
@@ -151,7 +155,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
         if (widget.parentCategory == null) {
           final cat = _categories[index];
           final catColor = cat.color != null ? Color(cat.color!) : theme.colorScheme.primary;
-          
+
           return ListTile(
             leading: CircleAvatar(
               backgroundColor: catColor.withOpacity(0.2),
@@ -167,7 +171,6 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
               ],
             ),
             onTap: () {
-              // כניסה פנימה לניהול הפריטים של הקבוצה
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => OrganizationScreen(parentCategory: cat)),
@@ -197,7 +200,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
 
   Widget _buildReorderableList() {
     final itemCount = widget.parentCategory == null ? _categories.length : _items.length;
-    
+
     return ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: itemCount,

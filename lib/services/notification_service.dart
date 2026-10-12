@@ -13,16 +13,18 @@ class NotificationService {
   Future<void> init() async {
     tz.initializeTimeZones();
 
-    // הגדרות אנדרואיד: משתמש באייקון ברירת המחדל של האפליקציה
+    // הגדרות לאנדרואיד בלבד
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosInit = DarwinInitializationSettings();
-
-    const initSettings = InitializationSettings(
-        android: androidInit,
-        iOS: iosInit
-    );
+    const initSettings = InitializationSettings(android: androidInit);
 
     await _notificationsPlugin.initialize(initSettings);
+  }
+
+  Future<void> requestPermissions() async {
+    // בקשת הרשאה חיונית באנדרואיד 13 ומעלה
+    final androidImplementation = _notificationsPlugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidImplementation?.requestNotificationsPermission();
   }
 
   Future<void> scheduleTaskReminder(AppTask task) async {
@@ -69,7 +71,7 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
     );
-    const details = NotificationDetails(android: androidDetails, iOS: DarwinNotificationDetails());
+    const details = NotificationDetails(android: androidDetails);
 
     // 4. תזמון ההתראה לפי הסגנון הנבחר
     if (style == 'separated') {

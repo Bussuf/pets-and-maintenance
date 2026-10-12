@@ -10,6 +10,8 @@ import '../providers/categories_provider.dart';
 import '../providers/items_provider.dart';
 import 'confirm_delete_dialog.dart';
 import '../services/notification_service.dart';
+import '../providers/google_auth_provider.dart';
+import '../services/google_calendar_service.dart';
 
 class EditTaskSheet extends ConsumerStatefulWidget {
   final Map<String, dynamic> taskMap;
@@ -44,6 +46,8 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
   DateTime? _selectedEndConditionDate;
   DateTime? _nextDueDate;
   late bool _isReminderEnabled;
+  late bool _isGoogleSyncEnabled;
+  String? _existingGoogleEventId;
 
   // שיוכים
   late String _selectedCategoryId;
@@ -67,6 +71,9 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
     }
     _nextDueDate = t['next_due_date'] != null ? DateTime.tryParse(t['next_due_date']) : null;
     _isReminderEnabled = (t['is_reminder_enabled'] == 1);
+
+    _existingGoogleEventId = t['google_event_id'];
+    _isGoogleSyncEnabled = _existingGoogleEventId != null;
 
     _selectedCategoryId = t['category_id'] ?? '';
     _selectedItemId = t['item_id'] ?? '';
@@ -154,6 +161,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final theme = Theme.of(context);
+    final googleUser = ref.watch(googleAuthProvider);
 
     return SafeArea(
       child: Padding(
@@ -185,6 +193,11 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
 
                       if (confirm == true) {
                         try {
+                          // מחיקה מהיומן במידה וקיים מזהה גוגל
+                          if (widget.taskMap['google_event_id'] != null) {
+                            await GoogleCalendarService.instance.deleteEvent(widget.taskMap['google_event_id']);
+                          }
+
                           final rawDb = await ref.read(databaseProvider).database;
                           await rawDb.delete('tasks', where: 'id = ?', whereArgs: [widget.taskMap['id']]);
 
@@ -414,6 +427,17 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       value: _isReminderEnabled,
                       onChanged: (bool value) => setState(() => _isReminderEnabled = value),
                     ),
+                    Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                    SwitchListTile(
+                      title: const Text('סנכרן ליומן גוגל', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      subtitle: Text(googleUser != null ? 'האירוע יעודכן ביומן' : 'יש להתחבר דרך מסך ההגדרות'),
+                      secondary: Icon(
+                        Icons.calendar_month,
+                        color: _isGoogleSyncEnabled ? theme.colorScheme.primary : Colors.grey,
+                      ),
+                      value: _isGoogleSyncEnabled,
+                      onChanged: googleUser != null ? (bool value) => setState(() => _isGoogleSyncEnabled = value) : null,
+                    ),
                   ],
                 ),
               ),
@@ -441,6 +465,40 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                     final db = ref.read(databaseProvider);
                     final rawDb = await db.database;
 
+                    String? finalGoogleEventId = _existingGoogleEventId;
+
+                    // מודל זמני כדי להעביר את הנתונים לשירות גוגל
+                    AppTask tempTask = AppTask(
+                      id: widget.taskMap['id'],
+                      itemId: _selectedItemId,
+                      name: newName,
+                      description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+                      intervalAmount: int.tryParse(_intervalAmountController.text) ?? 7,
+                      intervalUnit: _selectedUnit,
+                      endCondition: _selectedEndCondition,
+                      endConditionValue: endVal,
+                      nextDueDate: _nextDueDate,
+                      isReminderEnabled: _isReminderEnabled,
+                      reminderTime: _isReminderEnabled ? '09:00' : null,
+                      googleEventId: _existingGoogleEventId,
+                    );
+
+                    // לוגיקת סנכרון לגוגל בעת עדכון
+                    if (_isGoogleSyncEnabled && ref.read(googleAuthProvider) != null) {
+                      if (_existingGoogleEventId == null) {
+                        // המשתמש הדליק את המתג עכשיו - ניצור אירוע חדש
+                        finalGoogleEventId = await GoogleCalendarService.instance.createEvent(tempTask, 'נוסף מאפליקציית Pets & Maintenance');
+                      } else {
+                        // האירוע כבר קיים - רק נעדכן אותו
+                        await GoogleCalendarService.instance.updateEvent(tempTask, 'עודכן מהאפליקציה');
+                      }
+                    } else if (!_isGoogleSyncEnabled && _existingGoogleEventId != null) {
+                      // המשתמש כיבה את המתג - נמחק את האירוע מהיומן
+                      await GoogleCalendarService.instance.deleteEvent(_existingGoogleEventId!);
+                      finalGoogleEventId = null;
+                    }
+
+                    // עדכון מסד הנתונים
                     await rawDb.update(
                       'tasks',
                       {
@@ -454,6 +512,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                         'next_due_date': _nextDueDate?.toIso8601String(),
                         'is_reminder_enabled': _isReminderEnabled ? 1 : 0,
                         'reminder_time': _isReminderEnabled ? '09:00' : null,
+                        'google_event_id': finalGoogleEventId,
                       },
                       where: 'id = ?',
                       whereArgs: [widget.taskMap['id']],

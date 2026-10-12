@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../providers/database_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
-import '../providers/categories_provider.dart';
+import '../models/task.dart';
 import '../providers/items_provider.dart';
 import '../theme/app_icons.dart';
 import '../screens/create_entity_screen.dart';
-import 'edit_task_sheet.dart';
+import '../widgets/edit_task_sheet.dart';
 import '../services/notification_service.dart';
+import '../services/google_calendar_service.dart';
 
 class TaskCard extends ConsumerWidget {
   final Map<String, dynamic> task;
@@ -43,6 +44,28 @@ class TaskCard extends ConsumerWidget {
 
     final currentCompletedCount = (task['completed_count'] as num?)?.toInt() ?? 0;
     final uuid = const Uuid();
+    final String? googleEventId = task['google_event_id'];
+
+    // אם המשימה מסונכרנת לגוגל יומן, נעדכן את מועד האירוע לתאריך החדש
+    if (googleEventId != null) {
+      try {
+        final updatedTempTask = AppTask(
+          id: task['id'],
+          itemId: task['item_id'],
+          name: task['name'],
+          description: task['description'],
+          intervalAmount: intervalAmount,
+          intervalUnit: intervalUnit,
+          endCondition: task['end_condition'] ?? 'always',
+          endConditionValue: task['end_condition_value'],
+          nextDueDate: nextDate,
+          googleEventId: googleEventId,
+        );
+        await GoogleCalendarService.instance.updateEvent(updatedTempTask, 'עודכן עקב השלמת משימה');
+      } catch (e) {
+        debugPrint('Failed to update Google Calendar event on completion: $e');
+      }
+    }
 
     await rawDb.update(
       'tasks',
@@ -118,11 +141,9 @@ class TaskCard extends ConsumerWidget {
       }
     }
 
-    final intervalStr = 'תדירות: כל ${task['interval_amount'] ?? 7} ${task['interval_unit'] ?? 'ימים'}';
+    final intervalStr = 'תדירות: كل ${task['interval_amount'] ?? 7} ${task['interval_unit'] ?? 'ימים'}';
     final isRemindOn = (task['is_reminder_enabled'] == 1);
-
-    // Todo Feature 2: Placeholder for Google Calendar Sync state
-    final bool isGoogleSynced = false;
+    final bool isGoogleSynced = task['google_event_id'] != null;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -139,7 +160,7 @@ class TaskCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // --- שורה 1: כותרת ואייקוני סטטוס (פעמון / יומן) ---
+              // --- שורה 1: כותרת ואייקוני סטטוס מסודרים בצד שמאל ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,11 +175,12 @@ class TaskCard extends ConsumerWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // אייקון יומן גוגל (יופעל בהמשך)
-                      if (isGoogleSynced) const Icon(Icons.event_available, size: 18, color: Colors.green),
-                      if (isGoogleSynced && isRemindOn) const SizedBox(width: 8),
-                      // אייקון פעמון התראות
-                      if (isRemindOn) const Icon(Icons.notifications_active, size: 18, color: Colors.blueAccent),
+                      if (isGoogleSynced) ...[
+                        const Icon(Icons.event_available, size: 18, color: Colors.green),
+                        if (isRemindOn) const SizedBox(width: 8),
+                      ],
+                      if (isRemindOn)
+                        const Icon(Icons.notifications_active, size: 18, color: Colors.blueAccent),
                     ],
                   ),
                 ],
@@ -249,7 +271,7 @@ class TaskCard extends ConsumerWidget {
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.copy_outlined, size: 18),
                       tooltip: 'שכפל',
-                      onPressed: () => CreateEntityScreen.open(context, type: EntityType.task, categoryId: task['category_id'], itemId: task['item_id'], duplicateData: task),
+                      onPressed: () => CreateEntityScreen.show(context, type: EntityType.task, categoryId: task['category_id'], itemId: task['item_id'], duplicateData: task),
                     ),
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
