@@ -1,16 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeNotifier extends Notifier<ThemeMode> {
+  static const String _themeKey = 'app_theme_mode';
+
   @override
   ThemeMode build() {
-    // ברירת המחדל היא לפי הגדרות המערכת של המשתמש
+    // נטען את הערך השמור באסינכרוני, ובינתיים נחזיר system
+    _loadTheme();
     return ThemeMode.system;
   }
 
-  void setTheme(ThemeMode mode) {
+  Future<void> _loadTheme() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedIndex = prefs.getInt(_themeKey);
+      if (savedIndex != null) {
+        if (savedIndex >= 0 && savedIndex < ThemeMode.values.length) {
+          state = ThemeMode.values[savedIndex];
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to load theme: $e');
+    }
+  }
+
+  Future<void> setTheme(ThemeMode mode) async {
     state = mode;
-    // בעתיד נוסיף כאן קוד ששומר את הבחירה ל-SharedPreferences (משימה #17)
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_themeKey, mode.index);
+    } catch (e) {
+      debugPrint('Failed to save theme: $e');
+    }
   }
 }
 
