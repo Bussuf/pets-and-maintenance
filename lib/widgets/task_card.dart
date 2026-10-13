@@ -27,6 +27,25 @@ class TaskCard extends ConsumerWidget {
     required this.todayStart,
   }) : super(key: key);
 
+  // פונקציית עזר לעיצוב תאריך אחיד: dd/mm/yy
+  String _formatDate(DateTime date) {
+    final d = date.day.toString().padLeft(2, '0');
+    final m = date.month.toString().padLeft(2, '0');
+    final y = date.year.toString().substring(2);
+    return '$d/$m/$y';
+  }
+
+  // פונקציית עזר לתרגום יחידות זמן לעברית
+  String _translateIntervalUnit(String? unit) {
+    switch (unit) {
+      case 'days': return 'ימים';
+      case 'weeks': return 'שבועות';
+      case 'months': return 'חודשים';
+      case 'years': return 'שנים';
+      default: return 'ימים';
+    }
+  }
+
   Future<void> _completeTaskAtDate(BuildContext context, WidgetRef ref, DateTime completedDate) async {
     final db = ref.read(databaseProvider);
     final rawDb = await db.database;
@@ -95,7 +114,7 @@ class TaskCard extends ConsumerWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('משימה "${task['name']}" הושלמה! יעד הבא: ${nextDate.toIso8601String().split('T')[0]}'),
+          content: Text('משימה "${task['name']}" הושלמה! יעד הבא: ${_formatDate(nextDate)}'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -126,22 +145,28 @@ class TaskCard extends ConsumerWidget {
     final itemName = task['item_name'] ?? '';
 
     bool isOverdue = false;
-    final dueDateStr = task['next_due_date'] != null ? task['next_due_date'].toString().split('T')[0] : 'לא נקבע';
+    String dueDateStr = 'לא נקבע';
 
     if (task['next_due_date'] != null) {
       final due = DateTime.tryParse(task['next_due_date']);
-      if (due != null && due.isBefore(todayStart)) isOverdue = true;
+      if (due != null) {
+        if (due.isBefore(todayStart)) isOverdue = true;
+        dueDateStr = _formatDate(due);
+      }
     }
 
     String lastCompletedStr = 'טרם בוצע';
     if (task['last_completed_date'] != null) {
       final lcDate = DateTime.tryParse(task['last_completed_date']);
       if (lcDate != null) {
-        lastCompletedStr = '${lcDate.day.toString().padLeft(2, '0')}/${lcDate.month.toString().padLeft(2, '0')}/${lcDate.year.toString().substring(2)}';
+        lastCompletedStr = _formatDate(lcDate);
       }
     }
 
-    final intervalStr = 'תדירות: كل ${task['interval_amount'] ?? 7} ${task['interval_unit'] ?? 'ימים'}';
+    // תורגם לעברית תקינה ונשאב דרך פונקציית העזר
+    final unitTrans = _translateIntervalUnit(task['interval_unit']);
+    final intervalStr = 'תדירות: כל ${task['interval_amount'] ?? 7} $unitTrans';
+
     final isRemindOn = (task['is_reminder_enabled'] == 1);
     final bool isGoogleSynced = task['google_event_id'] != null;
 
@@ -260,6 +285,21 @@ class TaskCard extends ConsumerWidget {
                       onPressed: () => _completeTaskAtDate(context, ref, DateTime.now()),
                       icon: const Icon(Icons.check, size: 16),
                       label: const Text('השלם'),
+                    ),
+                    // כפתור הסטטיסטיקות החדש - ממוקם שני מימין
+                    IconButton.outlined(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.insights, size: 18),
+                      tooltip: 'סטטיסטיקות',
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('יוטמע בהמשך'),
+                            behavior: SnackBarBehavior.floating,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
                     ),
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
