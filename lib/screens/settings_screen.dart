@@ -20,7 +20,7 @@ class SettingsScreen extends ConsumerWidget {
         title: const Text('הגדרות מערכת'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.paddingOf(context).bottom),
         children: [
           // --- מקטע מראה ותצוגה ---
           Text(

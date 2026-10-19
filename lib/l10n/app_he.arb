@@ -46,5 +46,7 @@
     },
   "lightMode": "מצב בהיר",
   "darkMode": "מצב כהה",
-  "systemMode": "הגדרות מערכת"
+  "systemMode": "הגדרות מערכת",
+  "dueDateLabel": "תאריך לביצוע: {date}",
+  "overdueDays": "{count, plural, =1{יום אחד באיחור} =2{יומיים באיחור} other{{count} ימי איחור}}"
 }

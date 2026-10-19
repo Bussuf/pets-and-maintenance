@@ -421,7 +421,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         child: Text('אין משימות להצגה כרגע', style: TextStyle(color: Colors.grey)),
                       )
                           : ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 80),
+                        padding: EdgeInsets.only(bottom: 80 + MediaQuery.paddingOf(context).bottom),
                         itemCount: flatList.length,
                         itemBuilder: (context, index) {
                           final item = flatList[index];

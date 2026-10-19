@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_en.dart';
 import 'app_localizations_he.dart';
 
 // ignore_for_file: type=lint
@@ -92,253 +93,268 @@ abstract class AppLocalizations {
       ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('he')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('he'),
+  ];
 
   /// No description provided for @appTitle.
   ///
-  /// In he, this message translates to:
-  /// **'ניהול משימות חוזרות'**
+  /// In en, this message translates to:
+  /// **'Recurring Tasks'**
   String get appTitle;
 
   /// No description provided for @save.
   ///
-  /// In he, this message translates to:
-  /// **'שמירה'**
+  /// In en, this message translates to:
+  /// **'Save'**
   String get save;
 
   /// No description provided for @cancel.
   ///
-  /// In he, this message translates to:
-  /// **'ביטול'**
+  /// In en, this message translates to:
+  /// **'Cancel'**
   String get cancel;
 
   /// No description provided for @delete.
   ///
-  /// In he, this message translates to:
-  /// **'מחק'**
+  /// In en, this message translates to:
+  /// **'Delete'**
   String get delete;
 
   /// No description provided for @deletePermanently.
   ///
-  /// In he, this message translates to:
-  /// **'מחק לצמיתות'**
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
   String get deletePermanently;
 
   /// No description provided for @newAction.
   ///
-  /// In he, this message translates to:
-  /// **'חדש'**
+  /// In en, this message translates to:
+  /// **'New'**
   String get newAction;
 
   /// No description provided for @task.
   ///
-  /// In he, this message translates to:
-  /// **'משימה'**
+  /// In en, this message translates to:
+  /// **'Task'**
   String get task;
 
   /// No description provided for @item.
   ///
-  /// In he, this message translates to:
-  /// **'פריט'**
+  /// In en, this message translates to:
+  /// **'Item'**
   String get item;
 
   /// No description provided for @category.
   ///
-  /// In he, this message translates to:
-  /// **'קבוצה'**
+  /// In en, this message translates to:
+  /// **'Group'**
   String get category;
 
   /// No description provided for @all.
   ///
-  /// In he, this message translates to:
-  /// **'הכל'**
+  /// In en, this message translates to:
+  /// **'All'**
   String get all;
 
   /// No description provided for @noTasks.
   ///
-  /// In he, this message translates to:
-  /// **'אין משימות דחופות כרגע!'**
+  /// In en, this message translates to:
+  /// **'No urgent tasks right now!'**
   String get noTasks;
 
   /// No description provided for @activeTasks.
   ///
-  /// In he, this message translates to:
-  /// **'משימות פעילות'**
+  /// In en, this message translates to:
+  /// **'Active tasks'**
   String get activeTasks;
 
   /// No description provided for @overdueTasks.
   ///
-  /// In he, this message translates to:
-  /// **'באיחור'**
+  /// In en, this message translates to:
+  /// **'Overdue'**
   String get overdueTasks;
 
   /// No description provided for @doneNow.
   ///
-  /// In he, this message translates to:
-  /// **'בוצע עכשיו'**
+  /// In en, this message translates to:
+  /// **'Done now'**
   String get doneNow;
 
   /// No description provided for @myGroups.
   ///
-  /// In he, this message translates to:
-  /// **'הקבוצות שלי'**
+  /// In en, this message translates to:
+  /// **'My groups'**
   String get myGroups;
 
   /// No description provided for @name.
   ///
-  /// In he, this message translates to:
-  /// **'שם'**
+  /// In en, this message translates to:
+  /// **'Name'**
   String get name;
 
   /// No description provided for @description.
   ///
-  /// In he, this message translates to:
-  /// **'תיאור (אופציונלי)'**
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
   String get description;
 
   /// No description provided for @repeatEvery.
   ///
-  /// In he, this message translates to:
-  /// **'כל כמה זמן?'**
+  /// In en, this message translates to:
+  /// **'Repeat every'**
   String get repeatEvery;
 
   /// No description provided for @days.
   ///
-  /// In he, this message translates to:
-  /// **'ימים'**
+  /// In en, this message translates to:
+  /// **'days'**
   String get days;
 
   /// No description provided for @weeks.
   ///
-  /// In he, this message translates to:
-  /// **'שבועות'**
+  /// In en, this message translates to:
+  /// **'weeks'**
   String get weeks;
 
   /// No description provided for @months.
   ///
-  /// In he, this message translates to:
-  /// **'חודשים'**
+  /// In en, this message translates to:
+  /// **'months'**
   String get months;
 
   /// No description provided for @years.
   ///
-  /// In he, this message translates to:
-  /// **'שנים'**
+  /// In en, this message translates to:
+  /// **'years'**
   String get years;
 
   /// No description provided for @requiredField.
   ///
-  /// In he, this message translates to:
-  /// **'שדה חובה'**
+  /// In en, this message translates to:
+  /// **'Required field'**
   String get requiredField;
 
   /// No description provided for @selectCategory.
   ///
-  /// In he, this message translates to:
-  /// **'שייך לקבוצה'**
+  /// In en, this message translates to:
+  /// **'Group'**
   String get selectCategory;
 
   /// No description provided for @selectItem.
   ///
-  /// In he, this message translates to:
-  /// **'שייך לפריט'**
+  /// In en, this message translates to:
+  /// **'Item'**
   String get selectItem;
 
   /// No description provided for @addTaskTitleHint.
   ///
-  /// In he, this message translates to:
-  /// **'הוספת שם למשימה'**
+  /// In en, this message translates to:
+  /// **'Add task title'**
   String get addTaskTitleHint;
 
   /// No description provided for @addItemTitleHint.
   ///
-  /// In he, this message translates to:
-  /// **'שם הפריט'**
+  /// In en, this message translates to:
+  /// **'Item name'**
   String get addItemTitleHint;
 
   /// No description provided for @addCategoryTitleHint.
   ///
-  /// In he, this message translates to:
-  /// **'שם הקבוצה'**
+  /// In en, this message translates to:
+  /// **'Group name'**
   String get addCategoryTitleHint;
 
   /// No description provided for @color.
   ///
-  /// In he, this message translates to:
-  /// **'צבע (אופציונלי)'**
+  /// In en, this message translates to:
+  /// **'Color (optional)'**
   String get color;
 
   /// No description provided for @icon.
   ///
-  /// In he, this message translates to:
-  /// **'סמל (אופציונלי)'**
+  /// In en, this message translates to:
+  /// **'Icon (optional)'**
   String get icon;
 
   /// No description provided for @addQuick.
   ///
-  /// In he, this message translates to:
-  /// **'+ חדש'**
+  /// In en, this message translates to:
+  /// **'+ New'**
   String get addQuick;
 
   /// No description provided for @endConditionTitle.
   ///
-  /// In he, this message translates to:
-  /// **'משך'**
+  /// In en, this message translates to:
+  /// **'Duration'**
   String get endConditionTitle;
 
   /// No description provided for @endConditionAlways.
   ///
-  /// In he, this message translates to:
-  /// **'תמיד'**
+  /// In en, this message translates to:
+  /// **'Always'**
   String get endConditionAlways;
 
   /// No description provided for @endConditionCount.
   ///
-  /// In he, this message translates to:
-  /// **'מספר פעמים ספציפי'**
+  /// In en, this message translates to:
+  /// **'Specific number of times'**
   String get endConditionCount;
 
   /// No description provided for @endConditionUntil.
   ///
-  /// In he, this message translates to:
-  /// **'עד תאריך'**
+  /// In en, this message translates to:
+  /// **'Until date'**
   String get endConditionUntil;
 
   /// No description provided for @selectDate.
   ///
-  /// In he, this message translates to:
-  /// **'בחר תאריך'**
+  /// In en, this message translates to:
+  /// **'Select date'**
   String get selectDate;
 
   /// No description provided for @times.
   ///
-  /// In he, this message translates to:
-  /// **'פעמים'**
+  /// In en, this message translates to:
+  /// **'times'**
   String get times;
 
   /// No description provided for @savedSuccessfully.
   ///
-  /// In he, this message translates to:
-  /// **'{entityName} נשמר בהצלחה ב{repositoryName}'**
+  /// In en, this message translates to:
+  /// **'{entityName} saved to {repositoryName}'**
   String savedSuccessfully(String entityName, String repositoryName);
 
   /// No description provided for @lightMode.
   ///
-  /// In he, this message translates to:
-  /// **'מצב בהיר'**
+  /// In en, this message translates to:
+  /// **'Light mode'**
   String get lightMode;
 
   /// No description provided for @darkMode.
   ///
-  /// In he, this message translates to:
-  /// **'מצב כהה'**
+  /// In en, this message translates to:
+  /// **'Dark mode'**
   String get darkMode;
 
   /// No description provided for @systemMode.
   ///
-  /// In he, this message translates to:
-  /// **'הגדרות מערכת'**
+  /// In en, this message translates to:
+  /// **'System settings'**
   String get systemMode;
+
+  /// No description provided for @dueDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Due: {date}'**
+  String dueDateLabel(String date);
+
+  /// No description provided for @overdueDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day overdue} other{{count} days overdue}}'**
+  String overdueDays(int count);
 }
 
 class _AppLocalizationsDelegate
@@ -352,7 +368,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['he'].contains(locale.languageCode);
+      <String>['en', 'he'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -361,6 +377,8 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
     case 'he':
       return AppLocalizationsHe();
   }

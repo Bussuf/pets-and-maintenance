@@ -45,22 +45,27 @@ class AppDrawer extends ConsumerWidget {
 
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              padding: EdgeInsets.fromLTRB(12, 8, 12, 8 + MediaQuery.paddingOf(context).bottom),
               children: [
                 // יעד ראשי: כל הקבוצות (אייקון מלא)
-                ListTile(
+                // Material שקוף - כדי שצבע הבחירה ייצבע על הפריט ויזוז עם הגלילה
+                Material(
+                  type: MaterialType.transparency,
+                  child: ListTile(
                   leading: Icon(
                     Icons.grid_view,
                     color: isDashboardActive ? theme.colorScheme.primary : null,
                   ),
                   title: const Text('כל הקבוצות', style: TextStyle(fontWeight: FontWeight.bold)),
                   selected: isDashboardActive,
+                  focusColor: Colors.transparent,
                   selectedColor: theme.colorScheme.onPrimaryContainer,
                   selectedTileColor: theme.colorScheme.primaryContainer,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                   onTap: () {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
+                  ),
                 ),
 
                 const Padding(
@@ -94,7 +99,9 @@ class AppDrawer extends ConsumerWidget {
                       final catColor = cat.color != null ? Color(cat.color!) : theme.colorScheme.primary;
                       final catIcon = AppIcons.getIcon(cat.icon);
 
-                      return ListTile(
+                      return Material(
+                        type: MaterialType.transparency,
+                        child: ListTile(
                         leading: Icon(catIcon, color: isSelected ? theme.colorScheme.primary : catColor),
                         title: Text(
                           cat.name,
@@ -103,6 +110,7 @@ class AppDrawer extends ConsumerWidget {
                           ),
                         ),
                         selected: isSelected,
+                        focusColor: Colors.transparent,
                         selectedTileColor: theme.colorScheme.primaryContainer.withOpacity(0.5),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                         onTap: () {
@@ -121,7 +129,7 @@ class AppDrawer extends ConsumerWidget {
                             );
                           }
                         },
-                      );
+                      ));
                     }).toList();
                   },
                   loading: () => [const Center(child: CircularProgressIndicator())],

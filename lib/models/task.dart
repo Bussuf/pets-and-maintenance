@@ -77,6 +77,16 @@ class AppTask {
     );
   }
 
+  /// מוסיף תדירות לתאריך (כמות שלילית = מחסיר)
+  static DateTime addInterval(DateTime from, int amount, String unit) {
+    switch (unit) {
+      case 'weeks': return from.add(Duration(days: amount * 7));
+      case 'months': return DateTime(from.year, from.month + amount, from.day);
+      case 'years': return DateTime(from.year + amount, from.month, from.day);
+      default: return from.add(Duration(days: amount));
+    }
+  }
+
   AppTask copyWith({
     String? id,
     String? itemId,

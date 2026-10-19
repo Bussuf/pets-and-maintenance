@@ -584,7 +584,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       }
 
                       return ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 80),
+                        padding: EdgeInsets.only(bottom: 80 + MediaQuery.paddingOf(context).bottom),
                         itemCount: flatList.length,
                         itemBuilder: (context, index) {
                           final entry = flatList[index];

@@ -133,4 +133,21 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get systemMode => 'הגדרות מערכת';
+
+  @override
+  String dueDateLabel(String date) {
+    return 'תאריך לביצוע: $date';
+  }
+
+  @override
+  String overdueDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ימי איחור',
+      two: 'יומיים באיחור',
+      one: 'יום אחד באיחור',
+    );
+    return '$_temp0';
+  }
 }

@@ -465,6 +465,19 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                     final db = ref.read(databaseProvider);
                     final rawDb = await db.database;
 
+                    // חישוב מחדש של תאריך היעד אם שונתה התדירות
+                    final oldAmount = (widget.taskMap['interval_amount'] as num?)?.toInt() ?? 7;
+                    final oldUnit = widget.taskMap['interval_unit'] as String? ?? 'days';
+                    final newAmount = int.tryParse(_intervalAmountController.text) ?? 7;
+                    if (newAmount != oldAmount || _selectedUnit != oldUnit) {
+                      final lastDone = DateTime.tryParse(widget.taskMap['last_completed_date'] ?? '');
+                      final oldDue = DateTime.tryParse(widget.taskMap['next_due_date'] ?? '');
+                      // טרם בוצעה: משחזרים את נקודת ההתחלה מהיעד הישן פחות התדירות הישנה
+                      final base = lastDone ??
+                          (oldDue != null ? AppTask.addInterval(oldDue, -oldAmount, oldUnit) : DateTime.now());
+                      _nextDueDate = AppTask.addInterval(base, newAmount, _selectedUnit);
+                    }
+
                     String? finalGoogleEventId = _existingGoogleEventId;
 
                     // מודל זמני כדי להעביר את הנתונים לשירות גוגל

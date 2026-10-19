@@ -1,0 +1,62 @@
+{
+  "@@locale": "en",
+  "appTitle": "Recurring Tasks",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "deletePermanently": "Delete permanently",
+  "newAction": "New",
+  "task": "Task",
+  "item": "Item",
+  "category": "Group",
+  "all": "All",
+  "noTasks": "No urgent tasks right now!",
+  "activeTasks": "Active tasks",
+  "overdueTasks": "Overdue",
+  "doneNow": "Done now",
+  "myGroups": "My groups",
+  "name": "Name",
+  "description": "Description (optional)",
+  "repeatEvery": "Repeat every",
+  "days": "days",
+  "weeks": "weeks",
+  "months": "months",
+  "years": "years",
+  "requiredField": "Required field",
+  "selectCategory": "Group",
+  "selectItem": "Item",
+  "addTaskTitleHint": "Add task title",
+  "addItemTitleHint": "Item name",
+  "addCategoryTitleHint": "Group name",
+  "color": "Color (optional)",
+  "icon": "Icon (optional)",
+  "addQuick": "+ New",
+  "endConditionTitle": "Duration",
+  "endConditionAlways": "Always",
+  "endConditionCount": "Specific number of times",
+  "endConditionUntil": "Until date",
+  "selectDate": "Select date",
+  "times": "times",
+  "savedSuccessfully": "{entityName} saved to {repositoryName}",
+  "@savedSuccessfully": {
+    "placeholders": {
+      "entityName": { "type": "String" },
+      "repositoryName": { "type": "String" }
+    }
+  },
+  "lightMode": "Light mode",
+  "darkMode": "Dark mode",
+  "systemMode": "System settings",
+  "dueDateLabel": "Due: {date}",
+  "@dueDateLabel": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "overdueDays": "{count, plural, =1{1 day overdue} other{{count} days overdue}}",
+  "@overdueDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
+}

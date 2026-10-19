@@ -10,6 +10,7 @@ import '../screens/create_entity_screen.dart';
 import '../widgets/edit_task_sheet.dart';
 import '../services/notification_service.dart';
 import '../services/google_calendar_service.dart';
+import '../l10n/app_localizations.dart';
 
 class TaskCard extends ConsumerWidget {
   final Map<String, dynamic> task;
@@ -144,13 +145,19 @@ class TaskCard extends ConsumerWidget {
     final catName = task['category_name'] ?? 'כללי';
     final itemName = task['item_name'] ?? '';
 
+    final l10n = AppLocalizations.of(context)!;
     bool isOverdue = false;
+    int overdueDays = 0;
     String dueDateStr = 'לא נקבע';
 
     if (task['next_due_date'] != null) {
       final due = DateTime.tryParse(task['next_due_date']);
       if (due != null) {
-        if (due.isBefore(todayStart)) isOverdue = true;
+        if (due.isBefore(todayStart)) {
+          isOverdue = true;
+          // עיגול שעות ל-ימים, כדי שמעבר שעון קיץ/חורף לא יחסיר יום
+          overdueDays = (todayStart.difference(DateTime(due.year, due.month, due.day)).inHours / 24).round();
+        }
         dueDateStr = _formatDate(due);
       }
     }
@@ -245,7 +252,7 @@ class TaskCard extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (isOverdue) ...[const Icon(Icons.schedule, size: 12, color: Colors.redAccent), const SizedBox(width: 4)],
-                              Text('תאריך הבא לביצוע: $dueDateStr', style: TextStyle(fontSize: 12, fontWeight: isOverdue ? FontWeight.bold : FontWeight.normal, color: isOverdue ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800) : theme.colorScheme.onSurfaceVariant)),
+                              Text(isOverdue ? '${l10n.dueDateLabel(dueDateStr)} · ${l10n.overdueDays(overdueDays)}' : l10n.dueDateLabel(dueDateStr), style: TextStyle(fontSize: 12, fontWeight: isOverdue ? FontWeight.bold : FontWeight.normal, color: isOverdue ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800) : theme.colorScheme.onSurfaceVariant)),
                             ],
                           ),
                         ),

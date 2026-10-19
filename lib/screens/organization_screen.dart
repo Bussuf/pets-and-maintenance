@@ -4,6 +4,8 @@ import '../models/category.dart';
 import '../models/item.dart';
 import '../providers/database_provider.dart';
 import '../providers/categories_provider.dart';
+import '../providers/items_provider.dart';
+import '../providers/dashboard_tasks_provider.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../theme/app_icons.dart';
 import 'create_entity_screen.dart';
@@ -53,6 +55,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
     } else {
       final ids = _items.map((i) => i.id).toList();
       await db.reorderItems(ids);
+      ref.invalidate(itemsByCategoryProvider(widget.parentCategory!.id));
     }
   }
 
@@ -88,6 +91,9 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
           ref.invalidate(categoriesProvider);
         } else {
           await db.deleteItem(id);
+          ref.invalidate(itemsByCategoryProvider(widget.parentCategory!.id));
+          ref.invalidate(tasksByCategoryProvider(widget.parentCategory!.id));
+          ref.invalidate(dashboardTasksProvider);
         }
         _loadData();
       },
@@ -149,7 +155,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.only(top: 8, bottom: 8 + MediaQuery.paddingOf(context).bottom),
       itemCount: itemCount,
       itemBuilder: (context, index) {
         if (widget.parentCategory == null) {
