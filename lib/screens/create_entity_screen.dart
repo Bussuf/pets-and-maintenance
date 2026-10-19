@@ -219,14 +219,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
   }
 
   DateTime _calculateInitialDueDate(int amount, String unit) {
-    final now = DateTime.now();
-    switch (unit) {
-      case 'days': return now.add(Duration(days: amount));
-      case 'weeks': return now.add(Duration(days: amount * 7));
-      case 'months': return DateTime(now.year, now.month + amount, now.day);
-      case 'years': return DateTime(now.year + amount, now.month, now.day);
-      default: return now.add(Duration(days: amount));
-    }
+    return AppTask.addInterval(DateTime.now(), amount, unit);
   }
 
   Future<void> _save() async {

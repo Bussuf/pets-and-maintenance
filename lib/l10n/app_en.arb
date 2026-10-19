@@ -73,5 +73,6 @@
     "placeholders": {
       "error": { "type": "String" }
     }
-  }
+  },
+  "addItemToGroup": "Add item to group"
 }

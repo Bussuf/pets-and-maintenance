@@ -10,6 +10,7 @@ import '../theme/app_icons.dart';
 import '../widgets/animated_fab_menu.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/global_search_bar.dart';
+import 'create_entity_screen.dart';
 import 'category_screen.dart';
 import '../widgets/task_card.dart';
 import '../widgets/edit_category_sheet.dart';
@@ -48,6 +49,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       if (key?.currentContext != null) {
         Scrollable.ensureVisible(
           key!.currentContext!,
+          alignment: 0.5, // הצ'יפ המסומן נגלל למרכז; בקצוות הגלילה נעצרת והריפוד נשמר
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
         );
@@ -256,8 +258,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
         child: Scaffold(
           key: _scaffoldKey,
-          appBar: const GlobalSearchBar(
+          appBar: GlobalSearchBar(
             showSettingsMenu: true,
+            // ברירת מחדל: הקבוצה של הצ'יפ המסומן (ללא קבוצה כשמסומן 'הכל')
+            onAddItem: () => CreateEntityScreen.show(context, type: EntityType.item, categoryId: _selectedCategoryId),
           ),
           drawer: const AppDrawer(),
           body: tasksAsync.when(

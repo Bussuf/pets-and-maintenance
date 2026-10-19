@@ -415,6 +415,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Operation failed: {error}'**
   String backupFailed(String error);
+
+  /// No description provided for @addItemToGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item to group'**
+  String get addItemToGroup;
 }
 
 class _AppLocalizationsDelegate

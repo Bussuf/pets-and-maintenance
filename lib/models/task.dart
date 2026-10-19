@@ -77,13 +77,21 @@ class AppTask {
     );
   }
 
+  /// מצמיד את היום לסוף החודש אם הוא לא קיים בו (31/01 + חודש = 28/02, ולא 03/03)
+  static DateTime _clampDay(int year, int month, DateTime from) {
+    final lastDay = DateTime(year, month + 1, 0).day; // יום 0 של החודש הבא = היום האחרון של החודש
+    final day = from.day > lastDay ? lastDay : from.day;
+    return DateTime(year, month, day, from.hour, from.minute, from.second);
+  }
+
   /// מוסיף תדירות לתאריך (כמות שלילית = מחסיר)
   static DateTime addInterval(DateTime from, int amount, String unit) {
+    // חשבון קלנדרי (ולא Duration) - כדי שמעבר שעון קיץ/חורף לא יזיז את התאריך ביום
     switch (unit) {
-      case 'weeks': return from.add(Duration(days: amount * 7));
-      case 'months': return DateTime(from.year, from.month + amount, from.day);
-      case 'years': return DateTime(from.year + amount, from.month, from.day);
-      default: return from.add(Duration(days: amount));
+      case 'weeks': return DateTime(from.year, from.month, from.day + amount * 7, from.hour, from.minute, from.second);
+      case 'months': return _clampDay(from.year, from.month + amount, from);
+      case 'years': return _clampDay(from.year + amount, from.month, from);
+      default: return DateTime(from.year, from.month, from.day + amount, from.hour, from.minute, from.second);
     }
   }
 

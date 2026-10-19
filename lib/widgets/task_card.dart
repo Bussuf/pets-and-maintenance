@@ -53,14 +53,7 @@ class TaskCard extends ConsumerWidget {
     final intervalAmount = (task['interval_amount'] as num?)?.toInt() ?? 7;
     final intervalUnit = task['interval_unit'] as String? ?? 'days';
 
-    DateTime nextDate;
-    switch (intervalUnit) {
-      case 'days': nextDate = completedDate.add(Duration(days: intervalAmount)); break;
-      case 'weeks': nextDate = completedDate.add(Duration(days: intervalAmount * 7)); break;
-      case 'months': nextDate = DateTime(completedDate.year, completedDate.month + intervalAmount, completedDate.day); break;
-      case 'years': nextDate = DateTime(completedDate.year + intervalAmount, completedDate.month, completedDate.day); break;
-      default: nextDate = completedDate.add(Duration(days: intervalAmount));
-    }
+    final nextDate = AppTask.addInterval(completedDate, intervalAmount, intervalUnit);
 
     final currentCompletedCount = (task['completed_count'] as num?)?.toInt() ?? 0;
     final uuid = const Uuid();

@@ -5,15 +5,18 @@ import '../providers/database_provider.dart';
 import '../screens/category_screen.dart';
 import '../theme/app_icons.dart';
 import '../screens/settings_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final bool showSettingsMenu;
+  final VoidCallback? onAddItem; // אם קיים - מוצג 'הוסף פריט לקבוצה' בתפריט
 
   const GlobalSearchBar({
     Key? key,
     this.actions,
     this.showSettingsMenu = false,
+    this.onAddItem,
   }) : super(key: key);
 
   @override
@@ -111,6 +114,10 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                     icon: const Icon(Icons.more_vert),
                     tooltip: 'הגדרות מערכת',
                     onSelected: (value) {
+                      if (value == 'add_item') {
+                        widget.onAddItem?.call();
+                        return;
+                      }
                       if (value == 'settings') {
                         // סוגרים את החיפוש אך ורק אם הוא פתוח כרגע
                         if (controller.isOpen) {
@@ -123,7 +130,19 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                           MaterialPageRoute(builder: (_) => const SettingsScreen()),
                         );
                       }
-                    },                    itemBuilder: (context) => [
+                    },
+                    itemBuilder: (context) => [
+                      if (widget.onAddItem != null)
+                        PopupMenuItem(
+                          value: 'add_item',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.add_box_outlined, size: 20),
+                              const SizedBox(width: 12),
+                              Text(AppLocalizations.of(context)!.addItemToGroup),
+                            ],
+                          ),
+                        ),
                       const PopupMenuItem(
                         value: 'settings',
                         child: Row(

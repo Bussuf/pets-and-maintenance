@@ -11,6 +11,8 @@ import '../theme/app_icons.dart';
 import '../widgets/animated_fab_menu.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/global_search_bar.dart';
+import '../l10n/app_localizations.dart';
+import 'create_entity_screen.dart';
 import '../widgets/task_card.dart';
 import '../widgets/edit_category_sheet.dart';
 import '../widgets/confirm_delete_dialog.dart';
@@ -83,6 +85,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
       if (key?.currentContext != null) {
         Scrollable.ensureVisible(
           key!.currentContext!,
+          alignment: 0.5, // הצ'יפ המסומן נגלל למרכז; בקצוות הגלילה נעצרת והריפוד נשמר
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
         );
@@ -419,20 +422,18 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
             onSelected: (val) {
               if (val == 'edit') {
                 EditCategorySheet.show(context, currentCategory);
-              } else if (val == 'image') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('הוספת תמונה לקבוצה תוטמע בהמשך'), behavior: SnackBarBehavior.floating),
-                );
+              } else if (val == 'add_item') {
+                CreateEntityScreen.show(context, type: EntityType.item, categoryId: currentCategory.id);
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'add_item',
+                child: Row(children: [const Icon(Icons.add_box_outlined), const SizedBox(width: 12), Text(AppLocalizations.of(context)!.addItemToGroup)]),
+              ),
               const PopupMenuItem(
                 value: 'edit',
                 child: Row(children: [Icon(Icons.edit_outlined), SizedBox(width: 12), Text('עריכת קבוצה')]),
-              ),
-              const PopupMenuItem(
-                value: 'image',
-                child: Row(children: [Icon(Icons.image_outlined), SizedBox(width: 12), Text('הוספת תמונה')]),
               ),
             ],
           ),

@@ -184,4 +184,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String backupFailed(String error) {
     return 'הפעולה נכשלה: $error';
   }
+
+  @override
+  String get addItemToGroup => 'הוסף פריט לקבוצה';
 }

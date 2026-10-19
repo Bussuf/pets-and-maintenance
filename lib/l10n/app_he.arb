@@ -58,5 +58,6 @@
   "backupImportConfirmBody": "כל הקבוצות, הפריטים והמשימות הנוכחיים יוחלפו בתוכן הקובץ. מומלץ לייצא קודם גיבוי של המצב הנוכחי.",
   "backupImportConfirmAction": "בחר קובץ",
   "backupImportSuccess": "הנתונים שוחזרו בהצלחה",
-  "backupFailed": "הפעולה נכשלה: {error}"
+  "backupFailed": "הפעולה נכשלה: {error}",
+  "addItemToGroup": "הוסף פריט לקבוצה"
 }
