@@ -36,18 +36,18 @@ class TaskCard extends ConsumerWidget {
     return '$d/$m/$y';
   }
 
-  // פונקציית עזר לתרגום יחידות זמן לעברית
-  String _translateIntervalUnit(String? unit) {
+  // תדירות בשפה הנוכחית, כולל יחיד/זוגי/רבים (כל יום / כל יומיים / כל 3 ימים)
+  String _frequencyText(AppLocalizations l10n, int amount, String? unit) {
     switch (unit) {
-      case 'days': return 'ימים';
-      case 'weeks': return 'שבועות';
-      case 'months': return 'חודשים';
-      case 'years': return 'שנים';
-      default: return 'ימים';
+      case 'weeks': return l10n.frequencyWeeks(amount);
+      case 'months': return l10n.frequencyMonths(amount);
+      case 'years': return l10n.frequencyYears(amount);
+      default: return l10n.frequencyDays(amount);
     }
   }
 
   Future<void> _completeTaskAtDate(BuildContext context, WidgetRef ref, DateTime completedDate) async {
+    final l10n = AppLocalizations.of(context)!;
     final db = ref.read(databaseProvider);
     final rawDb = await db.database;
     final intervalAmount = (task['interval_amount'] as num?)?.toInt() ?? 7;
@@ -74,7 +74,7 @@ class TaskCard extends ConsumerWidget {
           nextDueDate: nextDate,
           googleEventId: googleEventId,
         );
-        await GoogleCalendarService.instance.updateEvent(updatedTempTask, 'עודכן עקב השלמת משימה');
+        await GoogleCalendarService.instance.updateEvent(updatedTempTask, l10n.calendarUpdatedOnCompletion);
       } catch (e) {
         debugPrint('Failed to update Google Calendar event on completion: $e');
       }
@@ -108,7 +108,7 @@ class TaskCard extends ConsumerWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('משימה "${task['name']}" הושלמה! יעד הבא: ${_formatDate(nextDate)}'),
+          content: Text(l10n.taskCompletedNext(task['name'], _formatDate(nextDate))),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -121,7 +121,7 @@ class TaskCard extends ConsumerWidget {
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      helpText: 'בחר תאריך ביצוע בפועל',
+      helpText: AppLocalizations.of(context)!.pickActualCompletionDate,
     );
     if (picked != null) {
       await _completeTaskAtDate(context, ref, picked);
@@ -135,13 +135,13 @@ class TaskCard extends ConsumerWidget {
 
     final catColor = task['category_color'] != null ? Color(task['category_color']) : theme.colorScheme.primary;
     final catIcon = AppIcons.getIcon(task['category_icon']);
-    final catName = task['category_name'] ?? 'כללי';
+    final catName = task['category_name'] ?? AppLocalizations.of(context)!.general;
     final itemName = task['item_name'] ?? '';
 
     final l10n = AppLocalizations.of(context)!;
     bool isOverdue = false;
     int overdueDays = 0;
-    String dueDateStr = 'לא נקבע';
+    String dueDateStr = l10n.notSet;
 
     if (task['next_due_date'] != null) {
       final due = DateTime.tryParse(task['next_due_date']);
@@ -155,7 +155,7 @@ class TaskCard extends ConsumerWidget {
       }
     }
 
-    String lastCompletedStr = 'טרם בוצע';
+    String lastCompletedStr = l10n.neverDone;
     if (task['last_completed_date'] != null) {
       final lcDate = DateTime.tryParse(task['last_completed_date']);
       if (lcDate != null) {
@@ -163,9 +163,7 @@ class TaskCard extends ConsumerWidget {
       }
     }
 
-    // תורגם לעברית תקינה ונשאב דרך פונקציית העזר
-    final unitTrans = _translateIntervalUnit(task['interval_unit']);
-    final intervalStr = 'תדירות: כל ${task['interval_amount'] ?? 7} $unitTrans';
+    final intervalStr = _frequencyText(l10n, (task['interval_amount'] as num?)?.toInt() ?? 7, task['interval_unit']);
 
     final isRemindOn = (task['is_reminder_enabled'] == 1);
     final bool isGoogleSynced = task['google_event_id'] != null;
@@ -273,7 +271,7 @@ class TaskCard extends ConsumerWidget {
                   children: [
                     Icon(Icons.history_toggle_off, size: 14, color: Colors.grey.shade600),
                     const SizedBox(width: 4),
-                    Text('בוצע לאחרונה: $lastCompletedStr', style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                    Text(l10n.lastDoneLabel(lastCompletedStr), style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -284,17 +282,17 @@ class TaskCard extends ConsumerWidget {
                       style: FilledButton.styleFrom(visualDensity: VisualDensity.compact, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
                       onPressed: () => _completeTaskAtDate(context, ref, DateTime.now()),
                       icon: const Icon(Icons.check, size: 16),
-                      label: const Text('השלם'),
+                      label: Text(l10n.complete),
                     ),
                     // כפתור הסטטיסטיקות החדש - ממוקם שני מימין
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.insights, size: 18),
-                      tooltip: 'סטטיסטיקות',
+                      tooltip: l10n.statistics,
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('יוטמע בהמשך'),
+                          SnackBar(
+                            content: Text(l10n.comingSoon),
                             behavior: SnackBarBehavior.floating,
                             duration: Duration(seconds: 2),
                           ),
@@ -304,19 +302,19 @@ class TaskCard extends ConsumerWidget {
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.history, size: 18),
-                      tooltip: 'ביצוע ידני',
+                      tooltip: l10n.manualCompletion,
                       onPressed: () => _pickManualCompletionDate(context, ref),
                     ),
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.copy_outlined, size: 18),
-                      tooltip: 'שכפל',
+                      tooltip: l10n.duplicate,
                       onPressed: () => CreateEntityScreen.show(context, type: EntityType.task, categoryId: task['category_id'], itemId: task['item_id'], duplicateData: task),
                     ),
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.edit_outlined, size: 18),
-                      tooltip: 'ערוך',
+                      tooltip: l10n.edit,
                       onPressed: () => EditTaskSheet.show(context, task),
                     ),
                   ],

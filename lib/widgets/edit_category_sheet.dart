@@ -6,6 +6,7 @@ import '../providers/categories_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
 import '../theme/app_icons.dart';
 import 'confirm_delete_dialog.dart';
+import '../l10n/app_localizations.dart';
 
 class EditCategorySheet extends ConsumerStatefulWidget {
   final Category category;
@@ -76,7 +77,7 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
                 height: 4,
                 decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2)),
               ),
-              const Text('בחר סמל לקבוצה', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(AppLocalizations.of(context)!.chooseGroupIcon, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Expanded(
                 child: GridView.builder(
@@ -116,6 +117,7 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     return SafeArea(
       child: Padding(
@@ -131,15 +133,15 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('עריכת קבוצה', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(l10n.editGroup, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    tooltip: 'מחק קבוצה',
+                    tooltip: l10n.deleteGroup,
                     onPressed: () async {
                       final confirm = await ConfirmDeleteDialog.show(
                         context,
-                        title: 'מחיקת קבוצה',
-                        content: 'האם למחוק את הקבוצה "${widget.category.name}"? כל הפריטים והמשימות שבה יימחקו לצמיתות.',
+                        title: l10n.deleteGroup,
+                        content: l10n.deleteGroupConfirm(widget.category.name),
                         onConfirm: () {}, // <--- הוספנו את הפרמטר החסר
                       );
                       if (confirm == true) {
@@ -168,28 +170,28 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
               const SizedBox(height: 16),
               TextField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'שם הקבוצה', border: const OutlineInputBorder(), errorText: _errorMessage),
+                decoration: InputDecoration(labelText: l10n.addCategoryTitleHint, border: const OutlineInputBorder(), errorText: _errorMessage),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _descController,
-                decoration: const InputDecoration(labelText: 'תיאור', border: OutlineInputBorder()),
+                decoration: InputDecoration(labelText: l10n.description, border: const OutlineInputBorder()),
               ),
               const SizedBox(height: 20),
               
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('סמל קבוצה:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.groupIconLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
                   OutlinedButton.icon(
                     onPressed: _openIconPickerSheet,
                     icon: Icon(AppIcons.getIcon(_selectedIcon), size: 20),
-                    label: const Text('החלף סמל'),
+                    label: Text(l10n.changeIcon),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              const Text('צבע קבוצה:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.groupColorLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 12,
@@ -212,13 +214,13 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
                 onPressed: () async {
                   final newName = _nameController.text.trim();
                   if (newName.isEmpty) {
-                    setState(() => _errorMessage = 'שדה חובה');
+                    setState(() => _errorMessage = l10n.requiredField);
                     return;
                   }
                   final db = ref.read(databaseProvider);
                   final isDup = await db.isCategoryNameExists(newName, excludeId: widget.category.id);
                   if (isDup) {
-                    setState(() => _errorMessage = 'שם קבוצה זה כבר קיים');
+                    setState(() => _errorMessage = l10n.groupNameExists);
                     return;
                   }
 
@@ -235,7 +237,7 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
 
                   if (mounted) Navigator.pop(context);
                 },
-                child: const Text('שמור שינויים', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: Text(l10n.saveChanges, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

@@ -89,6 +89,7 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return SafeArea(
       bottom: false,
@@ -103,16 +104,16 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
               backgroundColor: WidgetStatePropertyAll(theme.colorScheme.surfaceContainerHigh),
               leading: IconButton(
                 icon: const Icon(Icons.menu),
-                tooltip: 'תפריט צד',
+                tooltip: l10n.openMenu,
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
-              hintText: 'חיפוש משימות, פריטים או קבוצות...',
+              hintText: l10n.searchHint,
               trailing: [
                 if (widget.actions != null) ...widget.actions!,
                 if (widget.showSettingsMenu)
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert),
-                    tooltip: 'הגדרות מערכת',
+                    tooltip: l10n.settingsTitle,
                     onSelected: (value) {
                       if (value == 'add_item') {
                         widget.onAddItem?.call();
@@ -143,13 +144,13 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                             ],
                           ),
                         ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'settings',
                         child: Row(
                           children: [
-                            Icon(Icons.settings_outlined, size: 20),
-                            SizedBox(width: 12),
-                            Text('הגדרות מערכת'),
+                            const Icon(Icons.settings_outlined, size: 20),
+                            const SizedBox(width: 12),
+                            Text(l10n.settingsTitle),
                           ],
                         ),
                       ),
@@ -164,12 +165,12 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
             final query = controller.text.trim();
             if (query.isEmpty) {
               return [
-                const Padding(
-                  padding: EdgeInsets.all(32.0),
+                Padding(
+                  padding: const EdgeInsets.all(32.0),
                   child: Center(
                     child: Text(
-                      'הקלד כדי לחפש משימות, פריטים או קבוצות...',
-                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                      l10n.searchPrompt,
+                      style: const TextStyle(color: Colors.grey, fontSize: 16),
                     ),
                   ),
                 ),
@@ -185,10 +186,10 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
 
             if (categories.isEmpty && items.isEmpty && tasks.isEmpty) {
               return [
-                const Padding(
-                  padding: EdgeInsets.all(32.0),
+                Padding(
+                  padding: const EdgeInsets.all(32.0),
                   child: Center(
-                    child: Text('לא נמצאו תוצאות', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                    child: Text(l10n.noResults, style: const TextStyle(color: Colors.grey, fontSize: 16)),
                   ),
                 )
               ];
@@ -198,9 +199,9 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
 
             if (tasks.isNotEmpty) {
               tiles.add(
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text('משימות', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Text(l10n.tasksHeader, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                 ),
               );
               for (final task in tasks) {
@@ -209,7 +210,7 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                     leading: Icon(Icons.task_alt, color: theme.colorScheme.primary),
                     title: Text(task['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(
-                      'משימה • ${task['item_name']} • ${task['category_name']}',
+                      l10n.searchTaskSubtitle('${task['item_name']}', '${task['category_name']}'),
                       style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
                     ),
                     onTap: () => _navigateToTarget(controller, task),
@@ -220,9 +221,9 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
 
             if (items.isNotEmpty) {
               tiles.add(
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text('פריטים', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Text(l10n.itemsHeader, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                 ),
               );
               for (final item in items) {
@@ -231,7 +232,7 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                     leading: Icon(Icons.inventory_2_outlined, color: theme.colorScheme.secondary),
                     title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(
-                      'פריט • שייך לקבוצה: ${item['category_name']}',
+                      l10n.searchItemSubtitle('${item['category_name']}'),
                       style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
                     ),
                     onTap: () => _navigateToTarget(controller, item),
@@ -242,9 +243,9 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
 
             if (categories.isNotEmpty) {
               tiles.add(
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text('קבוצות', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Text(l10n.groupsHeader, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                 ),
               );
               for (final cat in categories) {
@@ -259,7 +260,7 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                       child: Icon(catIcon, color: catColor, size: 20),
                     ),
                     title: Text(cat['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: const Text('קבוצה ראשית', style: TextStyle(fontSize: 13, color: Colors.grey)),
+                    subtitle: Text(l10n.mainGroup, style: const TextStyle(fontSize: 13, color: Colors.grey)),
                     onTap: () => _navigateToTarget(controller, cat),
                   ),
                 );

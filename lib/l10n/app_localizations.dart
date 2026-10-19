@@ -299,7 +299,7 @@ abstract class AppLocalizations {
   /// No description provided for @endConditionCount.
   ///
   /// In en, this message translates to:
-  /// **'Specific number of times'**
+  /// **'Number of times'**
   String get endConditionCount;
 
   /// No description provided for @endConditionUntil.
@@ -421,6 +421,564 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add item to group'**
   String get addItemToGroup;
+
+  /// No description provided for @languageSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageSection;
+
+  /// No description provided for @languageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get languageSystem;
+
+  /// No description provided for @allGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'All groups'**
+  String get allGroups;
+
+  /// No description provided for @noGroupsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No groups yet'**
+  String get noGroupsYet;
+
+  /// No description provided for @errorWithDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorWithDetails(String error);
+
+  /// No description provided for @deleteGroupWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting the group also deletes all of its items and tasks. Continue?'**
+  String get deleteGroupWarning;
+
+  /// No description provided for @deleteItemWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting the item also deletes all of its tasks. Continue?'**
+  String get deleteItemWarning;
+
+  /// No description provided for @deleteNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}'**
+  String deleteNamed(String name);
+
+  /// No description provided for @organizeGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize groups'**
+  String get organizeGroups;
+
+  /// No description provided for @organizeNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize: {name}'**
+  String organizeNamed(String name);
+
+  /// No description provided for @doneReordering.
+  ///
+  /// In en, this message translates to:
+  /// **'Done reordering'**
+  String get doneReordering;
+
+  /// No description provided for @reorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder'**
+  String get reorder;
+
+  /// No description provided for @addNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new'**
+  String get addNew;
+
+  /// No description provided for @noData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data to show.'**
+  String get noData;
+
+  /// No description provided for @editItemNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit item: {name}'**
+  String editItemNamed(String name);
+
+  /// No description provided for @deleteItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete item'**
+  String get deleteItem;
+
+  /// No description provided for @deleteItemConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the item \"{name}\" and all of its tasks?'**
+  String deleteItemConfirm(String name);
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get saveChanges;
+
+  /// No description provided for @chooseGroupIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose group icon'**
+  String get chooseGroupIcon;
+
+  /// No description provided for @editGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit group'**
+  String get editGroup;
+
+  /// No description provided for @deleteGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete group'**
+  String get deleteGroup;
+
+  /// No description provided for @deleteGroupConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the group \"{name}\"? All of its items and tasks will be permanently deleted.'**
+  String deleteGroupConfirm(String name);
+
+  /// No description provided for @groupIconLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Group icon:'**
+  String get groupIconLabel;
+
+  /// No description provided for @changeIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Change icon'**
+  String get changeIcon;
+
+  /// No description provided for @groupColorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Group color:'**
+  String get groupColorLabel;
+
+  /// No description provided for @groupNameExists.
+  ///
+  /// In en, this message translates to:
+  /// **'A group with this name already exists'**
+  String get groupNameExists;
+
+  /// No description provided for @openMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get openMenu;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search tasks, items or groups...'**
+  String get searchHint;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @searchPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Type to search tasks, items or groups...'**
+  String get searchPrompt;
+
+  /// No description provided for @noResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResults;
+
+  /// No description provided for @tasksHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get tasksHeader;
+
+  /// No description provided for @itemsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get itemsHeader;
+
+  /// No description provided for @groupsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get groupsHeader;
+
+  /// No description provided for @searchTaskSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task • {item} • {group}'**
+  String searchTaskSubtitle(String item, String group);
+
+  /// No description provided for @searchItemSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Item • in group: {group}'**
+  String searchItemSubtitle(String group);
+
+  /// No description provided for @mainGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Group'**
+  String get mainGroup;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get tomorrow;
+
+  /// No description provided for @later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get later;
+
+  /// No description provided for @allWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'All ({count})'**
+  String allWithCount(int count);
+
+  /// No description provided for @editItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit item'**
+  String get editItem;
+
+  /// No description provided for @noTasksInGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks to show in this group'**
+  String get noTasksInGroup;
+
+  /// No description provided for @goToGroupNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to group \"{name}\"'**
+  String goToGroupNamed(String name);
+
+  /// No description provided for @pressAgainToExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Press again to exit'**
+  String get pressAgainToExit;
+
+  /// No description provided for @allGroupsAndTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'All groups and tasks'**
+  String get allGroupsAndTasks;
+
+  /// No description provided for @summaryWithOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'{active, plural, =1{1 active task} other{{active} active tasks}} • {overdue} overdue'**
+  String summaryWithOverdue(int active, int overdue);
+
+  /// No description provided for @summaryAllClear.
+  ///
+  /// In en, this message translates to:
+  /// **'{active, plural, =1{1 active task} other{{active} active tasks}} • all up to date 🎉'**
+  String summaryAllClear(int active);
+
+  /// No description provided for @groupOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Group options'**
+  String get groupOptions;
+
+  /// No description provided for @noTasksNow.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks to show right now'**
+  String get noTasksNow;
+
+  /// No description provided for @frequencyDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Frequency: every day} other{Frequency: every {n} days}}'**
+  String frequencyDays(int n);
+
+  /// No description provided for @frequencyWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Frequency: every week} other{Frequency: every {n} weeks}}'**
+  String frequencyWeeks(int n);
+
+  /// No description provided for @frequencyMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Frequency: every month} other{Frequency: every {n} months}}'**
+  String frequencyMonths(int n);
+
+  /// No description provided for @frequencyYears.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Frequency: every year} other{Frequency: every {n} years}}'**
+  String frequencyYears(int n);
+
+  /// No description provided for @calendarUpdatedOnCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated after task completion'**
+  String get calendarUpdatedOnCompletion;
+
+  /// No description provided for @taskCompletedNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Task \"{name}\" completed! Next due: {date}'**
+  String taskCompletedNext(String name, String date);
+
+  /// No description provided for @pickActualCompletionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the actual completion date'**
+  String get pickActualCompletionDate;
+
+  /// No description provided for @general.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get general;
+
+  /// No description provided for @notSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get notSet;
+
+  /// No description provided for @neverDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get neverDone;
+
+  /// No description provided for @lastDoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last done: {date}'**
+  String lastDoneLabel(String date);
+
+  /// No description provided for @complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get complete;
+
+  /// No description provided for @statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statistics;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
+
+  /// No description provided for @manualCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Log past completion'**
+  String get manualCompletion;
+
+  /// No description provided for @duplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get duplicate;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @newGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'New group'**
+  String get newGroup;
+
+  /// No description provided for @newItem.
+  ///
+  /// In en, this message translates to:
+  /// **'New item'**
+  String get newItem;
+
+  /// No description provided for @calendarGroupLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Group: {name}'**
+  String calendarGroupLabel(String name);
+
+  /// No description provided for @saveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed: {error}'**
+  String saveFailed(String error);
+
+  /// No description provided for @createNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new'**
+  String get createNew;
+
+  /// No description provided for @chooseIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose icon'**
+  String get chooseIcon;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get quantity;
+
+  /// No description provided for @remindMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a device reminder'**
+  String get remindMe;
+
+  /// No description provided for @reminderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown according to your notification settings'**
+  String get reminderSubtitle;
+
+  /// No description provided for @syncGoogleCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync to Google Calendar'**
+  String get syncGoogleCalendar;
+
+  /// No description provided for @willCreateAllDayEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'An all-day event will be created'**
+  String get willCreateAllDayEvent;
+
+  /// No description provided for @connectInSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in from the Settings screen'**
+  String get connectInSettings;
+
+  /// No description provided for @editTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit task'**
+  String get editTask;
+
+  /// No description provided for @deleteTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete task'**
+  String get deleteTask;
+
+  /// No description provided for @deleteTaskConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete the task \"{name}\"?'**
+  String deleteTaskConfirm(String name);
+
+  /// No description provided for @taskDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Task deleted'**
+  String get taskDeleted;
+
+  /// No description provided for @deleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed: {error}'**
+  String deleteFailed(String error);
+
+  /// No description provided for @taskNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Task name'**
+  String get taskNameLabel;
+
+  /// No description provided for @errorLoadingGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load groups'**
+  String get errorLoadingGroups;
+
+  /// No description provided for @errorLoadingItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load items'**
+  String get errorLoadingItems;
+
+  /// No description provided for @chooseGroupFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a group first'**
+  String get chooseGroupFirst;
+
+  /// No description provided for @eventWillUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'The calendar event will be updated'**
+  String get eventWillUpdate;
+
+  /// No description provided for @fillNameAndItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a task name and choose an item'**
+  String get fillNameAndItem;
+
+  /// No description provided for @calendarAddedFromApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Added from Pets & Maintenance'**
+  String get calendarAddedFromApp;
+
+  /// No description provided for @calendarUpdatedFromApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated from the app'**
+  String get calendarUpdatedFromApp;
+
+  /// No description provided for @savedOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved!'**
+  String get savedOk;
 }
 
 class _AppLocalizationsDelegate

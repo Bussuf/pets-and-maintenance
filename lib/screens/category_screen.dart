@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+
 import '../models/category.dart';
 import '../models/item.dart';
 import '../providers/database_provider.dart';
@@ -12,10 +12,11 @@ import '../widgets/animated_fab_menu.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/global_search_bar.dart';
 import '../l10n/app_localizations.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'create_entity_screen.dart';
 import '../widgets/task_card.dart';
 import '../widgets/edit_category_sheet.dart';
-import '../widgets/confirm_delete_dialog.dart';
+import '../widgets/edit_item_sheet.dart';
 
 class CategoryAgendaGroup {
   final String title;
@@ -46,7 +47,6 @@ class CategoryScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoryScreenState extends ConsumerState<CategoryScreen> {
-  final _uuid = const Uuid();
   String? _selectedFilterItemId;
   final Set<String> _expandedTaskIds = {};
 
@@ -85,7 +85,8 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
       if (key?.currentContext != null) {
         Scrollable.ensureVisible(
           key!.currentContext!,
-          alignment: 0.5, // הצ'יפ המסומן נגלל למרכז; בקצוות הגלילה נעצרת והריפוד נשמר
+          alignment: 0.5,
+          // הצ'יפ המסומן נגלל למרכז; בקצוות הגלילה נעצרת והריפוד נשמר
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
         );
@@ -98,7 +99,9 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
     _ensureChipVisible(itemId);
   }
 
-  List<CategoryAgendaGroup> _buildAgendaGroups(List<Map<String, dynamic>> tasks) {
+  List<CategoryAgendaGroup> _buildAgendaGroups(
+    List<Map<String, dynamic>> tasks,
+  ) {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
 
@@ -108,15 +111,8 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
     final Map<int, List<Map<String, dynamic>>> upcomingDays = {};
     final List<Map<String, dynamic>> later = [];
 
-    const weekdaysHebrew = {
-      DateTime.sunday: 'יום ראשון',
-      DateTime.monday: 'יום שני',
-      DateTime.tuesday: 'יום שלישי',
-      DateTime.wednesday: 'יום רביעי',
-      DateTime.thursday: 'יום חמישי',
-      DateTime.friday: 'יום שישי',
-      DateTime.saturday: 'שבת',
-    };
+    final l10n = AppLocalizations.of(context)!;
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
 
     for (final task in tasks) {
       if (task['next_due_date'] == null) {
@@ -146,207 +142,64 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
 
     final List<CategoryAgendaGroup> groups = [];
     if (overdue.isNotEmpty) {
-      groups.add(CategoryAgendaGroup(title: 'באיחור', tasks: overdue, isOverdue: true));
+      groups.add(
+        CategoryAgendaGroup(title: l10n.overdueTasks, tasks: overdue, isOverdue: true),
+      );
     }
     if (today.isNotEmpty) {
-      groups.add(CategoryAgendaGroup(title: 'היום', tasks: today));
+      groups.add(CategoryAgendaGroup(title: l10n.today, tasks: today));
     }
     if (tomorrow.isNotEmpty) {
-      groups.add(CategoryAgendaGroup(title: 'מחר', tasks: tomorrow));
+      groups.add(CategoryAgendaGroup(title: l10n.tomorrow, tasks: tomorrow));
     }
 
     final sortedDiffs = upcomingDays.keys.toList()..sort();
     for (final diff in sortedDiffs) {
       final targetDate = todayStart.add(Duration(days: diff));
-      final dayName = weekdaysHebrew[targetDate.weekday] ?? 'בקרוב';
-      groups.add(CategoryAgendaGroup(title: dayName, tasks: upcomingDays[diff]!));
+      final dayName = DateFormat.EEEE(localeTag).format(targetDate);
+      groups.add(
+        CategoryAgendaGroup(title: dayName, tasks: upcomingDays[diff]!),
+      );
     }
 
     if (later.isNotEmpty) {
-      groups.add(CategoryAgendaGroup(title: 'מאוחר יותר', tasks: later));
+      groups.add(CategoryAgendaGroup(title: l10n.later, tasks: later));
     }
 
     return groups;
   }
 
   Future<void> _editItemSheet(Item item, String catId) async {
-    final nameController = TextEditingController(text: item.name);
-    final descController = TextEditingController(text: item.description ?? '');
-    String selectedCatId = item.categoryId;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (sheetContext, setSheetState) {
-          final media = MediaQuery.of(sheetContext);
-          final categories = ref.watch(categoriesProvider).value ?? [];
-
-          return SafeArea(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: media.viewInsets.bottom + 16,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('עריכת פריט: ${item.name}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          tooltip: 'מחק פריט',
-                          onPressed: () async {
-                            final confirm = await ConfirmDeleteDialog.show(
-                              context,
-                              title: 'מחיקת פריט',
-                              content: 'האם למחוק את הפריט "${item.name}" ואת כל המשימות המשויכות אליו?',
-                              onConfirm: () {},
-                            );
-                            if (confirm == true) {
-                              final rawDb = await ref.read(databaseProvider).database;
-                              await rawDb.delete('tasks', where: 'item_id = ?', whereArgs: [item.id]);
-                              await rawDb.delete('items', where: 'id = ?', whereArgs: [item.id]);
-
-                              ref.invalidate(itemsByCategoryProvider(catId));
-                              ref.invalidate(dashboardTasksProvider);
-
-                              setState(() {
-                                if (_selectedFilterItemId == item.id) {
-                                  _selectedFilterItemId = null;
-                                }
-                              });
-
-                              if (mounted) Navigator.pop(ctx);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: nameController,
-                      decoration: const InputDecoration(labelText: 'שם הפריט', border: OutlineInputBorder()),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: descController,
-                      decoration: const InputDecoration(labelText: 'תיאור', border: OutlineInputBorder()),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: selectedCatId,
-                            decoration: const InputDecoration(
-                              labelText: 'שיוך לקבוצה',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setSheetState(() => selectedCatId = val);
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton.filledTonal(
-                          icon: const Icon(Icons.add),
-                          tooltip: 'קבוצה חדשה',
-                          onPressed: () async {
-                            final newCatNameController = TextEditingController();
-                            await showDialog(
-                              context: context,
-                              builder: (diagCtx) => AlertDialog(
-                                title: const Text('קבוצה חדשה'),
-                                content: TextField(
-                                  controller: newCatNameController,
-                                  decoration: const InputDecoration(labelText: 'שם הקבוצה'),
-                                  autofocus: true,
-                                ),
-                                actions: [
-                                  TextButton(onPressed: () => Navigator.pop(diagCtx), child: const Text('ביטול')),
-                                  FilledButton(
-                                    onPressed: () async {
-                                      final catName = newCatNameController.text.trim();
-                                      if (catName.isNotEmpty) {
-                                        final newCat = Category(
-                                          id: _uuid.v4(),
-                                          name: catName,
-                                          createdAt: DateTime.now(),
-                                        );
-                                        await ref.read(categoriesProvider.notifier).addCategory(newCat);
-                                        setSheetState(() => selectedCatId = newCat.id);
-                                      }
-                                      if (mounted) Navigator.pop(diagCtx);
-                                    },
-                                    child: const Text('צור'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    FilledButton(
-                      style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                      onPressed: () async {
-                        final newName = nameController.text.trim();
-                        if (newName.isEmpty) return;
-
-                        final rawDb = await ref.read(databaseProvider).database;
-                        await rawDb.update(
-                          'items',
-                          {
-                            'name': newName,
-                            'description': descController.text.trim().isEmpty ? null : descController.text.trim(),
-                            'category_id': selectedCatId,
-                          },
-                          where: 'id = ?',
-                          whereArgs: [item.id],
-                        );
-
-                        ref.invalidate(itemsByCategoryProvider(catId));
-                        if (selectedCatId != catId) {
-                          ref.invalidate(itemsByCategoryProvider(selectedCatId));
-                        }
-                        ref.invalidate(dashboardTasksProvider);
-
-                        if (mounted) Navigator.pop(ctx);
-                      },
-                      child: const Text('שמור שינויים', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    // טופס עריכת פריט משותף - אותו טופס כמו במסך הארגון
+    await EditItemSheet.show(context, item, catId);
+    if (!mounted || _selectedFilterItemId != item.id) return;
+    // אם הפריט נמחק או הועבר לקבוצה אחרת - חוזרים לסינון 'הכל'
+    final items = await ref.read(itemsByCategoryProvider(catId).future);
+    if (mounted && !items.any((i) => i.id == item.id)) {
+      _selectFilterItem(null); // כולל גלילה של 'הכל' לתוך התחום
+    }
   }
 
-  Widget _buildSectionHeader(CategoryAgendaGroup group, ThemeData theme, bool isDark) {
+  Widget _buildSectionHeader(
+    CategoryAgendaGroup group,
+    ThemeData theme,
+    bool isDark,
+  ) {
     return Padding(
-      padding: const EdgeInsets.only(top: 16.0, bottom: 6.0, right: 18.0, left: 18.0),
+      padding: const EdgeInsets.only(
+        top: 16.0,
+        bottom: 6.0,
+        right: 18.0,
+        left: 18.0,
+      ),
       child: Row(
         children: [
           if (group.isOverdue) ...[
-            const Icon(Icons.warning_amber_rounded, size: 18, color: Colors.redAccent),
+            const Icon(
+              Icons.warning_amber_rounded,
+              size: 18,
+              color: Colors.redAccent,
+            ),
             const SizedBox(width: 6),
           ],
           Text(
@@ -400,7 +253,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
 
     final categoriesList = ref.watch(categoriesProvider).value ?? [];
     final currentCategory = categoriesList.firstWhere(
-          (c) => c.id == widget.category.id,
+      (c) => c.id == widget.category.id,
       orElse: () => widget.category,
     );
 
@@ -409,7 +262,9 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
     // --- השינוי הגדול: שימוש ב-dashboardTasksProvider במקום ב-tasksByCategoryProvider ---
     final allTasksAsync = ref.watch(dashboardTasksProvider);
 
-    final catColor = currentCategory.color != null ? Color(currentCategory.color!) : theme.colorScheme.primary;
+    final catColor = currentCategory.color != null
+        ? Color(currentCategory.color!)
+        : theme.colorScheme.primary;
     final catIcon = AppIcons.getIcon(currentCategory.icon);
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
@@ -423,17 +278,33 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
               if (val == 'edit') {
                 EditCategorySheet.show(context, currentCategory);
               } else if (val == 'add_item') {
-                CreateEntityScreen.show(context, type: EntityType.item, categoryId: currentCategory.id);
+                CreateEntityScreen.show(
+                  context,
+                  type: EntityType.item,
+                  categoryId: currentCategory.id,
+                );
               }
             },
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'add_item',
-                child: Row(children: [const Icon(Icons.add_box_outlined), const SizedBox(width: 12), Text(AppLocalizations.of(context)!.addItemToGroup)]),
+                child: Row(
+                  children: [
+                    const Icon(Icons.add_box_outlined),
+                    const SizedBox(width: 12),
+                    Text(AppLocalizations.of(context)!.addItemToGroup),
+                  ],
+                ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'edit',
-                child: Row(children: [Icon(Icons.edit_outlined), SizedBox(width: 12), Text('עריכת קבוצה')]),
+                child: Row(
+                  children: [
+                    const Icon(Icons.edit_outlined),
+                    const SizedBox(width: 12),
+                    Text(AppLocalizations.of(context)!.editGroup),
+                  ],
+                ),
               ),
             ],
           ),
@@ -468,14 +339,20 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : catColor.withOpacity(0.9),
+                          color: isDark
+                              ? Colors.white
+                              : catColor.withOpacity(0.9),
                         ),
                       ),
-                      if (currentCategory.description != null && currentCategory.description!.isNotEmpty) ...[
+                      if (currentCategory.description != null &&
+                          currentCategory.description!.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
                           currentCategory.description!,
-                          style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ],
@@ -491,13 +368,16 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
 
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 4.0,
+                ),
                 child: Row(
                   children: [
                     FilterChip(
                       key: _chipKeys[null],
                       showCheckmark: false,
-                      label: Text('הכל (${items.length})'),
+                      label: Text(AppLocalizations.of(context)!.allWithCount(items.length)),
                       selected: _selectedFilterItemId == null,
                       onSelected: (_) => _selectFilterItem(null),
                     ),
@@ -509,17 +389,24 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: GestureDetector(
-                          onLongPress: () => _editItemSheet(item, currentCategory.id),
+                          onLongPress: () =>
+                              _editItemSheet(item, currentCategory.id),
                           child: InputChip(
                             key: _chipKeys[item.id],
                             showCheckmark: false,
                             label: Text(item.name),
                             selected: isSelected,
                             onSelected: (_) => _selectFilterItem(item.id),
-                            deleteIcon: isSelected ? const Icon(Icons.more_vert, size: 16) : null,
-                            onDeleted: isSelected ? () => _editItemSheet(item, currentCategory.id) : null,
-                            deleteButtonTooltipMessage: 'ערוך פריט',
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                            deleteIcon: isSelected
+                                ? const Icon(Icons.more_vert, size: 16)
+                                : null,
+                            onDeleted: isSelected
+                                ? () => _editItemSheet(item, currentCategory.id)
+                                : null,
+                            deleteButtonTooltipMessage: AppLocalizations.of(context)!.editItem,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
                           ),
                         ),
                       );
@@ -528,7 +415,10 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                 ),
               );
             },
-            loading: () => const SizedBox(height: 44, child: Center(child: LinearProgressIndicator())),
+            loading: () => const SizedBox(
+              height: 44,
+              child: Center(child: LinearProgressIndicator()),
+            ),
             error: (_, __) => const SizedBox.shrink(),
           ),
           const Divider(height: 1),
@@ -541,13 +431,22 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                   onHorizontalDragEnd: (details) {
                     if (items.isEmpty) return;
                     final allFilterIds = [null, ...items.map((e) => e.id)];
-                    final currentIndex = allFilterIds.indexOf(_selectedFilterItemId);
+                    final currentIndex = allFilterIds.indexOf(
+                      _selectedFilterItemId,
+                    );
                     if (currentIndex == -1) return;
 
                     if (details.primaryVelocity != null) {
-                      if (details.primaryVelocity! > 200 && currentIndex < allFilterIds.length - 1) {
+                      // ב-RTL החלקה ימינה = הצ'יפ הבא (כמו היום); ב-LTR הכיוון מתהפך
+                      final velocity =
+                          details.primaryVelocity! *
+                          (Directionality.of(context) == TextDirection.rtl
+                              ? 1
+                              : -1);
+                      if (velocity > 200 &&
+                          currentIndex < allFilterIds.length - 1) {
                         _selectFilterItem(allFilterIds[currentIndex + 1]);
-                      } else if (details.primaryVelocity! < -200 && currentIndex > 0) {
+                      } else if (velocity < -200 && currentIndex > 0) {
                         _selectFilterItem(allFilterIds[currentIndex - 1]);
                       }
                     }
@@ -555,25 +454,39 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                   child: allTasksAsync.when(
                     data: (allTasks) {
                       // --- סינון מקומי של המשימות לפי הקבוצה הנוכחית ---
-                      final tasks = allTasks.where((t) => t['category_id'] == currentCategory.id).toList();
+                      final tasks = allTasks
+                          .where((t) => t['category_id'] == currentCategory.id)
+                          .toList();
 
-                      final sortedTasks = List<Map<String, dynamic>>.from(tasks)..sort((a, b) {
-                        final dateA = a['next_due_date'] != null ? DateTime.tryParse(a['next_due_date']) : null;
-                        final dateB = b['next_due_date'] != null ? DateTime.tryParse(b['next_due_date']) : null;
+                      final sortedTasks = List<Map<String, dynamic>>.from(tasks)
+                        ..sort((a, b) {
+                          final dateA = a['next_due_date'] != null
+                              ? DateTime.tryParse(a['next_due_date'])
+                              : null;
+                          final dateB = b['next_due_date'] != null
+                              ? DateTime.tryParse(b['next_due_date'])
+                              : null;
 
-                        if (dateA == null && dateB == null) return 0;
-                        if (dateA == null) return 1;
-                        if (dateB == null) return -1;
-                        return dateA.compareTo(dateB);
-                      });
+                          if (dateA == null && dateB == null) return 0;
+                          if (dateA == null) return 1;
+                          if (dateB == null) return -1;
+                          return dateA.compareTo(dateB);
+                        });
 
                       final filteredTasks = _selectedFilterItemId == null
                           ? sortedTasks
-                          : sortedTasks.where((t) => t['item_id'] == _selectedFilterItemId).toList();
+                          : sortedTasks
+                                .where(
+                                  (t) => t['item_id'] == _selectedFilterItemId,
+                                )
+                                .toList();
 
                       if (filteredTasks.isEmpty) {
-                        return const Center(
-                          child: Text('אין משימות להצגה בקבוצה זו', style: TextStyle(color: Colors.grey)),
+                        return Center(
+                          child: Text(
+                            AppLocalizations.of(context)!.noTasksInGroup,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
                         );
                       }
 
@@ -585,7 +498,9 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       }
 
                       return ListView.builder(
-                        padding: EdgeInsets.only(bottom: 80 + MediaQuery.paddingOf(context).bottom),
+                        padding: EdgeInsets.only(
+                          bottom: 80 + MediaQuery.paddingOf(context).bottom,
+                        ),
                         itemCount: flatList.length,
                         itemBuilder: (context, index) {
                           final entry = flatList[index];
@@ -595,7 +510,9 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                           final taskItem = entry as Map<String, dynamic>;
                           return TaskCard(
                             task: taskItem,
-                            isExpanded: _expandedTaskIds.contains(taskItem['id']),
+                            isExpanded: _expandedTaskIds.contains(
+                              taskItem['id'],
+                            ),
                             onToggleExpand: () {
                               setState(() {
                                 if (_expandedTaskIds.contains(taskItem['id'])) {
@@ -611,13 +528,14 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                         },
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (err, _) => Center(child: Text('שגיאה: $err')),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, _) => Center(child: Text(AppLocalizations.of(context)!.errorWithDetails('$err'))),
                   ),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('שגיאה: $err')),
+              error: (err, _) => Center(child: Text(AppLocalizations.of(context)!.errorWithDetails('$err'))),
             ),
           ),
         ],

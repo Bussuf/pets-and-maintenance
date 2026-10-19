@@ -187,4 +187,369 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get addItemToGroup => 'הוסף פריט לקבוצה';
+
+  @override
+  String get languageSection => 'שפה';
+
+  @override
+  String get languageSystem => 'מערכת';
+
+  @override
+  String get allGroups => 'כל הקבוצות';
+
+  @override
+  String get noGroupsYet => 'אין קבוצות עדיין';
+
+  @override
+  String errorWithDetails(String error) {
+    return 'שגיאה: $error';
+  }
+
+  @override
+  String get deleteGroupWarning =>
+      'מחיקת הקבוצה תמחוק גם את כל הפריטים והמשימות שבתוכה (מחיקת שרשרת). האם להמשיך?';
+
+  @override
+  String get deleteItemWarning =>
+      'מחיקת הפריט תמחוק גם את כל המשימות המשויכות אליו. האם להמשיך?';
+
+  @override
+  String deleteNamed(String name) {
+    return 'מחיקת $name';
+  }
+
+  @override
+  String get organizeGroups => 'ארגון קבוצות';
+
+  @override
+  String organizeNamed(String name) {
+    return 'ארגון: $name';
+  }
+
+  @override
+  String get doneReordering => 'סיום סידור';
+
+  @override
+  String get reorder => 'ארגון מחדש';
+
+  @override
+  String get addNew => 'הוסף חדש';
+
+  @override
+  String get noData => 'אין נתונים להצגה.';
+
+  @override
+  String editItemNamed(String name) {
+    return 'עריכת פריט: $name';
+  }
+
+  @override
+  String get deleteItem => 'מחיקת פריט';
+
+  @override
+  String deleteItemConfirm(String name) {
+    return 'האם למחוק את הפריט \"$name\" ואת כל המשימות המשויכות אליו?';
+  }
+
+  @override
+  String get saveChanges => 'שמור שינויים';
+
+  @override
+  String get chooseGroupIcon => 'בחר סמל לקבוצה';
+
+  @override
+  String get editGroup => 'עריכת קבוצה';
+
+  @override
+  String get deleteGroup => 'מחיקת קבוצה';
+
+  @override
+  String deleteGroupConfirm(String name) {
+    return 'האם למחוק את הקבוצה \"$name\"? כל הפריטים והמשימות שבה יימחקו לצמיתות.';
+  }
+
+  @override
+  String get groupIconLabel => 'סמל קבוצה:';
+
+  @override
+  String get changeIcon => 'החלף סמל';
+
+  @override
+  String get groupColorLabel => 'צבע קבוצה:';
+
+  @override
+  String get groupNameExists => 'שם קבוצה זה כבר קיים';
+
+  @override
+  String get openMenu => 'תפריט צד';
+
+  @override
+  String get searchHint => 'חיפוש משימות, פריטים או קבוצות...';
+
+  @override
+  String get settingsTitle => 'הגדרות מערכת';
+
+  @override
+  String get searchPrompt => 'הקלד כדי לחפש משימות, פריטים או קבוצות...';
+
+  @override
+  String get noResults => 'לא נמצאו תוצאות';
+
+  @override
+  String get tasksHeader => 'משימות';
+
+  @override
+  String get itemsHeader => 'פריטים';
+
+  @override
+  String get groupsHeader => 'קבוצות';
+
+  @override
+  String searchTaskSubtitle(String item, String group) {
+    return 'משימה • $item • $group';
+  }
+
+  @override
+  String searchItemSubtitle(String group) {
+    return 'פריט • שייך לקבוצה: $group';
+  }
+
+  @override
+  String get mainGroup => 'קבוצה ראשית';
+
+  @override
+  String get today => 'היום';
+
+  @override
+  String get tomorrow => 'מחר';
+
+  @override
+  String get later => 'מאוחר יותר';
+
+  @override
+  String allWithCount(int count) {
+    return 'הכל ($count)';
+  }
+
+  @override
+  String get editItem => 'עריכת פריט';
+
+  @override
+  String get noTasksInGroup => 'אין משימות להצגה בקבוצה זו';
+
+  @override
+  String goToGroupNamed(String name) {
+    return 'עבור לקבוצה \"$name\"';
+  }
+
+  @override
+  String get pressAgainToExit => 'לחץ שוב ליציאה';
+
+  @override
+  String get allGroupsAndTasks => 'כל הקבוצות והמשימות';
+
+  @override
+  String summaryWithOverdue(int active, int overdue) {
+    String _temp0 = intl.Intl.pluralLogic(
+      active,
+      locale: localeName,
+      other: '$active משימות פעילות',
+      one: 'משימה פעילה אחת',
+    );
+    return '$_temp0 • $overdue באיחור';
+  }
+
+  @override
+  String summaryAllClear(int active) {
+    String _temp0 = intl.Intl.pluralLogic(
+      active,
+      locale: localeName,
+      other: '$active משימות פעילות',
+      one: 'משימה פעילה אחת',
+    );
+    return '$_temp0 • כל המשימות מעודכנות 🎉';
+  }
+
+  @override
+  String get groupOptions => 'אפשרויות קבוצה';
+
+  @override
+  String get noTasksNow => 'אין משימות להצגה כרגע';
+
+  @override
+  String frequencyDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'תדירות: כל $n ימים',
+      two: 'תדירות: כל יומיים',
+      one: 'תדירות: כל יום',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String frequencyWeeks(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'תדירות: כל $n שבועות',
+      two: 'תדירות: כל שבועיים',
+      one: 'תדירות: כל שבוע',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String frequencyMonths(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'תדירות: כל $n חודשים',
+      two: 'תדירות: כל חודשיים',
+      one: 'תדירות: כל חודש',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String frequencyYears(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'תדירות: כל $n שנים',
+      two: 'תדירות: כל שנתיים',
+      one: 'תדירות: כל שנה',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get calendarUpdatedOnCompletion => 'עודכן עקב השלמת משימה';
+
+  @override
+  String taskCompletedNext(String name, String date) {
+    return 'משימה \"$name\" הושלמה! יעד הבא: $date';
+  }
+
+  @override
+  String get pickActualCompletionDate => 'בחר תאריך ביצוע בפועל';
+
+  @override
+  String get general => 'כללי';
+
+  @override
+  String get notSet => 'לא נקבע';
+
+  @override
+  String get neverDone => 'טרם בוצע';
+
+  @override
+  String lastDoneLabel(String date) {
+    return 'בוצע לאחרונה: $date';
+  }
+
+  @override
+  String get complete => 'השלם';
+
+  @override
+  String get statistics => 'סטטיסטיקות';
+
+  @override
+  String get comingSoon => 'יוטמע בהמשך';
+
+  @override
+  String get manualCompletion => 'ביצוע ידני';
+
+  @override
+  String get duplicate => 'שכפל';
+
+  @override
+  String get edit => 'ערוך';
+
+  @override
+  String get newGroup => 'קבוצה חדשה';
+
+  @override
+  String get newItem => 'פריט חדש';
+
+  @override
+  String calendarGroupLabel(String name) {
+    return 'קבוצה: $name';
+  }
+
+  @override
+  String saveFailed(String error) {
+    return 'שגיאה בשמירה: $error';
+  }
+
+  @override
+  String get createNew => 'יצירת חדש';
+
+  @override
+  String get chooseIcon => 'בחר סמל';
+
+  @override
+  String get quantity => 'כמות';
+
+  @override
+  String get remindMe => 'קבל תזכורת למכשיר';
+
+  @override
+  String get reminderSubtitle => 'התראה תופיע בהתאם להגדרות המערכת';
+
+  @override
+  String get syncGoogleCalendar => 'סנכרן ליומן גוגל';
+
+  @override
+  String get willCreateAllDayEvent => 'ייווצר אירוע יום שלם';
+
+  @override
+  String get connectInSettings => 'יש להתחבר דרך מסך ההגדרות';
+
+  @override
+  String get editTask => 'עריכת משימה';
+
+  @override
+  String get deleteTask => 'מחיקת משימה';
+
+  @override
+  String deleteTaskConfirm(String name) {
+    return 'האם למחוק לצמיתות את המשימה \"$name\"?';
+  }
+
+  @override
+  String get taskDeleted => 'המשימה נמחקה בהצלחה';
+
+  @override
+  String deleteFailed(String error) {
+    return 'שגיאה במחיקה: $error';
+  }
+
+  @override
+  String get taskNameLabel => 'שם המשימה';
+
+  @override
+  String get errorLoadingGroups => 'שגיאה בטעינת קבוצות';
+
+  @override
+  String get errorLoadingItems => 'שגיאה בטעינת פריטים';
+
+  @override
+  String get chooseGroupFirst => 'בחר קבוצה קודם';
+
+  @override
+  String get eventWillUpdate => 'האירוע יעודכן ביומן';
+
+  @override
+  String get fillNameAndItem => 'נא למלא שם משימה ולשייך לפריט';
+
+  @override
+  String get calendarAddedFromApp => 'נוסף מאפליקציית Pets & Maintenance';
+
+  @override
+  String get calendarUpdatedFromApp => 'עודכן מהאפליקציה';
+
+  @override
+  String get savedOk => 'נשמר בהצלחה!';
 }

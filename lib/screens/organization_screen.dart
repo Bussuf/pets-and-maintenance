@@ -11,6 +11,7 @@ import '../theme/app_icons.dart';
 import 'create_entity_screen.dart';
 import '../widgets/edit_category_sheet.dart';
 import '../widgets/edit_item_sheet.dart';
+import '../l10n/app_localizations.dart';
 
 class OrganizationScreen extends ConsumerStatefulWidget {
   final Category? parentCategory;
@@ -76,13 +77,14 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
   }
 
   void _confirmDelete(String id, String title) {
+    final l10n = AppLocalizations.of(context)!;
     final warningText = widget.parentCategory == null
-        ? 'מחיקת הקבוצה תמחוק גם את כל הפריטים והמשימות שבתוכה (מחיקת שרשרת). האם להמשיך?'
-        : 'מחיקת הפריט תמחוק גם את כל המשימות המשויכות אליו. האם להמשיך?';
+        ? l10n.deleteGroupWarning
+        : l10n.deleteItemWarning;
 
     ConfirmDeleteDialog.show(
       context,
-      title: 'מחיקת $title',
+      title: l10n.deleteNamed(title),
       content: warningText,
       onConfirm: () async {
         final db = ref.read(databaseProvider);
@@ -123,19 +125,20 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
   Widget build(BuildContext context) {
     final isCategoryMode = widget.parentCategory == null;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isCategoryMode ? 'ארגון קבוצות' : 'ארגון: ${widget.parentCategory!.name}'),
+        title: Text(isCategoryMode ? l10n.organizeGroups : l10n.organizeNamed(widget.parentCategory!.name)),
         actions: [
           IconButton(
             icon: Icon(_isReordering ? Icons.check : Icons.reorder),
-            tooltip: _isReordering ? 'סיום סידור' : 'ארגון מחדש',
+            tooltip: _isReordering ? l10n.doneReordering : l10n.reorder,
             onPressed: () => setState(() => _isReordering = !_isReordering),
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            tooltip: 'הוסף חדש',
+            tooltip: l10n.addNew,
             onPressed: () => _navigateToEdit(),
           ),
         ],
@@ -151,7 +154,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
   Widget _buildStandardList(ThemeData theme) {
     final itemCount = widget.parentCategory == null ? _categories.length : _items.length;
     if (itemCount == 0) {
-      return const Center(child: Text('אין נתונים להצגה.'));
+      return Center(child: Text(AppLocalizations.of(context)!.noData));
     }
 
     return ListView.builder(

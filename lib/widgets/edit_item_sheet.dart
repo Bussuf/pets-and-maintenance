@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+
 import '../models/item.dart';
 import '../models/category.dart';
 import '../providers/database_provider.dart';
@@ -8,20 +9,32 @@ import '../providers/categories_provider.dart';
 import '../providers/items_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
 import 'confirm_delete_dialog.dart';
+import '../l10n/app_localizations.dart';
 
 class EditItemSheet extends ConsumerStatefulWidget {
   final Item item;
   final String currentCategoryId;
 
-  const EditItemSheet({Key? key, required this.item, required this.currentCategoryId}) : super(key: key);
+  const EditItemSheet({
+    Key? key,
+    required this.item,
+    required this.currentCategoryId,
+  }) : super(key: key);
 
-  static Future<void> show(BuildContext context, Item item, String currentCategoryId) {
+  static Future<void> show(
+    BuildContext context,
+    Item item,
+    String currentCategoryId,
+  ) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => EditItemSheet(item: item, currentCategoryId: currentCategoryId),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) =>
+          EditItemSheet(item: item, currentCategoryId: currentCategoryId),
     );
   }
 
@@ -39,7 +52,9 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.item.name);
-    _descController = TextEditingController(text: widget.item.description ?? '');
+    _descController = TextEditingController(
+      text: widget.item.description ?? '',
+    );
     _selectedCatId = widget.item.categoryId;
   }
 
@@ -54,11 +69,14 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final categories = ref.watch(categoriesProvider).value ?? [];
+    final l10n = AppLocalizations.of(context)!;
 
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
-          left: 20, right: 20, top: 20,
+          left: 20,
+          right: 20,
+          top: 20,
           bottom: media.viewInsets.bottom + 16,
         ),
         child: SingleChildScrollView(
@@ -69,24 +87,42 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('עריכת פריט: ${widget.item.name}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    l10n.editItemNamed(widget.item.name),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    tooltip: 'מחק פריט',
+                    tooltip: l10n.deleteItem,
                     onPressed: () async {
                       final confirm = await ConfirmDeleteDialog.show(
                         context,
-                        title: 'מחיקת פריט',
-                        content: 'האם למחוק את הפריט "${widget.item.name}" ואת כל המשימות המשויכות אליו?',
-                        onConfirm: () {}, 
+                        title: l10n.deleteItem,
+                        content: l10n.deleteItemConfirm(widget.item.name),
+                        onConfirm: () {},
                       );
                       if (confirm == true) {
                         final rawDb = await ref.read(databaseProvider).database;
-                        await rawDb.delete('tasks', where: 'item_id = ?', whereArgs: [widget.item.id]);
-                        await rawDb.delete('items', where: 'id = ?', whereArgs: [widget.item.id]);
+                        await rawDb.delete(
+                          'tasks',
+                          where: 'item_id = ?',
+                          whereArgs: [widget.item.id],
+                        );
+                        await rawDb.delete(
+                          'items',
+                          where: 'id = ?',
+                          whereArgs: [widget.item.id],
+                        );
 
-                        ref.invalidate(itemsByCategoryProvider(widget.currentCategoryId));
-                        ref.invalidate(tasksByCategoryProvider(widget.currentCategoryId));
+                        ref.invalidate(
+                          itemsByCategoryProvider(widget.currentCategoryId),
+                        );
+                        ref.invalidate(
+                          tasksByCategoryProvider(widget.currentCategoryId),
+                        );
                         ref.invalidate(dashboardTasksProvider);
 
                         if (mounted) Navigator.pop(context);
@@ -98,25 +134,41 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
               const SizedBox(height: 16),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'שם הפריט', border: OutlineInputBorder()),
+                decoration: InputDecoration(
+                  labelText: l10n.addItemTitleHint,
+                  border: const OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _descController,
-                decoration: const InputDecoration(labelText: 'תיאור', border: OutlineInputBorder()),
+                decoration: InputDecoration(
+                  labelText: l10n.description,
+                  border: const OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 value: _selectedCatId,
-                decoration: const InputDecoration(labelText: 'שיוך לקבוצה', border: OutlineInputBorder()),
-                items: categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+                decoration: InputDecoration(
+                  labelText: l10n.selectCategory,
+                  border: const OutlineInputBorder(),
+                ),
+                items: categories
+                    .map(
+                      (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
+                    )
+                    .toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedCatId = val);
                 },
               ),
               const SizedBox(height: 20),
               FilledButton(
-                style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 onPressed: () async {
                   final newName = _nameController.text.trim();
                   if (newName.isEmpty) return;
@@ -126,15 +178,21 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                     'items',
                     {
                       'name': newName,
-                      'description': _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+                      'description': _descController.text.trim().isEmpty
+                          ? null
+                          : _descController.text.trim(),
                       'category_id': _selectedCatId,
                     },
                     where: 'id = ?',
                     whereArgs: [widget.item.id],
                   );
 
-                  ref.invalidate(itemsByCategoryProvider(widget.currentCategoryId));
-                  ref.invalidate(tasksByCategoryProvider(widget.currentCategoryId));
+                  ref.invalidate(
+                    itemsByCategoryProvider(widget.currentCategoryId),
+                  );
+                  ref.invalidate(
+                    tasksByCategoryProvider(widget.currentCategoryId),
+                  );
                   if (_selectedCatId != widget.currentCategoryId) {
                     ref.invalidate(itemsByCategoryProvider(_selectedCatId));
                     ref.invalidate(tasksByCategoryProvider(_selectedCatId));
@@ -143,7 +201,13 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
 
                   if (mounted) Navigator.pop(context);
                 },
-                child: const Text('שמור שינויים', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: Text(
+                  l10n.saveChanges,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),

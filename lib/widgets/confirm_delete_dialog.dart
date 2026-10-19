@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
 class ConfirmDeleteDialog extends StatelessWidget {
   final String title;
@@ -64,7 +65,7 @@ class ConfirmDeleteDialog extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('ביטול', style: TextStyle(color: Colors.black54)),
+            child: Text(AppLocalizations.of(context)!.cancel, style: const TextStyle(color: Colors.black54)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -76,7 +77,7 @@ class ConfirmDeleteDialog extends StatelessWidget {
               Navigator.of(context).pop(true);
               onConfirm();
             },
-            child: const Text('מחק לצמיתות', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context)!.deletePermanently, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

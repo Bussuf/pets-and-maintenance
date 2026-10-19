@@ -56,7 +56,7 @@ class AppDrawer extends ConsumerWidget {
                     Icons.grid_view,
                     color: isDashboardActive ? theme.colorScheme.primary : null,
                   ),
-                  title: const Text('כל הקבוצות', style: TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(l10n.allGroups, style: const TextStyle(fontWeight: FontWeight.bold)),
                   selected: isDashboardActive,
                   focusColor: Colors.transparent,
                   selectedColor: theme.colorScheme.onPrimaryContainer,
@@ -76,7 +76,7 @@ class AppDrawer extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Text(
-                    'הקבוצות שלי',
+                    l10n.myGroups,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.bold,
@@ -88,9 +88,9 @@ class AppDrawer extends ConsumerWidget {
                   data: (categories) {
                     if (categories.isEmpty) {
                       return [
-                        const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text('אין קבוצות עדיין', style: TextStyle(color: Colors.grey)),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(l10n.noGroupsYet, style: const TextStyle(color: Colors.grey)),
                         )
                       ];
                     }
@@ -133,7 +133,7 @@ class AppDrawer extends ConsumerWidget {
                     }).toList();
                   },
                   loading: () => [const Center(child: CircularProgressIndicator())],
-                  error: (err, _) => [Text('שגיאה: $err')],
+                  error: (err, _) => [Text(l10n.errorWithDetails('$err'))],
                 ),
               ],
             ),

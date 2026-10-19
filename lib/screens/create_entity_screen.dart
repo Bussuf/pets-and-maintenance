@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+
 import '../l10n/app_localizations.dart';
 import '../models/category.dart';
 import '../models/item.dart';
@@ -13,6 +14,7 @@ import '../theme/app_icons.dart';
 import '../services/notification_service.dart';
 import '../providers/google_auth_provider.dart';
 import '../services/google_calendar_service.dart';
+import '../widgets/quick_add_dialogs.dart';
 
 enum EntityType { task, item, category }
 
@@ -26,25 +28,35 @@ class CreateEntityScreen extends ConsumerStatefulWidget {
   const CreateEntityScreen({
     Key? key,
     this.initialType = EntityType.task,
-    this.allowedTypes = const [EntityType.task, EntityType.item, EntityType.category],
+    this.allowedTypes = const [
+      EntityType.task,
+      EntityType.item,
+      EntityType.category,
+    ],
     this.preselectedCategoryId,
     this.preselectedItemId,
     this.initialDuplicateData,
   }) : super(key: key);
 
   static Future<void> show(
-      BuildContext context, {
-        EntityType type = EntityType.task,
-        List<EntityType> allowedTypes = const [EntityType.task, EntityType.item, EntityType.category],
-        String? categoryId,
-        String? itemId,
-        Map<String, dynamic>? duplicateData,
-      }) {
+    BuildContext context, {
+    EntityType type = EntityType.task,
+    List<EntityType> allowedTypes = const [
+      EntityType.task,
+      EntityType.item,
+      EntityType.category,
+    ],
+    String? categoryId,
+    String? itemId,
+    Map<String, dynamic>? duplicateData,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => CreateEntityScreen(
         initialType: type,
         allowedTypes: allowedTypes,
@@ -82,22 +94,38 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
   bool _isGoogleSyncEnabled = false;
 
   final List<Color> _availableColors = [
-    Colors.blue, Colors.indigo, Colors.teal, Colors.green, Colors.orange, Colors.deepOrange, Colors.red, Colors.purple, Colors.pink, Colors.brown, Colors.blueGrey,
+    Colors.blue,
+    Colors.indigo,
+    Colors.teal,
+    Colors.green,
+    Colors.orange,
+    Colors.deepOrange,
+    Colors.red,
+    Colors.purple,
+    Colors.pink,
+    Colors.brown,
+    Colors.blueGrey,
   ];
 
   @override
   void initState() {
     super.initState();
-    _currentType = widget.allowedTypes.contains(widget.initialType) ? widget.initialType : widget.allowedTypes.first;
+    _currentType = widget.allowedTypes.contains(widget.initialType)
+        ? widget.initialType
+        : widget.allowedTypes.first;
     _selectedCategoryId = widget.preselectedCategoryId;
     _selectedItemId = widget.preselectedItemId;
 
     final dup = widget.initialDuplicateData;
     _nameController = TextEditingController(text: dup?['name'] ?? '');
     _descController = TextEditingController(text: dup?['description'] ?? '');
-    _intervalAmountController = TextEditingController(text: dup != null ? '${dup['interval_amount'] ?? 7}' : '7');
+    _intervalAmountController = TextEditingController(
+      text: dup != null ? '${dup['interval_amount'] ?? 7}' : '7',
+    );
     _endConditionCountController = TextEditingController(
-      text: (dup != null && dup['end_condition'] == 'count') ? (dup['end_condition_value'] ?? '') : '',
+      text: (dup != null && dup['end_condition'] == 'count')
+          ? (dup['end_condition_value'] ?? '')
+          : '',
     );
 
     if (dup != null) {
@@ -125,19 +153,43 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => SafeArea(
         child: DraggableScrollableSheet(
-          initialChildSize: 0.65, maxChildSize: 0.9, minChildSize: 0.4, expand: false,
+          initialChildSize: 0.65,
+          maxChildSize: 0.9,
+          minChildSize: 0.4,
+          expand: false,
           builder: (_, scrollController) => Column(
             children: [
-              Container(margin: const EdgeInsets.symmetric(vertical: 12), width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-              const Text('בחר סמל לקבוצה (מלאים וקוויים)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                AppLocalizations.of(context)!.chooseGroupIcon,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 12),
               Expanded(
                 child: GridView.builder(
-                  controller: scrollController, padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5, crossAxisSpacing: 12, mainAxisSpacing: 12),
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 5,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
                   itemCount: AppIcons.catalog.length,
                   itemBuilder: (_, index) {
                     final key = AppIcons.catalog.keys.elementAt(index);
@@ -148,7 +200,15 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                         setState(() => _selectedIcon = key);
                         Navigator.pop(ctx);
                       },
-                      child: Container(decoration: BoxDecoration(border: Border.all(color: Colors.grey.withOpacity(0.2)), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 28)),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey.withOpacity(0.2),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(icon, size: 28),
+                      ),
                     );
                   },
                 ),
@@ -161,60 +221,27 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
   }
 
   Future<void> _showQuickAddCategory(AppLocalizations l10n) async {
-    final quickNameController = TextEditingController();
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.addCategoryTitleHint),
-        content: TextField(controller: quickNameController, decoration: InputDecoration(hintText: l10n.name), autofocus: true),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
-          FilledButton(
-            onPressed: () async {
-              if (quickNameController.text.trim().isNotEmpty) {
-                final newCat = Category(id: _uuid.v4(), name: quickNameController.text.trim(), createdAt: DateTime.now());
-                await ref.read(databaseProvider).createCategory(newCat);
-                ref.invalidate(categoriesProvider);
-                setState(() => _selectedCategoryId = newCat.id);
-              }
-              if (mounted) Navigator.pop(ctx);
-            },
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
-    );
+    final id = await QuickAddDialogs.category(context, ref);
+    if (id != null && mounted)
+      setState(() {
+        _selectedCategoryId = id;
+        _selectedItemId = null;
+      });
   }
 
   Future<void> _showQuickAddItem(AppLocalizations l10n) async {
     if (_selectedCategoryId == null) return;
-    final quickNameController = TextEditingController();
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.addItemTitleHint),
-        content: TextField(controller: quickNameController, decoration: InputDecoration(hintText: l10n.name), autofocus: true),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
-          FilledButton(
-            onPressed: () async {
-              if (quickNameController.text.trim().isNotEmpty) {
-                final newItem = Item(id: _uuid.v4(), categoryId: _selectedCategoryId!, name: quickNameController.text.trim());
-                await ref.read(databaseProvider).createItem(newItem);
-                ref.invalidate(itemsByCategoryProvider(_selectedCategoryId!));
-                setState(() => _selectedItemId = newItem.id);
-              }
-              if (mounted) Navigator.pop(ctx);
-            },
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
-    );
+    final id = await QuickAddDialogs.item(context, ref, _selectedCategoryId!);
+    if (id != null && mounted) setState(() => _selectedItemId = id);
   }
 
   Future<void> _pickEndDate() async {
-    final picked = await showDatePicker(context: context, initialDate: DateTime.now().add(const Duration(days: 1)), firstDate: DateTime.now(), lastDate: DateTime(2035));
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2035),
+    );
     if (picked != null) setState(() => _endConditionDate = picked);
   }
 
@@ -235,45 +262,78 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
       if (_currentType == EntityType.category) {
         repositoryName = l10n.myGroups;
         final category = Category(
-          id: _uuid.v4(), name: entityName, description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
-          createdAt: DateTime.now(), color: _selectedColor, icon: _selectedIcon,
+          id: _uuid.v4(),
+          name: entityName,
+          description: _descController.text.trim().isEmpty
+              ? null
+              : _descController.text.trim(),
+          createdAt: DateTime.now(),
+          color: _selectedColor,
+          icon: _selectedIcon,
         );
         await ref.read(categoriesProvider.notifier).addCategory(category);
-      }
-      else if (_currentType == EntityType.item) {
+      } else if (_currentType == EntityType.item) {
         if (_selectedCategoryId == null) return;
         final cats = ref.read(categoriesProvider).value ?? [];
-        final parentCat = cats.firstWhere((c) => c.id == _selectedCategoryId, orElse: () => Category(id: '', name: 'קבוצה', createdAt: DateTime.now()));
+        final parentCat = cats.firstWhere(
+          (c) => c.id == _selectedCategoryId,
+          orElse: () =>
+              Category(id: '', name: l10n.category, createdAt: DateTime.now()),
+        );
         repositoryName = parentCat.name;
 
         final item = Item(
-          id: _uuid.v4(), categoryId: _selectedCategoryId!, name: entityName, description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+          id: _uuid.v4(),
+          categoryId: _selectedCategoryId!,
+          name: entityName,
+          description: _descController.text.trim().isEmpty
+              ? null
+              : _descController.text.trim(),
         );
         await db.createItem(item);
         ref.invalidate(itemsByCategoryProvider(_selectedCategoryId!));
-      }
-      else if (_currentType == EntityType.task) {
+      } else if (_currentType == EntityType.task) {
         if (_selectedItemId == null) return;
-        final items = ref.read(itemsByCategoryProvider(_selectedCategoryId!)).value ?? [];
-        final parentItem = items.firstWhere((i) => i.id == _selectedItemId, orElse: () => Item(id: '', categoryId: '', name: 'פריט'));
+        final items =
+            ref.read(itemsByCategoryProvider(_selectedCategoryId!)).value ?? [];
+        final parentItem = items.firstWhere(
+          (i) => i.id == _selectedItemId,
+          orElse: () => Item(id: '', categoryId: '', name: l10n.item),
+        );
         repositoryName = parentItem.name;
 
         final amount = int.tryParse(_intervalAmountController.text) ?? 7;
-        final initialDueDate = _calculateInitialDueDate(amount, _selectedIntervalUnit);
+        final initialDueDate = _calculateInitialDueDate(
+          amount,
+          _selectedIntervalUnit,
+        );
 
         String? endVal;
-        if (_endCondition == 'count') endVal = _endConditionCountController.text.trim();
-        else if (_endCondition == 'until_date' && _endConditionDate != null) endVal = _endConditionDate!.toIso8601String();
+        if (_endCondition == 'count')
+          endVal = _endConditionCountController.text.trim();
+        else if (_endCondition == 'until_date' && _endConditionDate != null)
+          endVal = _endConditionDate!.toIso8601String();
 
         AppTask task = AppTask(
-          id: _uuid.v4(), itemId: _selectedItemId!, name: entityName, description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
-          intervalAmount: amount, intervalUnit: _selectedIntervalUnit, endCondition: _endCondition, endConditionValue: endVal,
-          nextDueDate: initialDueDate, isReminderEnabled: _isReminderEnabled, reminderTime: _isReminderEnabled ? '09:00' : null,
+          id: _uuid.v4(),
+          itemId: _selectedItemId!,
+          name: entityName,
+          description: _descController.text.trim().isEmpty
+              ? null
+              : _descController.text.trim(),
+          intervalAmount: amount,
+          intervalUnit: _selectedIntervalUnit,
+          endCondition: _endCondition,
+          endConditionValue: endVal,
+          nextDueDate: initialDueDate,
+          isReminderEnabled: _isReminderEnabled,
+          reminderTime: _isReminderEnabled ? '09:00' : null,
         );
 
         // -- יצירת סנכרון ליומן גוגל במידה ואושר --
         if (_isGoogleSyncEnabled && ref.read(googleAuthProvider) != null) {
-          final googleEventId = await GoogleCalendarService.instance.createEvent(task, 'קבוצה: $repositoryName');
+          final googleEventId = await GoogleCalendarService.instance
+              .createEvent(task, l10n.calendarGroupLabel(repositoryName));
           if (googleEventId != null) {
             task = task.copyWith(googleEventId: googleEventId);
           }
@@ -289,14 +349,28 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
       if (mounted) Navigator.pop(context);
       messenger.showSnackBar(
         SnackBar(
-          content: Text(l10n.savedSuccessfully(entityName, repositoryName), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          backgroundColor: const Color(0xFF2E2F33), duration: const Duration(seconds: 3),
+          content: Text(
+            l10n.savedSuccessfully(entityName, repositoryName),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          backgroundColor: const Color(0xFF2E2F33),
+          duration: const Duration(seconds: 3),
         ),
       );
-
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('שגיאה בשמירה: $e'), backgroundColor: Theme.of(context).colorScheme.error));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.saveFailed('$e')),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 
@@ -310,7 +384,12 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
 
     return SafeArea(
       child: Padding(
-        padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: media.viewInsets.bottom + 16),
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: media.viewInsets.bottom + 16,
+        ),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -321,8 +400,17 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('יצירת חדש', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                    Text(
+                      l10n.createNew,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -350,24 +438,43 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                 TextFormField(
                   controller: _nameController,
                   decoration: InputDecoration(
-                    labelText: _currentType == EntityType.category ? l10n.addCategoryTitleHint : _currentType == EntityType.item ? l10n.addItemTitleHint : l10n.addTaskTitleHint,
+                    labelText: _currentType == EntityType.category
+                        ? l10n.addCategoryTitleHint
+                        : _currentType == EntityType.item
+                        ? l10n.addItemTitleHint
+                        : l10n.addTaskTitleHint,
                     border: const OutlineInputBorder(),
                   ),
-                  validator: (val) => val == null || val.trim().isEmpty ? l10n.requiredField : null,
+                  validator: (val) => val == null || val.trim().isEmpty
+                      ? l10n.requiredField
+                      : null,
                 ),
                 const SizedBox(height: 12),
 
                 TextFormField(
                   controller: _descController,
                   maxLines: 2,
-                  decoration: InputDecoration(labelText: l10n.description, border: const OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    labelText: l10n.description,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
                 const SizedBox(height: 16),
 
-                if (_currentType == EntityType.item || _currentType == EntityType.task) ...[
+                if (_currentType == EntityType.item ||
+                    _currentType == EntityType.task) ...[
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3), borderRadius: BorderRadius.circular(12), border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5))),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest
+                          .withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.outlineVariant.withOpacity(
+                          0.5,
+                        ),
+                      ),
+                    ),
                     child: Column(
                       children: [
                         Row(
@@ -376,23 +483,53 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                               child: categoriesAsync.when(
                                 data: (cats) {
                                   final displayCats = cats.toList();
-                                  if (_selectedCategoryId != null && !displayCats.any((c) => c.id == _selectedCategoryId)) {
-                                    displayCats.add(Category(id: _selectedCategoryId!, name: '...', createdAt: DateTime.now()));
+                                  if (_selectedCategoryId != null &&
+                                      !displayCats.any(
+                                        (c) => c.id == _selectedCategoryId,
+                                      )) {
+                                    displayCats.add(
+                                      Category(
+                                        id: _selectedCategoryId!,
+                                        name: '...',
+                                        createdAt: DateTime.now(),
+                                      ),
+                                    );
                                   }
                                   return DropdownButtonFormField<String>(
+                                    isExpanded: true,
                                     value: _selectedCategoryId,
-                                    decoration: InputDecoration(labelText: l10n.selectCategory, border: const OutlineInputBorder(), isDense: true),
-                                    items: displayCats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
-                                    onChanged: (val) => setState(() { _selectedCategoryId = val; _selectedItemId = null; }),
-                                    validator: (val) => val == null ? l10n.requiredField : null,
+                                    decoration: InputDecoration(
+                                      labelText: l10n.selectCategory,
+                                      border: const OutlineInputBorder(),
+                                      isDense: true,
+                                    ),
+                                    items: displayCats
+                                        .map(
+                                          (c) => DropdownMenuItem(
+                                            value: c.id,
+                                            child: Text(c.name),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (val) => setState(() {
+                                      _selectedCategoryId = val;
+                                      _selectedItemId = null;
+                                    }),
+                                    validator: (val) =>
+                                        val == null ? l10n.requiredField : null,
                                   );
                                 },
                                 loading: () => const LinearProgressIndicator(),
-                                error: (err, _) => Text('שגיאה: $err'),
+                                error: (err, _) =>
+                                    Text(l10n.errorWithDetails('$err')),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            IconButton.filledTonal(icon: const Icon(Icons.add), onPressed: () => _showQuickAddCategory(l10n), tooltip: l10n.addQuick)
+                            IconButton.filledTonal(
+                              icon: const Icon(Icons.add),
+                              onPressed: () => _showQuickAddCategory(l10n),
+                              tooltip: l10n.addQuick,
+                            ),
                           ],
                         ),
                         if (_currentType == EntityType.task) ...[
@@ -400,26 +537,65 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                           Row(
                             children: [
                               Expanded(
-                                child: ref.watch(itemsByCategoryProvider(_selectedCategoryId ?? '')).when(
-                                  data: (items) {
-                                    final displayItems = items.toList();
-                                    if (_selectedItemId != null && !displayItems.any((i) => i.id == _selectedItemId)) {
-                                      displayItems.add(Item(id: _selectedItemId!, categoryId: _selectedCategoryId!, name: '...'));
-                                    }
-                                    return DropdownButtonFormField<String>(
-                                      value: _selectedItemId,
-                                      decoration: InputDecoration(labelText: l10n.selectItem, border: const OutlineInputBorder(), isDense: true),
-                                      items: displayItems.map((i) => DropdownMenuItem(value: i.id, child: Text(i.name))).toList(),
-                                      onChanged: (val) => setState(() => _selectedItemId = val),
-                                      validator: (val) => val == null ? l10n.requiredField : null,
-                                    );
-                                  },
-                                  loading: () => const LinearProgressIndicator(),
-                                  error: (err, _) => Text('שגיאה: $err'),
-                                ),
+                                child: ref
+                                    .watch(
+                                      itemsByCategoryProvider(
+                                        _selectedCategoryId ?? '',
+                                      ),
+                                    )
+                                    .when(
+                                      data: (items) {
+                                        final displayItems = items.toList();
+                                        if (_selectedItemId != null &&
+                                            !displayItems.any(
+                                              (i) => i.id == _selectedItemId,
+                                            )) {
+                                          displayItems.add(
+                                            Item(
+                                              id: _selectedItemId!,
+                                              categoryId: _selectedCategoryId!,
+                                              name: '...',
+                                            ),
+                                          );
+                                        }
+                                        return DropdownButtonFormField<String>(
+                                          isExpanded: true,
+                                          value: _selectedItemId,
+                                          decoration: InputDecoration(
+                                            labelText: l10n.selectItem,
+                                            border: const OutlineInputBorder(),
+                                            isDense: true,
+                                          ),
+                                          items: displayItems
+                                              .map(
+                                                (i) => DropdownMenuItem(
+                                                  value: i.id,
+                                                  child: Text(i.name),
+                                                ),
+                                              )
+                                              .toList(),
+                                          onChanged: (val) => setState(
+                                            () => _selectedItemId = val,
+                                          ),
+                                          validator: (val) => val == null
+                                              ? l10n.requiredField
+                                              : null,
+                                        );
+                                      },
+                                      loading: () =>
+                                          const LinearProgressIndicator(),
+                                      error: (err, _) =>
+                                          Text(l10n.errorWithDetails('$err')),
+                                    ),
                               ),
                               const SizedBox(width: 8),
-                              IconButton.filledTonal(icon: const Icon(Icons.add), onPressed: _selectedCategoryId == null ? null : () => _showQuickAddItem(l10n), tooltip: l10n.addQuick)
+                              IconButton.filledTonal(
+                                icon: const Icon(Icons.add),
+                                onPressed: _selectedCategoryId == null
+                                    ? null
+                                    : () => _showQuickAddItem(l10n),
+                                tooltip: l10n.addQuick,
+                              ),
                             ],
                           ),
                         ],
@@ -433,36 +609,94 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(l10n.icon, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      OutlinedButton.icon(onPressed: _openIconPickerSheet, icon: Icon(AppIcons.getIcon(_selectedIcon), size: 20), label: Text(_selectedIcon != null ? 'החלף סמל' : 'בחר סמל')),
+                      Text(
+                        l10n.icon,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: _openIconPickerSheet,
+                        icon: Icon(AppIcons.getIcon(_selectedIcon), size: 20),
+                        label: Text(
+                          _selectedIcon != null
+                              ? l10n.changeIcon
+                              : l10n.chooseIcon,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(l10n.color, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    l10n.color,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
-                    spacing: 12, runSpacing: 12,
-                    children: _availableColors.map((color) => GestureDetector(
-                      onTap: () => setState(() => _selectedColor = color.value),
-                      child: CircleAvatar(backgroundColor: color, child: _selectedColor == color.value ? const Icon(Icons.check, color: Colors.white) : null),
-                    )).toList(),
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: _availableColors
+                        .map(
+                          (color) => GestureDetector(
+                            onTap: () =>
+                                setState(() => _selectedColor = color.value),
+                            child: CircleAvatar(
+                              backgroundColor: color,
+                              child: _selectedColor == color.value
+                                  ? const Icon(Icons.check, color: Colors.white)
+                                  : null,
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ],
 
                 if (_currentType == EntityType.task) ...[
                   Row(
                     children: [
-                      Expanded(flex: 2, child: TextFormField(controller: _intervalAmountController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: l10n.repeatEvery, border: const OutlineInputBorder()), validator: (val) => (val == null || int.tryParse(val) == null) ? l10n.requiredField : null)),
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          controller: _intervalAmountController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: l10n.repeatEvery,
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (val) =>
+                              (val == null || int.tryParse(val) == null)
+                              ? l10n.requiredField
+                              : null,
+                        ),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         flex: 3,
                         child: DropdownButtonFormField<String>(
-                          value: _selectedIntervalUnit, decoration: const InputDecoration(border: OutlineInputBorder()),
+                          isExpanded: true,
+                          value: _selectedIntervalUnit,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
                           items: [
-                            DropdownMenuItem(value: 'days', child: Text(l10n.days)), DropdownMenuItem(value: 'weeks', child: Text(l10n.weeks)),
-                            DropdownMenuItem(value: 'months', child: Text(l10n.months)), DropdownMenuItem(value: 'years', child: Text(l10n.years)),
+                            DropdownMenuItem(
+                              value: 'days',
+                              child: Text(l10n.days),
+                            ),
+                            DropdownMenuItem(
+                              value: 'weeks',
+                              child: Text(l10n.weeks),
+                            ),
+                            DropdownMenuItem(
+                              value: 'months',
+                              child: Text(l10n.months),
+                            ),
+                            DropdownMenuItem(
+                              value: 'years',
+                              child: Text(l10n.years),
+                            ),
                           ],
-                          onChanged: (val) => setState(() => _selectedIntervalUnit = val!),
+                          onChanged: (val) =>
+                              setState(() => _selectedIntervalUnit = val!),
                         ),
                       ),
                     ],
@@ -470,52 +704,141 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                   const SizedBox(height: 16),
 
                   Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        flex: _endCondition == 'always' ? 1 : 2,
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          value: _endCondition,
+                          decoration: InputDecoration(
+                            labelText: l10n.endConditionTitle,
+                            border: const OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          items: [
+                            DropdownMenuItem(
+                              value: 'always',
+                              child: Text(l10n.endConditionAlways),
+                            ),
+                            DropdownMenuItem(
+                              value: 'count',
+                              child: Text(l10n.endConditionCount),
+                            ),
+                            DropdownMenuItem(
+                              value: 'until_date',
+                              child: Text(l10n.endConditionUntil),
+                            ),
+                          ],
+                          onChanged: (v) => setState(() => _endCondition = v!),
+                        ),
+                      ),
+                      if (_endCondition == 'count') ...[
+                        const SizedBox(width: 12),
                         Expanded(
-                          flex: _endCondition == 'always' ? 1 : 2,
-                          child: DropdownButtonFormField<String>(
-                            value: _endCondition,
-                            decoration: const InputDecoration(labelText: 'משך משימה', border: OutlineInputBorder(), isDense: true),
-                            items: [
-                              DropdownMenuItem(value: 'always', child: Text(l10n.endConditionAlways)),
-                              DropdownMenuItem(value: 'count', child: Text(l10n.endConditionCount)),
-                              DropdownMenuItem(value: 'until_date', child: Text(l10n.endConditionUntil)),
-                            ],
-                            onChanged: (v) => setState(() => _endCondition = v!),
+                          flex: 1,
+                          child: TextFormField(
+                            controller: _endConditionCountController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: l10n.quantity,
+                              border: const OutlineInputBorder(),
+                              isDense: true,
+                            ),
                           ),
                         ),
-                        if (_endCondition == 'count') ...[
-                          const SizedBox(width: 12),
-                          Expanded(flex: 1, child: TextFormField(controller: _endConditionCountController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'כמות', border: OutlineInputBorder(), isDense: true))),
-                        ],
-                        if (_endCondition == 'until_date') ...[
-                          const SizedBox(width: 12),
-                          Expanded(flex: 1, child: OutlinedButton.icon(style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))), onPressed: _pickEndDate, icon: const Icon(Icons.calendar_month, size: 16), label: Text(_endConditionDate != null ? _endConditionDate!.toIso8601String().split('T')[0] : l10n.selectDate, style: const TextStyle(fontSize: 12)))),
-                        ],
-                      ]
+                      ],
+                      if (_endCondition == 'until_date') ...[
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 1,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            onPressed: _pickEndDate,
+                            icon: const Icon(Icons.calendar_month, size: 16),
+                            label: Text(
+                              _endConditionDate != null
+                                  ? _endConditionDate!.toIso8601String().split(
+                                      'T',
+                                    )[0]
+                                  : l10n.selectDate,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 16),
 
                   // --- אזור התראות וסנכרון ---
                   Container(
-                    decoration: BoxDecoration(border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)), borderRadius: BorderRadius.circular(12)),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: theme.colorScheme.outlineVariant.withOpacity(
+                          0.5,
+                        ),
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Column(
                       children: [
                         SwitchListTile(
-                          title: const Text('קבל תזכורת למכשיר', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          subtitle: const Text('התראה תופיע בהתאם להגדרות המערכת'),
-                          secondary: Icon(_isReminderEnabled ? Icons.notifications_active : Icons.notifications_off_outlined, color: _isReminderEnabled ? theme.colorScheme.primary : Colors.grey),
+                          title: Text(
+                            l10n.remindMe,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          subtitle: Text(l10n.reminderSubtitle),
+                          secondary: Icon(
+                            _isReminderEnabled
+                                ? Icons.notifications_active
+                                : Icons.notifications_off_outlined,
+                            color: _isReminderEnabled
+                                ? theme.colorScheme.primary
+                                : Colors.grey,
+                          ),
                           value: _isReminderEnabled,
-                          onChanged: (bool value) => setState(() => _isReminderEnabled = value),
+                          onChanged: (bool value) =>
+                              setState(() => _isReminderEnabled = value),
                         ),
-                        Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                        Divider(
+                          height: 1,
+                          color: theme.colorScheme.outlineVariant.withOpacity(
+                            0.3,
+                          ),
+                        ),
                         SwitchListTile(
-                          title: const Text('סנכרן ליומן גוגל', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          subtitle: Text(googleUser != null ? 'ייווצר אירוע יום שלם' : 'יש להתחבר דרך מסך ההגדרות'),
-                          secondary: Icon(Icons.calendar_month, color: _isGoogleSyncEnabled ? theme.colorScheme.primary : Colors.grey),
+                          title: Text(
+                            l10n.syncGoogleCalendar,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          subtitle: Text(
+                            googleUser != null
+                                ? l10n.willCreateAllDayEvent
+                                : l10n.connectInSettings,
+                          ),
+                          secondary: Icon(
+                            Icons.calendar_month,
+                            color: _isGoogleSyncEnabled
+                                ? theme.colorScheme.primary
+                                : Colors.grey,
+                          ),
                           value: _isGoogleSyncEnabled,
-                          onChanged: googleUser != null ? (bool value) => setState(() => _isGoogleSyncEnabled = value) : null,
+                          onChanged: googleUser != null
+                              ? (bool value) =>
+                                    setState(() => _isGoogleSyncEnabled = value)
+                              : null,
                         ),
                       ],
                     ),
@@ -523,9 +846,17 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                 ],
                 const SizedBox(height: 24),
                 FilledButton(
-                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
                   onPressed: _save,
-                  child: Text(l10n.save, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    l10n.save,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -548,7 +879,9 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
       }),
       selectedColor: theme.colorScheme.primaryContainer,
       labelStyle: TextStyle(
-        color: isSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface,
+        color: isSelected
+            ? theme.colorScheme.onPrimaryContainer
+            : theme.colorScheme.onSurface,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

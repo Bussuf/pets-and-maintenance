@@ -4,6 +4,7 @@ import 'l10n/app_localizations.dart';
 import 'theme/app_theme.dart';
 import 'screens/main_layout.dart';
 import 'providers/theme_provider.dart';
+import 'providers/locale_provider.dart';
 
 import 'services/notification_service.dart';
 
@@ -14,6 +15,9 @@ void main() async {
   // אתחול מנוע ההתראות המקומיות ובקשת הרשאות מאנדרואיד
   await NotificationService.instance.init();
   await NotificationService.instance.requestPermissions();
+
+  // טעינת השפה השמורה לפני הצגת המסך הראשון
+  await LocaleNotifier.preload();
 
   runApp(
     const ProviderScope(
@@ -35,7 +39,7 @@ class MyApp extends ConsumerWidget {
       title: 'Pets & Maintenance',
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('he', ''), // כפיית עברית כרגע
+      locale: ref.watch(localeProvider), // null = לפי שפת המערכת
 
       // שימוש בערכות הנושא של Google Stock שיצרנו
       theme: AppTheme.lightTheme,

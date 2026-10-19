@@ -22,7 +22,7 @@ class GoogleAuthNotifier extends StateNotifier<GoogleSignInAccount?> {
       final account = await GoogleCalendarService.instance.signIn();
       state = account;
     } catch (e) {
-      print('שגיאה בהתחברות לגוגל: $e');
+      print('Google sign-in failed: $e');
       // כאן נוכל להוסיף טיפול בשגיאות בהמשך
     }
   }

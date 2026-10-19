@@ -9,6 +9,7 @@ import '../providers/dashboard_tasks_provider.dart';
 import '../providers/items_provider.dart';
 import '../services/backup_service.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/locale_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -65,6 +66,7 @@ class SettingsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final googleUser = ref.watch(googleAuthProvider);
     final l10n = AppLocalizations.of(context)!;
+    final currentLocale = ref.watch(localeProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -103,6 +105,24 @@ class SettingsScreen extends ConsumerWidget {
             selected: {themeMode},
             onSelectionChanged: (Set<ThemeMode> newSelection) {
               ref.read(themeProvider.notifier).setTheme(newSelection.first);
+            },
+          ),
+
+          // --- בחירת שפה ---
+          const SizedBox(height: 24),
+          Text(l10n.languageSection, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          SegmentedButton<String>(
+            segments: [
+              ButtonSegment(value: 'system', icon: const Icon(Icons.phone_android), label: Text(l10n.languageSystem)),
+              // שמות השפות תמיד בשפה עצמה - כדי שכל משתמש ימצא את שלו
+              const ButtonSegment(value: 'he', label: Text('עברית')),
+              const ButtonSegment(value: 'en', label: Text('English')),
+            ],
+            selected: {currentLocale?.languageCode ?? 'system'},
+            onSelectionChanged: (Set<String> newSelection) {
+              final code = newSelection.first;
+              ref.read(localeProvider.notifier).setLocale(code == 'system' ? null : Locale(code));
             },
           ),
 

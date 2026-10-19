@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/create_entity_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class AnimatedFabMenu extends StatelessWidget {
   final String? currentCategoryId;
@@ -60,11 +61,11 @@ class _FabMenuOverlay extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            _buildPill(context, 'קבוצה', Icons.folder_outlined, EntityType.category, 2),
+            _buildPill(context, AppLocalizations.of(context)!.category, Icons.folder_outlined, EntityType.category, 2),
             const SizedBox(height: 16),
-            _buildPill(context, 'פריט', Icons.inventory_2_outlined, EntityType.item, 1),
+            _buildPill(context, AppLocalizations.of(context)!.item, Icons.inventory_2_outlined, EntityType.item, 1),
             const SizedBox(height: 16),
-            _buildPill(context, 'משימה', Icons.task_alt, EntityType.task, 0),
+            _buildPill(context, AppLocalizations.of(context)!.task, Icons.task_alt, EntityType.task, 0),
             const SizedBox(height: 24),
             RotationTransition(
               turns: Tween<double>(begin: 0.0, end: 0.125).animate(animation),
