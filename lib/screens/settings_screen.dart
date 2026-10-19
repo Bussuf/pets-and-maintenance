@@ -4,9 +4,59 @@ import '../providers/theme_provider.dart';
 import '../providers/settings_provider.dart';
 import 'organization_screen.dart';
 import '../providers/google_auth_provider.dart';
+import '../providers/categories_provider.dart';
+import '../providers/dashboard_tasks_provider.dart';
+import '../providers/items_provider.dart';
+import '../services/backup_service.dart';
+import '../l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({Key? key}) : super(key: key);
+
+  Future<void> _exportBackup(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await BackupService.instance.exportToFile();
+    } catch (e) {
+      if (context.mounted) _showSnack(context, l10n.backupFailed('$e'));
+    }
+  }
+
+  Future<void> _importBackup(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.warning_amber_rounded),
+        title: Text(l10n.backupImportConfirmTitle),
+        content: Text(l10n.backupImportConfirmBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.backupImportConfirmAction)),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final imported = await BackupService.instance.importFromFile();
+      if (!imported) return;
+      // רענון כל המסכים אחרי החלפת הנתונים
+      ref.invalidate(categoriesProvider);
+      ref.invalidate(dashboardTasksProvider);
+      ref.invalidate(itemsByCategoryProvider);
+      ref.invalidate(tasksByCategoryProvider);
+      if (context.mounted) _showSnack(context, l10n.backupImportSuccess);
+    } catch (e) {
+      if (context.mounted) _showSnack(context, l10n.backupFailed('$e'));
+    }
+  }
+
+  void _showSnack(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -14,6 +64,7 @@ class SettingsScreen extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final theme = Theme.of(context);
     final googleUser = ref.watch(googleAuthProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -248,6 +299,41 @@ class SettingsScreen extends ConsumerWidget {
                 MaterialPageRoute(builder: (_) => const OrganizationScreen()),
               );
             },
+          ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.0),
+            child: Divider(),
+          ),
+
+          // --- מקטע גיבוי ושחזור ---
+          Text(
+            l10n.backupSection,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: CircleAvatar(
+              backgroundColor: theme.colorScheme.primaryContainer,
+              child: Icon(Icons.upload_file, color: theme.colorScheme.primary),
+            ),
+            title: Text(l10n.backupExport, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(l10n.backupExportSubtitle),
+            onTap: () => _exportBackup(context),
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: CircleAvatar(
+              backgroundColor: theme.colorScheme.errorContainer,
+              child: Icon(Icons.restore, color: theme.colorScheme.error),
+            ),
+            title: Text(l10n.backupImport, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(l10n.backupImportSubtitle),
+            onTap: () => _importBackup(context, ref),
           ),
         ],
       ),

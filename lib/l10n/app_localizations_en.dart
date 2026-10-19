@@ -149,4 +149,39 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get backupSection => 'Backup & restore';
+
+  @override
+  String get backupExport => 'Export backup';
+
+  @override
+  String get backupExportSubtitle =>
+      'Save all data to a file (Drive, WhatsApp, Files...)';
+
+  @override
+  String get backupImport => 'Restore from backup';
+
+  @override
+  String get backupImportSubtitle =>
+      'Load a backup file, replacing current data';
+
+  @override
+  String get backupImportConfirmTitle => 'Restore from backup?';
+
+  @override
+  String get backupImportConfirmBody =>
+      'All current groups, items and tasks will be replaced by the file\'s content. Consider exporting a backup of the current data first.';
+
+  @override
+  String get backupImportConfirmAction => 'Choose file';
+
+  @override
+  String get backupImportSuccess => 'Data restored successfully';
+
+  @override
+  String backupFailed(String error) {
+    return 'Operation failed: $error';
+  }
 }

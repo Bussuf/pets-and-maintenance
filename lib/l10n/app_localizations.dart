@@ -355,6 +355,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 day overdue} other{{count} days overdue}}'**
   String overdueDays(int count);
+
+  /// No description provided for @backupSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup & restore'**
+  String get backupSection;
+
+  /// No description provided for @backupExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export backup'**
+  String get backupExport;
+
+  /// No description provided for @backupExportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save all data to a file (Drive, WhatsApp, Files...)'**
+  String get backupExportSubtitle;
+
+  /// No description provided for @backupImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from backup'**
+  String get backupImport;
+
+  /// No description provided for @backupImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Load a backup file, replacing current data'**
+  String get backupImportSubtitle;
+
+  /// No description provided for @backupImportConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from backup?'**
+  String get backupImportConfirmTitle;
+
+  /// No description provided for @backupImportConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'All current groups, items and tasks will be replaced by the file\'s content. Consider exporting a backup of the current data first.'**
+  String get backupImportConfirmBody;
+
+  /// No description provided for @backupImportConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose file'**
+  String get backupImportConfirmAction;
+
+  /// No description provided for @backupImportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data restored successfully'**
+  String get backupImportSuccess;
+
+  /// No description provided for @backupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed: {error}'**
+  String backupFailed(String error);
 }
 
 class _AppLocalizationsDelegate

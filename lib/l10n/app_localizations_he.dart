@@ -150,4 +150,38 @@ class AppLocalizationsHe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get backupSection => 'גיבוי ושחזור';
+
+  @override
+  String get backupExport => 'ייצוא גיבוי';
+
+  @override
+  String get backupExportSubtitle =>
+      'שמירת כל הנתונים לקובץ (Drive, וואטסאפ, קבצים...)';
+
+  @override
+  String get backupImport => 'שחזור מגיבוי';
+
+  @override
+  String get backupImportSubtitle => 'טעינת קובץ גיבוי במקום הנתונים הנוכחיים';
+
+  @override
+  String get backupImportConfirmTitle => 'לשחזר מגיבוי?';
+
+  @override
+  String get backupImportConfirmBody =>
+      'כל הקבוצות, הפריטים והמשימות הנוכחיים יוחלפו בתוכן הקובץ. מומלץ לייצא קודם גיבוי של המצב הנוכחי.';
+
+  @override
+  String get backupImportConfirmAction => 'בחר קובץ';
+
+  @override
+  String get backupImportSuccess => 'הנתונים שוחזרו בהצלחה';
+
+  @override
+  String backupFailed(String error) {
+    return 'הפעולה נכשלה: $error';
+  }
 }

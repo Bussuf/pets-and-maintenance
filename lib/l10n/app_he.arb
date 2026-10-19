@@ -48,5 +48,15 @@
   "darkMode": "מצב כהה",
   "systemMode": "הגדרות מערכת",
   "dueDateLabel": "תאריך לביצוע: {date}",
-  "overdueDays": "{count, plural, =1{יום אחד באיחור} =2{יומיים באיחור} other{{count} ימי איחור}}"
+  "overdueDays": "{count, plural, =1{יום אחד באיחור} =2{יומיים באיחור} other{{count} ימי איחור}}",
+  "backupSection": "גיבוי ושחזור",
+  "backupExport": "ייצוא גיבוי",
+  "backupExportSubtitle": "שמירת כל הנתונים לקובץ (Drive, וואטסאפ, קבצים...)",
+  "backupImport": "שחזור מגיבוי",
+  "backupImportSubtitle": "טעינת קובץ גיבוי במקום הנתונים הנוכחיים",
+  "backupImportConfirmTitle": "לשחזר מגיבוי?",
+  "backupImportConfirmBody": "כל הקבוצות, הפריטים והמשימות הנוכחיים יוחלפו בתוכן הקובץ. מומלץ לייצא קודם גיבוי של המצב הנוכחי.",
+  "backupImportConfirmAction": "בחר קובץ",
+  "backupImportSuccess": "הנתונים שוחזרו בהצלחה",
+  "backupFailed": "הפעולה נכשלה: {error}"
 }

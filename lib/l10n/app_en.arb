@@ -58,5 +58,20 @@
     "placeholders": {
       "count": { "type": "int" }
     }
+  },
+  "backupSection": "Backup & restore",
+  "backupExport": "Export backup",
+  "backupExportSubtitle": "Save all data to a file (Drive, WhatsApp, Files...)",
+  "backupImport": "Restore from backup",
+  "backupImportSubtitle": "Load a backup file, replacing current data",
+  "backupImportConfirmTitle": "Restore from backup?",
+  "backupImportConfirmBody": "All current groups, items and tasks will be replaced by the file's content. Consider exporting a backup of the current data first.",
+  "backupImportConfirmAction": "Choose file",
+  "backupImportSuccess": "Data restored successfully",
+  "backupFailed": "Operation failed: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
   }
 }
