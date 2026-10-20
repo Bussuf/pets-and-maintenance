@@ -21,10 +21,10 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    // שדרוג לגרסה 6 לתמיכה בסנכרון מול גוגל יומן
+    // גרסה 7: תאריך יעד לכל ביצוע ותאריך יצירה למשימה (ניתוח מעקב משימה #25)
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onConfigure: _onConfigure,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
@@ -78,6 +78,7 @@ class DatabaseHelper {
         is_reminder_enabled INTEGER DEFAULT 0,
         reminder_time TEXT,
         google_event_id TEXT,
+        created_at TEXT,
         FOREIGN KEY (item_id) REFERENCES items (id) ON DELETE CASCADE
       )
     ''');
@@ -88,6 +89,7 @@ class DatabaseHelper {
         task_id TEXT NOT NULL,
         completed_at TEXT NOT NULL,
         notes TEXT,
+        due_at TEXT,
         FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE
       )
     ''');
@@ -124,6 +126,12 @@ class DatabaseHelper {
     if (oldVersion < 6) {
       // מיגרציה לגרסה 6: הוספת עמודה למזהה אירוע יומן גוגל
       try { await db.execute('ALTER TABLE tasks ADD COLUMN google_event_id TEXT;'); } catch (_) {}
+    }
+    if (oldVersion < 7) {
+      // מיגרציה לגרסה 7 (#25): תאריך יצירת משימה, ותאריך היעד שכל ביצוע סגר
+      // ערכים קיימים נשארים ריקים - מנוע החישובים משחזר אותם בקירוב
+      try { await db.execute('ALTER TABLE tasks ADD COLUMN created_at TEXT;'); } catch (_) {}
+      try { await db.execute('ALTER TABLE task_logs ADD COLUMN due_at TEXT;'); } catch (_) {}
     }
   }
 

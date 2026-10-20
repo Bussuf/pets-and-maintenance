@@ -330,6 +330,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
           nextDueDate: initialDueDate,
           isReminderEnabled: _isReminderEnabled,
           reminderTime: _isReminderEnabled ? '09:00' : null,
+          createdAt: DateTime.now(),
         );
 
         // -- יצירת סנכרון ליומן גוגל במידה ואושר --

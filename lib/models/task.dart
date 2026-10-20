@@ -18,6 +18,9 @@ class AppTask {
   // -- סנכרון יומן גוגל --
   final String? googleEventId;
 
+  // -- מעקב (#25) --
+  final DateTime? createdAt; // תאריך יצירת המשימה (ריק במשימות שנוצרו לפני גרסה 7)
+
   AppTask({
     required this.id,
     required this.itemId,
@@ -33,6 +36,7 @@ class AppTask {
     this.isReminderEnabled = false,
     this.reminderTime,
     this.googleEventId,
+    this.createdAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -51,6 +55,8 @@ class AppTask {
       'is_reminder_enabled': isReminderEnabled ? 1 : 0,
       'reminder_time': reminderTime,
       'google_event_id': googleEventId,
+      // רק אם קיים - כדי ששמירה של משימה ישנה לא תמחק ערך קיים
+      if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
     };
   }
 
@@ -74,6 +80,9 @@ class AppTask {
       isReminderEnabled: (map['is_reminder_enabled'] as int?) == 1,
       reminderTime: map['reminder_time'] as String?,
       googleEventId: map['google_event_id'] as String?,
+      createdAt: map['created_at'] != null
+          ? DateTime.tryParse(map['created_at'] as String)
+          : null,
     );
   }
 
@@ -110,6 +119,7 @@ class AppTask {
     bool? isReminderEnabled,
     String? reminderTime,
     String? googleEventId,
+    DateTime? createdAt,
   }) {
     return AppTask(
       id: id ?? this.id,
@@ -126,6 +136,7 @@ class AppTask {
       isReminderEnabled: isReminderEnabled ?? this.isReminderEnabled,
       reminderTime: reminderTime ?? this.reminderTime,
       googleEventId: googleEventId ?? this.googleEventId,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

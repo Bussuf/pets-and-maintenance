@@ -125,6 +125,8 @@ class TaskCard extends ConsumerWidget {
       'id': uuid.v4(),
       'task_id': task['id'],
       'completed_at': completedDate.toIso8601String(),
+      // תאריך היעד שהביצוע הזה סגר - לחישוב 'בזמן / באיחור' (#25). ריק אם המשימה כבר הסתיימה
+      'due_at': task['next_due_date'],
     });
 
     final updatedTask = await db.readTask(task['id']);

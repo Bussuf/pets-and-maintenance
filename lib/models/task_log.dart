@@ -5,12 +5,14 @@ class TaskLog {
   final String taskId;
   final DateTime completedAt;
   final String? notes; // For future JSON payload
+  final DateTime? dueAt; // תאריך היעד שהביצוע הזה סגר (ריק בביצועים לפני גרסה 7)
 
   TaskLog({
     required this.id,
     required this.taskId,
     required this.completedAt,
     this.notes,
+    this.dueAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -19,6 +21,7 @@ class TaskLog {
       'task_id': taskId,
       'completed_at': completedAt.toIso8601String(),
       'notes': notes,
+      'due_at': dueAt?.toIso8601String(),
     };
   }
 
@@ -28,6 +31,7 @@ class TaskLog {
       taskId: map['task_id'],
       completedAt: DateTime.parse(map['completed_at']),
       notes: map['notes'],
+      dueAt: map['due_at'] != null ? DateTime.tryParse(map['due_at']) : null,
     );
   }
 
