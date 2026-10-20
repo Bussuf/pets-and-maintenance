@@ -757,4 +757,166 @@ class AppLocalizationsHe extends AppLocalizations {
   String overdueBy(String duration) {
     return 'באיחור $duration';
   }
+
+  @override
+  String get taskAnalysisTitle => 'ניתוח מעקב משימה';
+
+  @override
+  String everyDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n ימים',
+      two: 'כל יומיים',
+      one: 'כל יום',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String everyWeeks(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n שבועות',
+      two: 'כל שבועיים',
+      one: 'כל שבוע',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String everyMonths(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n חודשים',
+      two: 'כל חודשיים',
+      one: 'כל חודש',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get everyHalfYear => 'כל חצי שנה';
+
+  @override
+  String everyYears(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n שנים',
+      two: 'כל שנתיים',
+      one: 'כל שנה',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get detailFrequency => 'תדירות';
+
+  @override
+  String get detailReminder => 'תזכורת משימה';
+
+  @override
+  String get detailCalendar => 'אירוע משימה';
+
+  @override
+  String get detailNextDue => 'יעד הבא';
+
+  @override
+  String get detailLastDone => 'בוצע לאחרונה';
+
+  @override
+  String get detailActiveSince => 'פעילה מאז';
+
+  @override
+  String get detailGroupItem => 'קבוצה · פריט';
+
+  @override
+  String endCountProgress(int done, int total) {
+    return '$done מתוך $total פעמים';
+  }
+
+  @override
+  String endUntilDate(String date) {
+    return 'עד $date';
+  }
+
+  @override
+  String get reminderOff => 'לא פעילה';
+
+  @override
+  String get reminderActive => 'פעילה';
+
+  @override
+  String get reminderOffInSettings => 'כבויה בהגדרות';
+
+  @override
+  String reminderOnDetail(String time, String style) {
+    return 'פעילה · $time · $style';
+  }
+
+  @override
+  String get calendarSynced => 'ביומן גוגל';
+
+  @override
+  String get calendarNotSynced => 'לא ביומן גוגל';
+
+  @override
+  String get chipCalendar => 'ביומן';
+
+  @override
+  String get healthOnTrack => 'בקצב טוב';
+
+  @override
+  String get healthAttention => 'צריך תשומת לב';
+
+  @override
+  String statusNextIn(String duration) {
+    return 'יעד הבא בעוד $duration';
+  }
+
+  @override
+  String get statusDueToday => 'היעד היום';
+
+  @override
+  String statusStreak(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n ביצועים ברצף בזמן',
+      one: 'ביצוע אחד בזמן',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statusTendsLate => 'לאחרונה נוטה לאחר';
+
+  @override
+  String statusFinishedAfter(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'הסתיימה אחרי $n ביצועים',
+      one: 'הסתיימה אחרי ביצוע אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statCompletions => 'ביצועים';
+
+  @override
+  String get statOnTime => 'בזמן';
+
+  @override
+  String get statActualEvery => 'בפועל כל';
+
+  @override
+  String get unitDay => 'יום';
+
+  @override
+  String get unitMonth => 'חודש';
 }

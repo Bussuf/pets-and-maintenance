@@ -753,4 +753,162 @@ class AppLocalizationsEn extends AppLocalizations {
   String overdueBy(String duration) {
     return '$duration overdue';
   }
+
+  @override
+  String get taskAnalysisTitle => 'Task tracking analysis';
+
+  @override
+  String everyDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'every $n days',
+      one: 'every day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String everyWeeks(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'every $n weeks',
+      one: 'every week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String everyMonths(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'every $n months',
+      one: 'every month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get everyHalfYear => 'every 6 months';
+
+  @override
+  String everyYears(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'every $n years',
+      one: 'every year',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get detailFrequency => 'Frequency';
+
+  @override
+  String get detailReminder => 'Task reminder';
+
+  @override
+  String get detailCalendar => 'Task event';
+
+  @override
+  String get detailNextDue => 'Next due';
+
+  @override
+  String get detailLastDone => 'Last done';
+
+  @override
+  String get detailActiveSince => 'Active since';
+
+  @override
+  String get detailGroupItem => 'Group · item';
+
+  @override
+  String endCountProgress(int done, int total) {
+    return '$done of $total times';
+  }
+
+  @override
+  String endUntilDate(String date) {
+    return 'until $date';
+  }
+
+  @override
+  String get reminderOff => 'Off';
+
+  @override
+  String get reminderActive => 'On';
+
+  @override
+  String get reminderOffInSettings => 'Off in settings';
+
+  @override
+  String reminderOnDetail(String time, String style) {
+    return 'On · $time · $style';
+  }
+
+  @override
+  String get calendarSynced => 'In Google Calendar';
+
+  @override
+  String get calendarNotSynced => 'Not in Google Calendar';
+
+  @override
+  String get chipCalendar => 'Calendar';
+
+  @override
+  String get healthOnTrack => 'On track';
+
+  @override
+  String get healthAttention => 'Needs attention';
+
+  @override
+  String statusNextIn(String duration) {
+    return 'Next due in $duration';
+  }
+
+  @override
+  String get statusDueToday => 'Due today';
+
+  @override
+  String statusStreak(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n on time in a row',
+      one: '1 on time',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statusTendsLate => 'lately tends to be late';
+
+  @override
+  String statusFinishedAfter(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Finished after $n completions',
+      one: 'Finished after 1 completion',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statCompletions => 'Completions';
+
+  @override
+  String get statOnTime => 'On time';
+
+  @override
+  String get statActualEvery => 'Actually every';
+
+  @override
+  String get unitDay => 'day';
+
+  @override
+  String get unitMonth => 'month';
 }

@@ -1333,6 +1333,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{duration} overdue'**
   String overdueBy(String duration);
+
+  /// No description provided for @taskAnalysisTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task tracking analysis'**
+  String get taskAnalysisTitle;
+
+  /// No description provided for @everyDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{every day} other{every {n} days}}'**
+  String everyDays(int n);
+
+  /// No description provided for @everyWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{every week} other{every {n} weeks}}'**
+  String everyWeeks(int n);
+
+  /// No description provided for @everyMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{every month} other{every {n} months}}'**
+  String everyMonths(int n);
+
+  /// No description provided for @everyHalfYear.
+  ///
+  /// In en, this message translates to:
+  /// **'every 6 months'**
+  String get everyHalfYear;
+
+  /// No description provided for @everyYears.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{every year} other{every {n} years}}'**
+  String everyYears(int n);
+
+  /// No description provided for @detailFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get detailFrequency;
+
+  /// No description provided for @detailReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Task reminder'**
+  String get detailReminder;
+
+  /// No description provided for @detailCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Task event'**
+  String get detailCalendar;
+
+  /// No description provided for @detailNextDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due'**
+  String get detailNextDue;
+
+  /// No description provided for @detailLastDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Last done'**
+  String get detailLastDone;
+
+  /// No description provided for @detailActiveSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Active since'**
+  String get detailActiveSince;
+
+  /// No description provided for @detailGroupItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Group · item'**
+  String get detailGroupItem;
+
+  /// No description provided for @endCountProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} times'**
+  String endCountProgress(int done, int total);
+
+  /// No description provided for @endUntilDate.
+  ///
+  /// In en, this message translates to:
+  /// **'until {date}'**
+  String endUntilDate(String date);
+
+  /// No description provided for @reminderOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get reminderOff;
+
+  /// No description provided for @reminderActive.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get reminderActive;
+
+  /// No description provided for @reminderOffInSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Off in settings'**
+  String get reminderOffInSettings;
+
+  /// No description provided for @reminderOnDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'On · {time} · {style}'**
+  String reminderOnDetail(String time, String style);
+
+  /// No description provided for @calendarSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'In Google Calendar'**
+  String get calendarSynced;
+
+  /// No description provided for @calendarNotSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in Google Calendar'**
+  String get calendarNotSynced;
+
+  /// No description provided for @chipCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get chipCalendar;
+
+  /// No description provided for @healthOnTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'On track'**
+  String get healthOnTrack;
+
+  /// No description provided for @healthAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get healthAttention;
+
+  /// No description provided for @statusNextIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due in {duration}'**
+  String statusNextIn(String duration);
+
+  /// No description provided for @statusDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get statusDueToday;
+
+  /// No description provided for @statusStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 on time} other{{n} on time in a row}}'**
+  String statusStreak(int n);
+
+  /// No description provided for @statusTendsLate.
+  ///
+  /// In en, this message translates to:
+  /// **'lately tends to be late'**
+  String get statusTendsLate;
+
+  /// No description provided for @statusFinishedAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Finished after 1 completion} other{Finished after {n} completions}}'**
+  String statusFinishedAfter(int n);
+
+  /// No description provided for @statCompletions.
+  ///
+  /// In en, this message translates to:
+  /// **'Completions'**
+  String get statCompletions;
+
+  /// No description provided for @statOnTime.
+  ///
+  /// In en, this message translates to:
+  /// **'On time'**
+  String get statOnTime;
+
+  /// No description provided for @statActualEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'Actually every'**
+  String get statActualEvery;
+
+  /// No description provided for @unitDay.
+  ///
+  /// In en, this message translates to:
+  /// **'day'**
+  String get unitDay;
+
+  /// No description provided for @unitMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'month'**
+  String get unitMonth;
 }
 
 class _AppLocalizationsDelegate

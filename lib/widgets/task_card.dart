@@ -15,6 +15,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/date_format_provider.dart';
 import '../models/task_status.dart';
 import '../utils/duration_text.dart';
+import '../screens/task_analysis_screen.dart';
 
 class TaskCard extends ConsumerWidget {
   final Map<String, dynamic> task;
@@ -50,10 +51,10 @@ class TaskCard extends ConsumerWidget {
   }
 
   Future<void> _completeTaskAtDate(
-    BuildContext context,
-    WidgetRef ref,
-    DateTime completedDate,
-  ) async {
+      BuildContext context,
+      WidgetRef ref,
+      DateTime completedDate,
+      ) async {
     final l10n = AppLocalizations.of(context)!;
     final db = ref.read(databaseProvider);
     final rawDb = await db.database;
@@ -139,17 +140,18 @@ class TaskCard extends ConsumerWidget {
 
     ref.invalidate(dashboardTasksProvider);
     ref.invalidate(tasksByCategoryProvider(task['category_id']));
+    ref.invalidate(logsByTaskProvider(task['id'])); // היסטוריה ודף הניתוח
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             (isLastTime
-                    ? l10n.extraCompletionLogged
-                    : l10n.taskCompletedNext(
-                        task['name'],
-                        _formatDate(nextDate),
-                      )) +
+                ? l10n.extraCompletionLogged
+                : l10n.taskCompletedNext(
+              task['name'],
+              _formatDate(nextDate),
+            )) +
                 (calendarOk ? '' : '\n${l10n.calendarNotUpdated}'),
           ),
           behavior: SnackBarBehavior.floating,
@@ -159,9 +161,9 @@ class TaskCard extends ConsumerWidget {
   }
 
   Future<void> _pickManualCompletionDate(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+      BuildContext context,
+      WidgetRef ref,
+      ) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -202,9 +204,9 @@ class TaskCard extends ConsumerWidget {
           // עיגול שעות ל-ימים, כדי שמעבר שעון קיץ/חורף לא יחסיר יום
           overdueDays =
               (todayStart
-                          .difference(DateTime(due.year, due.month, due.day))
-                          .inHours /
-                      24)
+                  .difference(DateTime(due.year, due.month, due.day))
+                  .inHours /
+                  24)
                   .round();
         }
         dueDateStr = _formatDate(due);
@@ -333,13 +335,13 @@ class TaskCard extends ConsumerWidget {
                             color: isOverdue
                                 ? Colors.red.withOpacity(isDark ? 0.25 : 0.1)
                                 : theme.colorScheme.surfaceContainerHighest
-                                      .withOpacity(0.5),
+                                .withOpacity(0.5),
                             borderRadius: BorderRadius.circular(6),
                             border: isOverdue
                                 ? Border.all(
-                                    color: Colors.red.withOpacity(0.3),
-                                    width: 1,
-                                  )
+                              color: Colors.red.withOpacity(0.3),
+                              width: 1,
+                            )
                                 : null,
                           ),
                           child: Row(
@@ -367,8 +369,8 @@ class TaskCard extends ConsumerWidget {
                                         : FontWeight.normal,
                                     color: isOverdue
                                         ? (isDark
-                                              ? Colors.redAccent.shade100
-                                              : Colors.red.shade800)
+                                        ? Colors.redAccent.shade100
+                                        : Colors.red.shade800)
                                         : theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
@@ -452,15 +454,11 @@ class TaskCard extends ConsumerWidget {
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.insights, size: 18),
                       tooltip: l10n.statistics,
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(l10n.comingSoon),
-                            behavior: SnackBarBehavior.floating,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                      // דף ניתוח מעקב משימה (#25)
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => TaskAnalysisScreen(taskId: task['id'])),
+                      ),
                     ),
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
