@@ -9,6 +9,7 @@ import '../providers/items_provider.dart';
 import '../theme/app_icons.dart';
 import '../utils/duration_text.dart';
 import '../widgets/analysis_widgets.dart';
+import '../widgets/analysis_sections.dart';
 import '../widgets/edit_task_sheet.dart';
 
 /// דף 'ניתוח מעקב משימה' (#25). נפתח מכפתור 'סטטיסטיקות' בכרטיס המשימה.
@@ -82,6 +83,7 @@ class _TaskAnalysisScreenState extends ConsumerState<TaskAnalysisScreen> {
           _buildStatusCard(context, l10n, currentTask, stats),
           const SizedBox(height: 10),
           _buildTiles(l10n, currentTask, stats),
+          WhenSection(stats: stats),
         ],
       ),
     );

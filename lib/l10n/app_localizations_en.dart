@@ -904,11 +904,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statOnTime => 'On time';
 
   @override
-  String get statActualEvery => 'Actually every';
+  String get statActualEvery => 'Avg. every';
 
   @override
   String get unitDay => 'day';
 
   @override
   String get unitMonth => 'month';
+
+  @override
+  String get whenTitle => 'When you do it';
+
+  @override
+  String whenSentence(String day, String part) {
+    return 'Usually on $day, mostly at the $part';
+  }
+
+  @override
+  String get whenWeekdays => 'Days of the week';
+
+  @override
+  String get whenMonthPart => 'Part of the month';
+
+  @override
+  String get monthPartStart => 'start of the month';
+
+  @override
+  String get monthPartMiddle => 'middle of the month';
+
+  @override
+  String get monthPartEnd => 'end of the month';
+
+  @override
+  String get monthPartStartShort => 'Start';
+
+  @override
+  String get monthPartMiddleShort => 'Mid';
+
+  @override
+  String get monthPartEndShort => 'End';
+
+  @override
+  String get noCompletionsYet =>
+      'No completions yet. The analysis will appear after the first one.';
 }

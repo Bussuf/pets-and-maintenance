@@ -300,7 +300,19 @@
   "@statusFinishedAfter": { "placeholders": { "n": { "type": "int" } } },
   "statCompletions": "Completions",
   "statOnTime": "On time",
-  "statActualEvery": "Actually every",
+  "statActualEvery": "Avg. every",
   "unitDay": "day",
-  "unitMonth": "month"
+  "unitMonth": "month",
+  "whenTitle": "When you do it",
+  "whenSentence": "Usually on {day}, mostly at the {part}",
+  "@whenSentence": { "placeholders": { "day": { "type": "String" }, "part": { "type": "String" } } },
+  "whenWeekdays": "Days of the week",
+  "whenMonthPart": "Part of the month",
+  "monthPartStart": "start of the month",
+  "monthPartMiddle": "middle of the month",
+  "monthPartEnd": "end of the month",
+  "monthPartStartShort": "Start",
+  "monthPartMiddleShort": "Mid",
+  "monthPartEndShort": "End",
+  "noCompletionsYet": "No completions yet. The analysis will appear after the first one."
 }

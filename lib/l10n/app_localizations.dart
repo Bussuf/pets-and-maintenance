@@ -1523,7 +1523,7 @@ abstract class AppLocalizations {
   /// No description provided for @statActualEvery.
   ///
   /// In en, this message translates to:
-  /// **'Actually every'**
+  /// **'Avg. every'**
   String get statActualEvery;
 
   /// No description provided for @unitDay.
@@ -1537,6 +1537,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'month'**
   String get unitMonth;
+
+  /// No description provided for @whenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When you do it'**
+  String get whenTitle;
+
+  /// No description provided for @whenSentence.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually on {day}, mostly at the {part}'**
+  String whenSentence(String day, String part);
+
+  /// No description provided for @whenWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days of the week'**
+  String get whenWeekdays;
+
+  /// No description provided for @whenMonthPart.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of the month'**
+  String get whenMonthPart;
+
+  /// No description provided for @monthPartStart.
+  ///
+  /// In en, this message translates to:
+  /// **'start of the month'**
+  String get monthPartStart;
+
+  /// No description provided for @monthPartMiddle.
+  ///
+  /// In en, this message translates to:
+  /// **'middle of the month'**
+  String get monthPartMiddle;
+
+  /// No description provided for @monthPartEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'end of the month'**
+  String get monthPartEnd;
+
+  /// No description provided for @monthPartStartShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get monthPartStartShort;
+
+  /// No description provided for @monthPartMiddleShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Mid'**
+  String get monthPartMiddleShort;
+
+  /// No description provided for @monthPartEndShort.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get monthPartEndShort;
+
+  /// No description provided for @noCompletionsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No completions yet. The analysis will appear after the first one.'**
+  String get noCompletionsYet;
 }
 
 class _AppLocalizationsDelegate

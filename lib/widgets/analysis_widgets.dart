@@ -83,11 +83,19 @@ class _AnalysisSectionState extends State<AnalysisSection> {
                     child: Icon(Icons.expand_more, color: theme.colorScheme.onSurfaceVariant),
                   ),
                   const SizedBox(width: 8),
-                  Expanded(child: widget.title),
-                  if (widget.chip != null) ...[
-                    const SizedBox(width: 8),
-                    Flexible(child: SummaryChip(text: widget.chip!)),
-                  ],
+                  Expanded(
+                    // הצ'יפ מתחת לכותרת - כדי שהכותרת לא תישבר והצ'יפ לא ייחתך
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        widget.title,
+                        if (widget.chip != null) ...[
+                          const SizedBox(height: 6),
+                          SummaryChip(text: widget.chip!),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

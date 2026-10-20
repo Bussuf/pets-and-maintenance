@@ -132,7 +132,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get darkMode => 'מצב כהה';
 
   @override
-  String get systemMode => 'הגדרות מערכת';
+  String get systemMode => 'הגדרות';
 
   @override
   String dueDateLabel(String date) {
@@ -287,7 +287,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get searchHint => 'חיפוש משימות, פריטים או קבוצות...';
 
   @override
-  String get settingsTitle => 'הגדרות מערכת';
+  String get settingsTitle => 'הגדרות';
 
   @override
   String get searchPrompt => 'הקלד כדי לחפש משימות, פריטים או קבוצות...';
@@ -919,4 +919,40 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get unitMonth => 'חודש';
+
+  @override
+  String get whenTitle => 'מתי אתה עושה את זה';
+
+  @override
+  String whenSentence(String day, String part) {
+    return 'בדרך כלל ב$day, ובעיקר ב$part';
+  }
+
+  @override
+  String get whenWeekdays => 'ימים בשבוע';
+
+  @override
+  String get whenMonthPart => 'חלק בחודש';
+
+  @override
+  String get monthPartStart => 'תחילת חודש';
+
+  @override
+  String get monthPartMiddle => 'אמצע חודש';
+
+  @override
+  String get monthPartEnd => 'סוף חודש';
+
+  @override
+  String get monthPartStartShort => 'תחילת';
+
+  @override
+  String get monthPartMiddleShort => 'אמצע';
+
+  @override
+  String get monthPartEndShort => 'סוף';
+
+  @override
+  String get noCompletionsYet =>
+      'עוד אין ביצועים. אחרי הביצוע הראשון יופיע כאן הניתוח.';
 }
