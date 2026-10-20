@@ -70,14 +70,14 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('הגדרות מערכת'),
+        title: Text(l10n.settingsTitle),
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.paddingOf(context).bottom),
         children: [
           // --- מקטע מראה ותצוגה ---
           Text(
-            'מראה ותצוגה',
+            l10n.appearanceSection,
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -85,21 +85,21 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           SegmentedButton<ThemeMode>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: ThemeMode.system,
-                icon: Icon(Icons.brightness_auto),
-                label: Text('מערכת'),
+                icon: const Icon(Icons.brightness_auto),
+                label: Text(l10n.languageSystem),
               ),
               ButtonSegment(
                 value: ThemeMode.light,
-                icon: Icon(Icons.light_mode),
-                label: Text('בהיר'),
+                icon: const Icon(Icons.light_mode),
+                label: Text(l10n.themeLight),
               ),
               ButtonSegment(
                 value: ThemeMode.dark,
-                icon: Icon(Icons.dark_mode),
-                label: Text('כהה'),
+                icon: const Icon(Icons.dark_mode),
+                label: Text(l10n.themeDark),
               ),
             ],
             selected: {themeMode},
@@ -133,7 +133,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- מקטע התראות ותזכורות ---
           Text(
-            'התראות ותזכורות',
+            l10n.notificationsSection,
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -142,21 +142,21 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           SegmentedButton<String>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: 'separated',
-                icon: Icon(Icons.notifications_active),
-                label: Text('נפרד'),
+                icon: const Icon(Icons.notifications_active),
+                label: Text(l10n.notifSeparated),
               ),
               ButtonSegment(
                 value: 'grouped',
-                icon: Icon(Icons.list_alt),
-                label: Text('מרוכז'),
+                icon: const Icon(Icons.list_alt),
+                label: Text(l10n.notifGrouped),
               ),
               ButtonSegment(
                 value: 'none',
-                icon: Icon(Icons.notifications_off),
-                label: Text('ללא'),
+                icon: const Icon(Icons.notifications_off),
+                label: Text(l10n.notifNone),
               ),
             ],
             selected: {settings.notificationStyle},
@@ -170,10 +170,10 @@ class SettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Text(
               settings.notificationStyle == 'grouped'
-                  ? 'התראה אחת ביום המאגדת את כל המשימות לאותו יום'
+                  ? l10n.notifGroupedDesc
                   : settings.notificationStyle == 'separated'
-                  ? 'קבלת התראה נפרדת לכל משימה'
-                  : 'התראות האפליקציה כבויות',
+                  ? l10n.notifSeparatedDesc
+                  : l10n.notifNoneDesc,
               style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
@@ -196,11 +196,11 @@ class SettingsScreen extends ConsumerWidget {
                         : theme.colorScheme.primary
                 ),
               ),
-              title: const Text('שעת תזכורת יומית', style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(l10n.dailyReminderTime, style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text(
                 settings.notificationStyle == 'none'
-                    ? 'התראות כבויות'
-                    : 'בשעה ${ref.read(settingsProvider.notifier).formattedReminderTime} (לחץ לשינוי)',
+                    ? l10n.notificationsOff
+                    : l10n.reminderAt(ref.read(settingsProvider.notifier).formattedReminderTime),
               ),
               trailing: const Icon(Icons.edit_outlined, size: 20),
               enabled: settings.notificationStyle != 'none',
@@ -209,17 +209,17 @@ class SettingsScreen extends ConsumerWidget {
                 final picked = await showTimePicker(
                   context: context,
                   initialTime: initialTime,
-                  helpText: 'בחר שעת תזכורת',
-                  confirmText: 'אישור',
-                  cancelText: 'ביטול',
+                  helpText: l10n.pickReminderTime,
+                  confirmText: l10n.ok,
+                  cancelText: l10n.cancel,
                 );
 
                 if (picked != null && picked != initialTime) {
                   await ref.read(settingsProvider.notifier).setReminderTime(picked);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('שעת ההתראות עודכנה בהצלחה'),
+                      SnackBar(
+                        content: Text(l10n.reminderTimeUpdated),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -236,7 +236,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- מקטע סנכרון ושירותים ---
           Text(
-            'סנכרון ושירותים',
+            l10n.syncSection,
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -265,9 +265,9 @@ class SettingsScreen extends ConsumerWidget {
                     ? Icon(Icons.calendar_month, color: googleUser != null ? theme.colorScheme.primary : Colors.grey)
                     : null,
               ),
-              title: const Text('סנכרון יומן גוגל', style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(l10n.googleCalendarSync, style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text(
-                googleUser != null ? 'מחובר: ${googleUser.email}' : 'לא מחובר ליומן גוגל',
+                googleUser != null ? l10n.connectedAs(googleUser.email) : l10n.notConnectedGoogle,
                 style: TextStyle(
                   color: googleUser != null ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
                   fontSize: 13,
@@ -285,7 +285,7 @@ class SettingsScreen extends ConsumerWidget {
                   backgroundColor: googleUser != null ? theme.colorScheme.errorContainer : null,
                   foregroundColor: googleUser != null ? theme.colorScheme.onErrorContainer : null,
                 ),
-                child: Text(googleUser != null ? 'ניתוק' : 'התחבר'),
+                child: Text(googleUser != null ? l10n.disconnect : l10n.connect),
               ),
             ),
           ),
@@ -297,7 +297,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- מקטע ניהול תוכן ---
           Text(
-            'ניהול תוכן',
+            l10n.contentSection,
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -310,8 +310,8 @@ class SettingsScreen extends ConsumerWidget {
               backgroundColor: theme.colorScheme.primaryContainer,
               child: Icon(Icons.folder_copy_outlined, color: theme.colorScheme.primary),
             ),
-            title: const Text('ארגון קבוצות ופריטים', style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: const Text('עריכה, מחיקה וסידור מחדש של התוכן'),
+            title: Text(l10n.organizeGroupsItems, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(l10n.organizeSubtitle),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               Navigator.push(

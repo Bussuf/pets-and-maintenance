@@ -387,7 +387,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       _chipKeys.putIfAbsent(item.id, () => GlobalKey());
 
                       return Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
+                        padding: const EdgeInsetsDirectional.only(end: 8.0),
                         child: GestureDetector(
                           onLongPress: () =>
                               _editItemSheet(item, currentCategory.id),

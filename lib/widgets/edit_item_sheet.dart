@@ -10,6 +10,7 @@ import '../providers/items_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
 import 'confirm_delete_dialog.dart';
 import '../l10n/app_localizations.dart';
+import 'quick_add_dialogs.dart';
 
 class EditItemSheet extends ConsumerStatefulWidget {
   final Item item;
@@ -148,21 +149,42 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                 ),
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                isExpanded: true,
-                value: _selectedCatId,
-                decoration: InputDecoration(
-                  labelText: l10n.selectCategory,
-                  border: const OutlineInputBorder(),
-                ),
-                items: categories
-                    .map(
-                      (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
-                    )
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedCatId = val);
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: _selectedCatId,
+                      decoration: InputDecoration(
+                        labelText: l10n.selectCategory,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: categories
+                          .map(
+                            (c) => DropdownMenuItem(
+                              value: c.id,
+                              child: Text(c.name),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedCatId = val);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.filledTonal(
+                    icon: const Icon(Icons.add),
+                    tooltip: l10n.newGroup,
+                    onPressed: () async {
+                      final id = await QuickAddDialogs.category(context, ref);
+                      if (id == null) return;
+                      // מחכים שרשימת הקבוצות תתעדכן - אחרת הרשימה הנפתחת לא תכיר את הקבוצה החדשה
+                      await ref.read(categoriesProvider.future);
+                      if (mounted) setState(() => _selectedCatId = id);
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               FilledButton(

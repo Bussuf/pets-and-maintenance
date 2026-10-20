@@ -443,7 +443,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             _chipKeys.putIfAbsent(cat.id, () => GlobalKey());
 
                             return Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
+                              padding: const EdgeInsetsDirectional.only(end: 8.0),
                               child: GestureDetector(
                                 onLongPress: () => _showCategoryChipMenu(cat),
                                 child: InputChip(

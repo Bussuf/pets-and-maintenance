@@ -979,6 +979,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved!'**
   String get savedOk;
+
+  /// No description provided for @appearanceSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearanceSection;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// No description provided for @notificationsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications & reminders'**
+  String get notificationsSection;
+
+  /// No description provided for @notifSeparated.
+  ///
+  /// In en, this message translates to:
+  /// **'Separate'**
+  String get notifSeparated;
+
+  /// No description provided for @notifGrouped.
+  ///
+  /// In en, this message translates to:
+  /// **'Grouped'**
+  String get notifGrouped;
+
+  /// No description provided for @notifNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get notifNone;
+
+  /// No description provided for @notifGroupedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'One daily notification with all of the day\'s tasks'**
+  String get notifGroupedDesc;
+
+  /// No description provided for @notifSeparatedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'A separate notification for each task'**
+  String get notifSeparatedDesc;
+
+  /// No description provided for @notifNoneDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'App notifications are off'**
+  String get notifNoneDesc;
+
+  /// No description provided for @dailyReminderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily reminder time'**
+  String get dailyReminderTime;
+
+  /// No description provided for @notificationsOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications off'**
+  String get notificationsOff;
+
+  /// No description provided for @reminderAt.
+  ///
+  /// In en, this message translates to:
+  /// **'At {time} (tap to change)'**
+  String reminderAt(String time);
+
+  /// No description provided for @pickReminderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick reminder time'**
+  String get pickReminderTime;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @reminderTimeUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time updated'**
+  String get reminderTimeUpdated;
+
+  /// No description provided for @syncSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync & services'**
+  String get syncSection;
+
+  /// No description provided for @googleCalendarSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Calendar sync'**
+  String get googleCalendarSync;
+
+  /// No description provided for @connectedAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected:\n{email}'**
+  String connectedAs(String email);
+
+  /// No description provided for @notConnectedGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected to Google Calendar'**
+  String get notConnectedGoogle;
+
+  /// No description provided for @disconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get disconnect;
+
+  /// No description provided for @connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connect;
+
+  /// No description provided for @contentSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get contentSection;
+
+  /// No description provided for @organizeGroupsItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize groups & items'**
+  String get organizeGroupsItems;
+
+  /// No description provided for @organizeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit, delete and reorder content'**
+  String get organizeSubtitle;
+
+  /// No description provided for @notifChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks & maintenance'**
+  String get notifChannelName;
+
+  /// No description provided for @notifChannelDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders for your home tasks'**
+  String get notifChannelDesc;
+
+  /// No description provided for @notifTaskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder: {name}'**
+  String notifTaskTitle(String name);
+
+  /// No description provided for @notifTaskDefaultBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to do this task'**
+  String get notifTaskDefaultBody;
+
+  /// No description provided for @notifGroupedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🏠 Today\'s tasks'**
+  String get notifGroupedTitle;
+
+  /// No description provided for @notifGroupedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have maintenance tasks due today. Open the app for details.'**
+  String get notifGroupedBody;
+
+  /// No description provided for @calendarEventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🏠 Maintenance: {name}'**
+  String calendarEventTitle(String name);
+
+  /// No description provided for @calendarAutoCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created automatically by Pets & Maintenance'**
+  String get calendarAutoCreated;
 }
 
 class _AppLocalizationsDelegate

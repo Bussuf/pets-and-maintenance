@@ -426,7 +426,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                         if (type == EntityType.item) label = l10n.item;
                         if (type == EntityType.category) label = l10n.category;
                         return Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
+                          padding: const EdgeInsetsDirectional.only(end: 8.0),
                           child: _buildTypeChip(label, type),
                         );
                       }).toList(),

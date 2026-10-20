@@ -2,6 +2,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as cal;
 import 'package:http/http.dart' as http;
 import '../models/task.dart';
+import '../providers/locale_provider.dart';
 
 // עוטף את קריאות הרשת ומוסיף להן את טוקן האימות של גוגל
 class GoogleAuthClient extends http.BaseClient {
@@ -61,8 +62,8 @@ class GoogleCalendarService {
     if (api == null) return null;
 
     final event = cal.Event()
-      ..summary = '🏠 תחזוקה: ${task.name}'
-      ..description = '${task.description ?? ''}\n\n$itemAndCategoryDetails\n\nנוצר אוטומטית מאפליקציית Pets & Maintenance';
+      ..summary = LocaleNotifier.l10n.calendarEventTitle(task.name)
+      ..description = '${task.description ?? ''}\n\n$itemAndCategoryDetails\n\n${LocaleNotifier.l10n.calendarAutoCreated}';
 
     // הגדרת אירוע ליום שלם (מתחיל בתאריך ומסתיים ביום למחרת)
     final startDate = DateTime(task.nextDueDate!.year, task.nextDueDate!.month, task.nextDueDate!.day);
@@ -76,7 +77,7 @@ class GoogleCalendarService {
       final createdEvent = await api.events.insert(event, 'primary');
       return createdEvent.id;
     } catch (e) {
-      print('שגיאה ביצירת אירוע בגוגל יומן: $e');
+      print('Google Calendar create failed: $e');
       return null;
     }
   }
@@ -89,8 +90,8 @@ class GoogleCalendarService {
     if (api == null) return;
 
     final event = cal.Event()
-      ..summary = '🏠 תחזוקה: ${task.name}'
-      ..description = '${task.description ?? ''}\n\n$itemAndCategoryDetails\n\nנוצר אוטומטית מאפליקציית Pets & Maintenance';
+      ..summary = LocaleNotifier.l10n.calendarEventTitle(task.name)
+      ..description = '${task.description ?? ''}\n\n$itemAndCategoryDetails\n\n${LocaleNotifier.l10n.calendarAutoCreated}';
 
     final startDate = DateTime(task.nextDueDate!.year, task.nextDueDate!.month, task.nextDueDate!.day);
     final endDate = startDate.add(const Duration(days: 1));
@@ -101,7 +102,7 @@ class GoogleCalendarService {
     try {
       await api.events.update(event, 'primary', task.googleEventId!);
     } catch (e) {
-      print('שגיאה בעדכון אירוע בגוגל יומן: $e');
+      print('Google Calendar update failed: $e');
     }
   }
 
@@ -113,7 +114,7 @@ class GoogleCalendarService {
     try {
       await api.events.delete('primary', eventId);
     } catch (e) {
-      print('שגיאה במחיקת אירוע מגוגל יומן: $e');
+      print('Google Calendar delete failed: $e');
     }
   }
 }

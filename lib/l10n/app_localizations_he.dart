@@ -552,4 +552,114 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get savedOk => 'נשמר בהצלחה!';
+
+  @override
+  String get appearanceSection => 'מראה ותצוגה';
+
+  @override
+  String get themeLight => 'בהיר';
+
+  @override
+  String get themeDark => 'כהה';
+
+  @override
+  String get notificationsSection => 'התראות ותזכורות';
+
+  @override
+  String get notifSeparated => 'נפרד';
+
+  @override
+  String get notifGrouped => 'מרוכז';
+
+  @override
+  String get notifNone => 'ללא';
+
+  @override
+  String get notifGroupedDesc =>
+      'התראה אחת ביום המאגדת את כל המשימות לאותו יום';
+
+  @override
+  String get notifSeparatedDesc => 'קבלת התראה נפרדת לכל משימה';
+
+  @override
+  String get notifNoneDesc => 'התראות האפליקציה כבויות';
+
+  @override
+  String get dailyReminderTime => 'שעת תזכורת יומית';
+
+  @override
+  String get notificationsOff => 'התראות כבויות';
+
+  @override
+  String reminderAt(String time) {
+    return 'בשעה $time (לחץ לשינוי)';
+  }
+
+  @override
+  String get pickReminderTime => 'בחר שעת תזכורת';
+
+  @override
+  String get ok => 'אישור';
+
+  @override
+  String get reminderTimeUpdated => 'שעת ההתראות עודכנה בהצלחה';
+
+  @override
+  String get syncSection => 'סנכרון ושירותים';
+
+  @override
+  String get googleCalendarSync => 'סנכרון יומן גוגל';
+
+  @override
+  String connectedAs(String email) {
+    return 'מחובר:\n$email';
+  }
+
+  @override
+  String get notConnectedGoogle => 'לא מחובר ליומן גוגל';
+
+  @override
+  String get disconnect => 'ניתוק';
+
+  @override
+  String get connect => 'התחבר';
+
+  @override
+  String get contentSection => 'ניהול תוכן';
+
+  @override
+  String get organizeGroupsItems => 'ארגון קבוצות ופריטים';
+
+  @override
+  String get organizeSubtitle => 'עריכה, מחיקה וסידור מחדש של התוכן';
+
+  @override
+  String get notifChannelName => 'משימות ותחזוקה';
+
+  @override
+  String get notifChannelDesc => 'התראות עבור משימות הבית';
+
+  @override
+  String notifTaskTitle(String name) {
+    return 'תזכורת: $name';
+  }
+
+  @override
+  String get notifTaskDefaultBody => 'הגיע הזמן לבצע את המשימה';
+
+  @override
+  String get notifGroupedTitle => '🏠 משימות להיום';
+
+  @override
+  String get notifGroupedBody =>
+      'יש לך משימות תחזוקה שנקבעו להיום. היכנס לאפליקציה לצפייה בפירוט.';
+
+  @override
+  String calendarEventTitle(String name) {
+    return '🏠 תחזוקה: $name';
+  }
+
+  @override
+  String get calendarAutoCreated =>
+      'נוצר אוטומטית מאפליקציית Pets & Maintenance';
 }

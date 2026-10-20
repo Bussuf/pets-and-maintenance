@@ -549,4 +549,114 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savedOk => 'Saved!';
+
+  @override
+  String get appearanceSection => 'Appearance';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get notificationsSection => 'Notifications & reminders';
+
+  @override
+  String get notifSeparated => 'Separate';
+
+  @override
+  String get notifGrouped => 'Grouped';
+
+  @override
+  String get notifNone => 'Off';
+
+  @override
+  String get notifGroupedDesc =>
+      'One daily notification with all of the day\'s tasks';
+
+  @override
+  String get notifSeparatedDesc => 'A separate notification for each task';
+
+  @override
+  String get notifNoneDesc => 'App notifications are off';
+
+  @override
+  String get dailyReminderTime => 'Daily reminder time';
+
+  @override
+  String get notificationsOff => 'Notifications off';
+
+  @override
+  String reminderAt(String time) {
+    return 'At $time (tap to change)';
+  }
+
+  @override
+  String get pickReminderTime => 'Pick reminder time';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get reminderTimeUpdated => 'Reminder time updated';
+
+  @override
+  String get syncSection => 'Sync & services';
+
+  @override
+  String get googleCalendarSync => 'Google Calendar sync';
+
+  @override
+  String connectedAs(String email) {
+    return 'Connected:\n$email';
+  }
+
+  @override
+  String get notConnectedGoogle => 'Not connected to Google Calendar';
+
+  @override
+  String get disconnect => 'Disconnect';
+
+  @override
+  String get connect => 'Connect';
+
+  @override
+  String get contentSection => 'Content';
+
+  @override
+  String get organizeGroupsItems => 'Organize groups & items';
+
+  @override
+  String get organizeSubtitle => 'Edit, delete and reorder content';
+
+  @override
+  String get notifChannelName => 'Tasks & maintenance';
+
+  @override
+  String get notifChannelDesc => 'Reminders for your home tasks';
+
+  @override
+  String notifTaskTitle(String name) {
+    return 'Reminder: $name';
+  }
+
+  @override
+  String get notifTaskDefaultBody => 'Time to do this task';
+
+  @override
+  String get notifGroupedTitle => '🏠 Today\'s tasks';
+
+  @override
+  String get notifGroupedBody =>
+      'You have maintenance tasks due today. Open the app for details.';
+
+  @override
+  String calendarEventTitle(String name) {
+    return '🏠 Maintenance: $name';
+  }
+
+  @override
+  String get calendarAutoCreated =>
+      'Created automatically by Pets & Maintenance';
 }

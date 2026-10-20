@@ -3,6 +3,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
+import '../providers/locale_provider.dart';
 
 class NotificationService {
   static final NotificationService instance = NotificationService._();
@@ -64,14 +65,15 @@ class NotificationService {
 
     final tzDate = tz.TZDateTime.from(scheduledDate, tz.local);
 
-    const androidDetails = AndroidNotificationDetails(
+    final l10n = LocaleNotifier.l10n;
+    final androidDetails = AndroidNotificationDetails(
       'tasks_maintenance_channel',
-      'משימות ותחזוקה',
-      channelDescription: 'התראות עבור משימות הבית',
+      l10n.notifChannelName,
+      channelDescription: l10n.notifChannelDesc,
       importance: Importance.max,
       priority: Priority.high,
     );
-    const details = NotificationDetails(android: androidDetails);
+    final details = NotificationDetails(android: androidDetails);
 
     // 4. תזמון ההתראה לפי הסגנון הנבחר
     if (style == 'separated') {
@@ -79,10 +81,10 @@ class NotificationService {
       final int id = task.id.hashCode;
       await _notificationsPlugin.zonedSchedule(
         id,
-        'תזכורת: ${task.name}',
+        l10n.notifTaskTitle(task.name),
         task.description != null && task.description!.isNotEmpty
             ? task.description
-            : 'הגיע הזמן לבצע את המשימה',
+            : l10n.notifTaskDefaultBody,
         tzDate,
         details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -94,8 +96,8 @@ class NotificationService {
 
       await _notificationsPlugin.zonedSchedule(
         dateId,
-        '🏠 משימות להיום',
-        'יש לך משימות תחזוקה שנקבעו להיום. היכנס לאפליקציה לצפייה בפירוט.',
+        l10n.notifGroupedTitle,
+        l10n.notifGroupedBody,
         tzDate,
         details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
