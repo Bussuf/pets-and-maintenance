@@ -202,5 +202,9 @@
   "googleDisconnected": "נותקת מיומן גוגל",
   "finishedTasks": "הסתיימו",
   "taskFinishedLabel": "הסתיימה",
-  "extraCompletionLogged": "ביצוע נוסף נרשם ✓"
+  "extraCompletionLogged": "ביצוע נוסף נרשם ✓",
+  "calendarCreateFailed": "נשמר, אבל לא נוסף ליומן גוגל. אפשר לנסות שוב בעריכת המשימה.",
+  "calendarSyncFailed": "השינויים נשמרו, אבל יומן גוגל לא עודכן. בדוק את החיבור לאינטרנט ונסה שוב.",
+  "calendarDeleteFailed": "המשימה נמחקה, אבל האירוע נשאר ביומן גוגל. אפשר למחוק אותו ידנית.",
+  "calendarNotUpdated": "יומן גוגל לא עודכן (אין חיבור?)"
 }

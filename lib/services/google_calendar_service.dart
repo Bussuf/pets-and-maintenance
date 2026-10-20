@@ -57,7 +57,7 @@ class GoogleCalendarService {
   // יצירת אירוע יום שלם (All-Day Event)
   Future<String?> createEvent(AppTask task, String itemAndCategoryDetails) async {
     if (task.nextDueDate == null) return null;
-    
+
     final api = await _getCalendarApi();
     if (api == null) return null;
 
@@ -83,11 +83,12 @@ class GoogleCalendarService {
   }
 
   // עדכון תאריך או פרטי אירוע קיים
-  Future<void> updateEvent(AppTask task, String itemAndCategoryDetails) async {
-    if (task.googleEventId == null || task.nextDueDate == null) return;
-    
+  // מחזיר false אם העדכון נכשל (למשל בלי אינטרנט)
+  Future<bool> updateEvent(AppTask task, String itemAndCategoryDetails) async {
+    if (task.googleEventId == null || task.nextDueDate == null) return true; // אין מה לעדכן
+
     final api = await _getCalendarApi();
-    if (api == null) return;
+    if (api == null) return false;
 
     final event = cal.Event()
       ..summary = LocaleNotifier.l10n.calendarEventTitle(task.name)
@@ -101,20 +102,25 @@ class GoogleCalendarService {
 
     try {
       await api.events.update(event, 'primary', task.googleEventId!);
+      return true;
     } catch (e) {
       print('Google Calendar update failed: $e');
+      return false;
     }
   }
 
   // מחיקת אירוע (מופעל כאשר המשימה נמחקת או כשהמתג מכובה)
-  Future<void> deleteEvent(String eventId) async {
+  // מחזיר false אם המחיקה נכשלה (למשל בלי אינטרנט)
+  Future<bool> deleteEvent(String eventId) async {
     final api = await _getCalendarApi();
-    if (api == null) return;
+    if (api == null) return false;
 
     try {
       await api.events.delete('primary', eventId);
+      return true;
     } catch (e) {
       print('Google Calendar delete failed: $e');
+      return false;
     }
   }
 }

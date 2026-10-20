@@ -78,10 +78,11 @@ class TaskCard extends ConsumerWidget {
     final String? googleEventId = task['google_event_id'];
 
     // אם המשימה מסונכרנת לגוגל יומן, נעדכן את מועד האירוע לתאריך החדש
+    bool calendarOk = true; // #54
     if (googleEventId != null && isLastTime) {
       // המשימה הסתיימה - האירוע הבא ביומן כבר לא רלוונטי
       try {
-        await GoogleCalendarService.instance.deleteEvent(googleEventId);
+        calendarOk = await GoogleCalendarService.instance.deleteEvent(googleEventId);
       } catch (e) {
         debugPrint('Failed to delete Google Calendar event on finish: $e');
       }
@@ -99,7 +100,7 @@ class TaskCard extends ConsumerWidget {
           nextDueDate: nextDate,
           googleEventId: googleEventId,
         );
-        await GoogleCalendarService.instance.updateEvent(
+        calendarOk = await GoogleCalendarService.instance.updateEvent(
           updatedTempTask,
           l10n.calendarUpdatedOnCompletion,
         );
@@ -138,9 +139,10 @@ class TaskCard extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isLastTime
+            (isLastTime
                 ? l10n.extraCompletionLogged
-                : l10n.taskCompletedNext(task['name'], _formatDate(nextDate)),
+                : l10n.taskCompletedNext(task['name'], _formatDate(nextDate))) +
+                (calendarOk ? '' : '\n${l10n.calendarNotUpdated}'),
           ),
           behavior: SnackBarBehavior.floating,
         ),

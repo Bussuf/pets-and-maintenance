@@ -1279,6 +1279,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Additional completion logged ✓'**
   String get extraCompletionLogged;
+
+  /// No description provided for @calendarCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved, but not added to Google Calendar. You can try again by editing the task.'**
+  String get calendarCreateFailed;
+
+  /// No description provided for @calendarSyncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes saved, but Google Calendar wasn\'t updated. Check your connection and try again.'**
+  String get calendarSyncFailed;
+
+  /// No description provided for @calendarDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Task deleted, but the event is still in Google Calendar. You can delete it manually.'**
+  String get calendarDeleteFailed;
+
+  /// No description provided for @calendarNotUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Calendar wasn\'t updated (offline?)'**
+  String get calendarNotUpdated;
 }
 
 class _AppLocalizationsDelegate

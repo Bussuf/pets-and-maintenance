@@ -714,4 +714,19 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get extraCompletionLogged => 'ביצוע נוסף נרשם ✓';
+
+  @override
+  String get calendarCreateFailed =>
+      'נשמר, אבל לא נוסף ליומן גוגל. אפשר לנסות שוב בעריכת המשימה.';
+
+  @override
+  String get calendarSyncFailed =>
+      'השינויים נשמרו, אבל יומן גוגל לא עודכן. בדוק את החיבור לאינטרנט ונסה שוב.';
+
+  @override
+  String get calendarDeleteFailed =>
+      'המשימה נמחקה, אבל האירוע נשאר ביומן גוגל. אפשר למחוק אותו ידנית.';
+
+  @override
+  String get calendarNotUpdated => 'יומן גוגל לא עודכן (אין חיבור?)';
 }

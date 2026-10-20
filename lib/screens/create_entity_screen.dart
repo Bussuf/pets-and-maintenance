@@ -40,17 +40,17 @@ class CreateEntityScreen extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   static Future<void> show(
-    BuildContext context, {
-    EntityType type = EntityType.task,
-    List<EntityType> allowedTypes = const [
-      EntityType.task,
-      EntityType.item,
-      EntityType.category,
-    ],
-    String? categoryId,
-    String? itemId,
-    Map<String, dynamic>? duplicateData,
-  }) {
+      BuildContext context, {
+        EntityType type = EntityType.task,
+        List<EntityType> allowedTypes = const [
+          EntityType.task,
+          EntityType.item,
+          EntityType.category,
+        ],
+        String? categoryId,
+        String? itemId,
+        Map<String, dynamic>? duplicateData,
+      }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -259,6 +259,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
       final db = ref.read(databaseProvider);
       final entityName = _nameController.text.trim();
       String repositoryName = '';
+      bool calendarFailed = false; // #54: הסנכרון ליומן נכשל
 
       if (_currentType == EntityType.category) {
         repositoryName = l10n.myGroups;
@@ -277,7 +278,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
         if (_selectedCategoryId == null) return;
         final cats = ref.read(categoriesProvider).value ?? [];
         final parentCat = cats.firstWhere(
-          (c) => c.id == _selectedCategoryId,
+              (c) => c.id == _selectedCategoryId,
           orElse: () =>
               Category(id: '', name: l10n.category, createdAt: DateTime.now()),
         );
@@ -298,7 +299,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
         final items =
             ref.read(itemsByCategoryProvider(_selectedCategoryId!)).value ?? [];
         final parentItem = items.firstWhere(
-          (i) => i.id == _selectedItemId,
+              (i) => i.id == _selectedItemId,
           orElse: () => Item(id: '', categoryId: '', name: l10n.item),
         );
         repositoryName = parentItem.name;
@@ -337,6 +338,8 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
               .createEvent(task, l10n.calendarGroupLabel(repositoryName));
           if (googleEventId != null) {
             task = task.copyWith(googleEventId: googleEventId);
+          } else {
+            calendarFailed = true; // המשימה תישמר בלי אירוע - המשתמש יכול לנסות שוב בעריכה
           }
         }
 
@@ -351,7 +354,9 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            l10n.savedSuccessfully(entityName, repositoryName),
+            calendarFailed
+                ? l10n.calendarCreateFailed
+                : l10n.savedSuccessfully(entityName, repositoryName),
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -486,7 +491,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                                   final displayCats = cats.toList();
                                   if (_selectedCategoryId != null &&
                                       !displayCats.any(
-                                        (c) => c.id == _selectedCategoryId,
+                                            (c) => c.id == _selectedCategoryId,
                                       )) {
                                     displayCats.add(
                                       Category(
@@ -507,17 +512,17 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                                     items: displayCats
                                         .map(
                                           (c) => DropdownMenuItem(
-                                            value: c.id,
-                                            child: Text(c.name),
-                                          ),
-                                        )
+                                        value: c.id,
+                                        child: Text(c.name),
+                                      ),
+                                    )
                                         .toList(),
                                     onChanged: (val) => setState(() {
                                       _selectedCategoryId = val;
                                       _selectedItemId = null;
                                     }),
                                     validator: (val) =>
-                                        val == null ? l10n.requiredField : null,
+                                    val == null ? l10n.requiredField : null,
                                   );
                                 },
                                 loading: () => const LinearProgressIndicator(),
@@ -540,54 +545,54 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                               Expanded(
                                 child: ref
                                     .watch(
-                                      itemsByCategoryProvider(
-                                        _selectedCategoryId ?? '',
-                                      ),
-                                    )
+                                  itemsByCategoryProvider(
+                                    _selectedCategoryId ?? '',
+                                  ),
+                                )
                                     .when(
-                                      data: (items) {
-                                        final displayItems = items.toList();
-                                        if (_selectedItemId != null &&
-                                            !displayItems.any(
+                                  data: (items) {
+                                    final displayItems = items.toList();
+                                    if (_selectedItemId != null &&
+                                        !displayItems.any(
                                               (i) => i.id == _selectedItemId,
-                                            )) {
-                                          displayItems.add(
-                                            Item(
-                                              id: _selectedItemId!,
-                                              categoryId: _selectedCategoryId!,
-                                              name: '...',
-                                            ),
-                                          );
-                                        }
-                                        return DropdownButtonFormField<String>(
-                                          isExpanded: true,
-                                          value: _selectedItemId,
-                                          decoration: InputDecoration(
-                                            labelText: l10n.selectItem,
-                                            border: const OutlineInputBorder(),
-                                            isDense: true,
-                                          ),
-                                          items: displayItems
-                                              .map(
-                                                (i) => DropdownMenuItem(
-                                                  value: i.id,
-                                                  child: Text(i.name),
-                                                ),
-                                              )
-                                              .toList(),
-                                          onChanged: (val) => setState(
+                                        )) {
+                                      displayItems.add(
+                                        Item(
+                                          id: _selectedItemId!,
+                                          categoryId: _selectedCategoryId!,
+                                          name: '...',
+                                        ),
+                                      );
+                                    }
+                                    return DropdownButtonFormField<String>(
+                                      isExpanded: true,
+                                      value: _selectedItemId,
+                                      decoration: InputDecoration(
+                                        labelText: l10n.selectItem,
+                                        border: const OutlineInputBorder(),
+                                        isDense: true,
+                                      ),
+                                      items: displayItems
+                                          .map(
+                                            (i) => DropdownMenuItem(
+                                          value: i.id,
+                                          child: Text(i.name),
+                                        ),
+                                      )
+                                          .toList(),
+                                      onChanged: (val) => setState(
                                             () => _selectedItemId = val,
-                                          ),
-                                          validator: (val) => val == null
-                                              ? l10n.requiredField
-                                              : null,
-                                        );
-                                      },
-                                      loading: () =>
-                                          const LinearProgressIndicator(),
-                                      error: (err, _) =>
-                                          Text(l10n.errorWithDetails('$err')),
-                                    ),
+                                      ),
+                                      validator: (val) => val == null
+                                          ? l10n.requiredField
+                                          : null,
+                                    );
+                                  },
+                                  loading: () =>
+                                  const LinearProgressIndicator(),
+                                  error: (err, _) =>
+                                      Text(l10n.errorWithDetails('$err')),
+                                ),
                               ),
                               const SizedBox(width: 8),
                               IconButton.filledTonal(
@@ -639,16 +644,16 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                     children: _availableColors
                         .map(
                           (color) => GestureDetector(
-                            onTap: () =>
-                                setState(() => _selectedColor = color.value),
-                            child: CircleAvatar(
-                              backgroundColor: color,
-                              child: _selectedColor == color.value
-                                  ? const Icon(Icons.check, color: Colors.white)
-                                  : null,
-                            ),
-                          ),
-                        )
+                        onTap: () =>
+                            setState(() => _selectedColor = color.value),
+                        child: CircleAvatar(
+                          backgroundColor: color,
+                          child: _selectedColor == color.value
+                              ? const Icon(Icons.check, color: Colors.white)
+                              : null,
+                        ),
+                      ),
+                    )
                         .toList(),
                   ),
                 ],
@@ -666,7 +671,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                             border: const OutlineInputBorder(),
                           ),
                           validator: (val) =>
-                              (val == null || int.tryParse(val) == null)
+                          (val == null || int.tryParse(val) == null)
                               ? l10n.requiredField
                               : null,
                         ),
@@ -838,7 +843,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                           value: _isGoogleSyncEnabled,
                           onChanged: googleUser != null
                               ? (bool value) =>
-                                    setState(() => _isGoogleSyncEnabled = value)
+                              setState(() => _isGoogleSyncEnabled = value)
                               : null,
                         ),
                       ],

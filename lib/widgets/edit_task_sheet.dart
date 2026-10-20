@@ -157,8 +157,9 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       if (confirm == true) {
                         try {
                           // מחיקה מהיומן במידה וקיים מזהה גוגל
+                          bool calendarOk = true; // #54
                           if (widget.taskMap['google_event_id'] != null) {
-                            await GoogleCalendarService.instance.deleteEvent(
+                            calendarOk = await GoogleCalendarService.instance.deleteEvent(
                               widget.taskMap['google_event_id'],
                             );
                           }
@@ -202,7 +203,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(l10n.taskDeleted),
+                                content: Text(calendarOk ? l10n.taskDeleted : l10n.calendarDeleteFailed),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -261,49 +262,49 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                           child: ref
                               .watch(categoriesProvider)
                               .when(
-                                data: (cats) {
-                                  final displayCats = cats.toList();
-                                  if (_selectedCategoryId.isNotEmpty &&
-                                      !displayCats.any(
+                            data: (cats) {
+                              final displayCats = cats.toList();
+                              if (_selectedCategoryId.isNotEmpty &&
+                                  !displayCats.any(
                                         (c) => c.id == _selectedCategoryId,
-                                      )) {
-                                    displayCats.add(
-                                      Category(
-                                        id: _selectedCategoryId,
-                                        name: '...',
-                                        createdAt: DateTime.now(),
-                                      ),
-                                    );
-                                  }
-                                  return DropdownButtonFormField<String>(
-                                    isExpanded: true,
-                                    value: _selectedCategoryId.isEmpty
-                                        ? null
-                                        : _selectedCategoryId,
-                                    decoration: InputDecoration(
-                                      labelText: l10n.selectCategory,
-                                      border: const OutlineInputBorder(),
-                                      isDense: true,
-                                    ),
-                                    items: displayCats
-                                        .map(
-                                          (c) => DropdownMenuItem(
-                                            value: c.id,
-                                            child: Text(c.name),
-                                          ),
-                                        )
-                                        .toList(),
-                                    onChanged: (val) => setState(() {
-                                      _selectedCategoryId = val ?? '';
-                                      _selectedItemId =
-                                          ''; // איפוס פריט בעת החלפת קבוצה
-                                    }),
-                                  );
-                                },
-                                loading: () => const LinearProgressIndicator(),
-                                error: (err, _) =>
-                                    Text(l10n.errorLoadingGroups),
-                              ),
+                                  )) {
+                                displayCats.add(
+                                  Category(
+                                    id: _selectedCategoryId,
+                                    name: '...',
+                                    createdAt: DateTime.now(),
+                                  ),
+                                );
+                              }
+                              return DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                value: _selectedCategoryId.isEmpty
+                                    ? null
+                                    : _selectedCategoryId,
+                                decoration: InputDecoration(
+                                  labelText: l10n.selectCategory,
+                                  border: const OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                                items: displayCats
+                                    .map(
+                                      (c) => DropdownMenuItem(
+                                    value: c.id,
+                                    child: Text(c.name),
+                                  ),
+                                )
+                                    .toList(),
+                                onChanged: (val) => setState(() {
+                                  _selectedCategoryId = val ?? '';
+                                  _selectedItemId =
+                                  ''; // איפוס פריט בעת החלפת קבוצה
+                                }),
+                              );
+                            },
+                            loading: () => const LinearProgressIndicator(),
+                            error: (err, _) =>
+                                Text(l10n.errorLoadingGroups),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         IconButton.filledTonal(
@@ -319,58 +320,58 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                         Expanded(
                           child: _selectedCategoryId.isEmpty
                               ? Text(
-                                  l10n.chooseGroupFirst,
-                                  style: const TextStyle(color: Colors.grey),
-                                )
+                            l10n.chooseGroupFirst,
+                            style: const TextStyle(color: Colors.grey),
+                          )
                               : ref
-                                    .watch(
-                                      itemsByCategoryProvider(
-                                        _selectedCategoryId,
-                                      ),
-                                    )
-                                    .when(
-                                      data: (items) {
-                                        final displayItems = items.toList();
-                                        if (_selectedItemId.isNotEmpty &&
-                                            !displayItems.any(
-                                              (i) => i.id == _selectedItemId,
-                                            )) {
-                                          displayItems.add(
-                                            Item(
-                                              id: _selectedItemId,
-                                              categoryId: _selectedCategoryId,
-                                              name: '...',
-                                            ),
-                                          );
-                                        }
-                                        return DropdownButtonFormField<String>(
-                                          isExpanded: true,
-                                          value: _selectedItemId.isEmpty
-                                              ? null
-                                              : _selectedItemId,
-                                          decoration: InputDecoration(
-                                            labelText: l10n.selectItem,
-                                            border: const OutlineInputBorder(),
-                                            isDense: true,
-                                          ),
-                                          items: displayItems
-                                              .map(
-                                                (i) => DropdownMenuItem(
-                                                  value: i.id,
-                                                  child: Text(i.name),
-                                                ),
-                                              )
-                                              .toList(),
-                                          onChanged: (val) => setState(
-                                            () => _selectedItemId = val ?? '',
-                                          ),
-                                        );
-                                      },
-                                      loading: () =>
-                                          const LinearProgressIndicator(),
-                                      error: (err, _) =>
-                                          Text(l10n.errorLoadingItems),
-                                    ),
+                              .watch(
+                            itemsByCategoryProvider(
+                              _selectedCategoryId,
+                            ),
+                          )
+                              .when(
+                            data: (items) {
+                              final displayItems = items.toList();
+                              if (_selectedItemId.isNotEmpty &&
+                                  !displayItems.any(
+                                        (i) => i.id == _selectedItemId,
+                                  )) {
+                                displayItems.add(
+                                  Item(
+                                    id: _selectedItemId,
+                                    categoryId: _selectedCategoryId,
+                                    name: '...',
+                                  ),
+                                );
+                              }
+                              return DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                value: _selectedItemId.isEmpty
+                                    ? null
+                                    : _selectedItemId,
+                                decoration: InputDecoration(
+                                  labelText: l10n.selectItem,
+                                  border: const OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                                items: displayItems
+                                    .map(
+                                      (i) => DropdownMenuItem(
+                                    value: i.id,
+                                    child: Text(i.name),
+                                  ),
+                                )
+                                    .toList(),
+                                onChanged: (val) => setState(
+                                      () => _selectedItemId = val ?? '',
+                                ),
+                              );
+                            },
+                            loading: () =>
+                            const LinearProgressIndicator(),
+                            error: (err, _) =>
+                                Text(l10n.errorLoadingItems),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         IconButton.filledTonal(
@@ -493,7 +494,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                           final p = await showDatePicker(
                             context: context,
                             initialDate:
-                                _selectedEndConditionDate ??
+                            _selectedEndConditionDate ??
                                 DateTime.now().add(const Duration(days: 30)),
                             firstDate: DateTime.now(),
                             lastDate: DateTime(2035),
@@ -505,8 +506,8 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                         label: Text(
                           _selectedEndConditionDate != null
                               ? DateFormatNotifier.format(
-                                  _selectedEndConditionDate!,
-                                )
+                            _selectedEndConditionDate!,
+                          )
                               : l10n.selectDate,
                           style: const TextStyle(fontSize: 12),
                         ),
@@ -574,7 +575,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       value: _isGoogleSyncEnabled,
                       onChanged: googleUser != null
                           ? (bool value) =>
-                                setState(() => _isGoogleSyncEnabled = value)
+                          setState(() => _isGoogleSyncEnabled = value)
                           : null,
                     ),
                   ],
@@ -613,7 +614,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                     // חישוב מחדש של תאריך היעד אם שונתה התדירות
                     final oldAmount =
                         (widget.taskMap['interval_amount'] as num?)?.toInt() ??
-                        7;
+                            7;
                     final oldUnit =
                         widget.taskMap['interval_unit'] as String? ?? 'days';
                     final newAmount =
@@ -628,9 +629,9 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       // טרם בוצעה: משחזרים את נקודת ההתחלה מהיעד הישן פחות התדירות הישנה
                       final base =
                           lastDone ??
-                          (oldDue != null
-                              ? AppTask.addInterval(oldDue, -oldAmount, oldUnit)
-                              : DateTime.now());
+                              (oldDue != null
+                                  ? AppTask.addInterval(oldDue, -oldAmount, oldUnit)
+                                  : DateTime.now());
                       _nextDueDate = AppTask.addInterval(
                         base,
                         newAmount,
@@ -642,7 +643,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                     // ומשימה פעילה שתנאי הסיום החדש שלה כבר הושג - מסתיימת
                     final doneCount =
                         (widget.taskMap['completed_count'] as num?)?.toInt() ??
-                        0;
+                            0;
                     if (_nextDueDate == null) {
                       final lastDone = DateTime.tryParse(
                         widget.taskMap['last_completed_date'] ?? '',
@@ -664,6 +665,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                     }
 
                     String? finalGoogleEventId = _existingGoogleEventId;
+                    bool calendarOk = true; // #54: הסנכרון ליומן הצליח
 
                     // מודל זמני כדי להעביר את הנתונים לשירות גוגל
                     AppTask tempTask = AppTask(
@@ -674,7 +676,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                           ? null
                           : _descController.text.trim(),
                       intervalAmount:
-                          int.tryParse(_intervalAmountController.text) ?? 7,
+                      int.tryParse(_intervalAmountController.text) ?? 7,
                       intervalUnit: _selectedUnit,
                       endCondition: _selectedEndCondition,
                       endConditionValue: endVal,
@@ -692,9 +694,11 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                         finalGoogleEventId = await GoogleCalendarService
                             .instance
                             .createEvent(tempTask, l10n.calendarAddedFromApp);
+                        // נכשל: המשימה נשמרת בלי אירוע, והמתג יופיע כבוי - אפשר לנסות שוב
+                        calendarOk = finalGoogleEventId != null;
                       } else {
                         // האירוע כבר קיים - רק נעדכן אותו
-                        await GoogleCalendarService.instance.updateEvent(
+                        calendarOk = await GoogleCalendarService.instance.updateEvent(
                           tempTask,
                           l10n.calendarUpdatedFromApp,
                         );
@@ -702,7 +706,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                     } else if (!_isGoogleSyncEnabled &&
                         _existingGoogleEventId != null) {
                       // המשתמש כיבה את המתג - נמחק את האירוע מהיומן
-                      await GoogleCalendarService.instance.deleteEvent(
+                      calendarOk = await GoogleCalendarService.instance.deleteEvent(
                         _existingGoogleEventId!,
                       );
                       finalGoogleEventId = null;
@@ -718,7 +722,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                             : _descController.text.trim(),
                         'item_id': _selectedItemId,
                         'interval_amount':
-                            int.tryParse(_intervalAmountController.text) ?? 7,
+                        int.tryParse(_intervalAmountController.text) ?? 7,
                         'interval_unit': _selectedUnit,
                         'end_condition': _selectedEndCondition,
                         'end_condition_value': endVal,
@@ -763,7 +767,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(l10n.savedOk),
+                          content: Text(calendarOk ? l10n.savedOk : l10n.calendarSyncFailed),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );

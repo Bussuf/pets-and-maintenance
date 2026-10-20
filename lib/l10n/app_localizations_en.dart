@@ -711,4 +711,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get extraCompletionLogged => 'Additional completion logged ✓';
+
+  @override
+  String get calendarCreateFailed =>
+      'Saved, but not added to Google Calendar. You can try again by editing the task.';
+
+  @override
+  String get calendarSyncFailed =>
+      'Changes saved, but Google Calendar wasn\'t updated. Check your connection and try again.';
+
+  @override
+  String get calendarDeleteFailed =>
+      'Task deleted, but the event is still in Google Calendar. You can delete it manually.';
+
+  @override
+  String get calendarNotUpdated => 'Google Calendar wasn\'t updated (offline?)';
 }
