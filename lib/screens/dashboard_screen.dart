@@ -18,6 +18,7 @@ import '../widgets/edit_category_sheet.dart';
 import '../l10n/app_localizations.dart';
 
 import '../widgets/agenda.dart';
+import '../models/task_status.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -168,6 +169,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               }
             }
 
+            // משימות שהסתיימו לא נספרות כפעילות (#51)
+            final activeCount = tasks.where((t) => !isTaskFinished(t)).length;
+
             final sortedTasks = List<Map<String, dynamic>>.from(tasks)
               ..sort((a, b) {
                 final dateA = a['next_due_date'] != null
@@ -247,11 +251,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               overdueCount > 0
                                   ? AppLocalizations.of(context)!
                                   .summaryWithOverdue(
-                                tasks.length,
+                                activeCount,
                                 overdueCount,
                               )
                                   : AppLocalizations.of(context)!
-                                  .summaryAllClear(tasks.length),
+                                  .summaryAllClear(activeCount),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: overdueCount > 0

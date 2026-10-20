@@ -244,5 +244,8 @@
   "dateFormatYmd": "Year-Month-Day",
   "googleSignInFailed": "Couldn't connect to Google. Check your connection and try again.",
   "googleConnected": "Connected to Google Calendar",
-  "googleDisconnected": "Disconnected from Google Calendar"
+  "googleDisconnected": "Disconnected from Google Calendar",
+  "finishedTasks": "Finished",
+  "taskFinishedLabel": "Finished",
+  "extraCompletionLogged": "Additional completion logged ✓"
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import '../l10n/app_localizations.dart';
+import '../models/task_status.dart';
 
 /// קבוצה ביומן: כותרת (באיחור / היום / מחר / יום בשבוע / מאוחר יותר) והמשימות שבה
 class AgendaGroup {
@@ -27,8 +28,13 @@ List<AgendaGroup> buildAgendaGroups(BuildContext context, List<Map<String, dynam
   final List<Map<String, dynamic>> tomorrow = [];
   final Map<int, List<Map<String, dynamic>>> upcomingDays = {};
   final List<Map<String, dynamic>> later = [];
+  final List<Map<String, dynamic>> finished = [];
 
   for (final task in tasks) {
+    if (isTaskFinished(task)) {
+      finished.add(task);
+      continue;
+    }
     final due = task['next_due_date'] != null ? DateTime.tryParse(task['next_due_date']) : null;
     if (due == null) {
       later.add(task);
@@ -61,6 +67,7 @@ List<AgendaGroup> buildAgendaGroups(BuildContext context, List<Map<String, dynam
   }
 
   if (later.isNotEmpty) groups.add(AgendaGroup(title: l10n.later, tasks: later));
+  if (finished.isNotEmpty) groups.add(AgendaGroup(title: l10n.finishedTasks, tasks: finished));
   return groups;
 }
 

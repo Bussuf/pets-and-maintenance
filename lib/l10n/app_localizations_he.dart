@@ -705,4 +705,13 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get googleDisconnected => 'נותקת מיומן גוגל';
+
+  @override
+  String get finishedTasks => 'הסתיימו';
+
+  @override
+  String get taskFinishedLabel => 'הסתיימה';
+
+  @override
+  String get extraCompletionLogged => 'ביצוע נוסף נרשם ✓';
 }

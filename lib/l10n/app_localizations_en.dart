@@ -702,4 +702,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get googleDisconnected => 'Disconnected from Google Calendar';
+
+  @override
+  String get finishedTasks => 'Finished';
+
+  @override
+  String get taskFinishedLabel => 'Finished';
+
+  @override
+  String get extraCompletionLogged => 'Additional completion logged ✓';
 }

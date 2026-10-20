@@ -199,5 +199,8 @@
   "dateFormatYmd": "שנה-חודש-יום",
   "googleSignInFailed": "ההתחברות לגוגל נכשלה. בדוק את החיבור לאינטרנט ונסה שוב.",
   "googleConnected": "מחובר ליומן גוגל",
-  "googleDisconnected": "נותקת מיומן גוגל"
+  "googleDisconnected": "נותקת מיומן גוגל",
+  "finishedTasks": "הסתיימו",
+  "taskFinishedLabel": "הסתיימה",
+  "extraCompletionLogged": "ביצוע נוסף נרשם ✓"
 }

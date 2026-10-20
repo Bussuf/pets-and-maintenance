@@ -14,6 +14,7 @@ import '../providers/google_auth_provider.dart';
 import '../services/google_calendar_service.dart';
 import 'quick_add_dialogs.dart';
 import '../providers/date_format_provider.dart';
+import '../models/task_status.dart';
 import '../l10n/app_localizations.dart';
 
 class EditTaskSheet extends ConsumerStatefulWidget {
@@ -503,7 +504,9 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                         icon: const Icon(Icons.calendar_month, size: 16),
                         label: Text(
                           _selectedEndConditionDate != null
-                              ? DateFormatNotifier.format(_selectedEndConditionDate!)
+                              ? DateFormatNotifier.format(
+                                  _selectedEndConditionDate!,
+                                )
                               : l10n.selectDate,
                           style: const TextStyle(fontSize: 12),
                         ),
@@ -633,6 +636,31 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                         newAmount,
                         _selectedUnit,
                       );
+                    }
+
+                    // #51 תנאי סיום: משימה שהסתיימה ונערכה לשימוש חוזר חוזרת לפעילות,
+                    // ומשימה פעילה שתנאי הסיום החדש שלה כבר הושג - מסתיימת
+                    final doneCount =
+                        (widget.taskMap['completed_count'] as num?)?.toInt() ??
+                        0;
+                    if (_nextDueDate == null) {
+                      final lastDone = DateTime.tryParse(
+                        widget.taskMap['last_completed_date'] ?? '',
+                      );
+                      _nextDueDate = AppTask.addInterval(
+                        lastDone ?? DateTime.now(),
+                        newAmount,
+                        _selectedUnit,
+                      );
+                    }
+                    if (doneCount > 0 &&
+                        isEndReached(
+                          _selectedEndCondition,
+                          endVal,
+                          doneCount,
+                          _nextDueDate,
+                        )) {
+                      _nextDueDate = null;
                     }
 
                     String? finalGoogleEventId = _existingGoogleEventId;

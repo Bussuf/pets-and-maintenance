@@ -1261,6 +1261,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Disconnected from Google Calendar'**
   String get googleDisconnected;
+
+  /// No description provided for @finishedTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get finishedTasks;
+
+  /// No description provided for @taskFinishedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get taskFinishedLabel;
+
+  /// No description provided for @extraCompletionLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional completion logged ✓'**
+  String get extraCompletionLogged;
 }
 
 class _AppLocalizationsDelegate
