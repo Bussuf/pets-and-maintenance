@@ -185,5 +185,19 @@
   "notifGroupedTitle": "🏠 משימות להיום",
   "notifGroupedBody": "יש לך משימות תחזוקה שנקבעו להיום. היכנס לאפליקציה לצפייה בפירוט.",
   "calendarEventTitle": "🏠 תחזוקה: {name}",
-  "calendarAutoCreated": "נוצר אוטומטית מאפליקציית Pets & Maintenance"
+  "calendarAutoCreated": "נוצר אוטומטית מאפליקציית Pets & Maintenance",
+  "generalSection": "כללי",
+  "themeTitle": "ערכת נושא",
+  "followSystem": "לפי המערכת",
+  "notificationStyleTitle": "סגנון התראות",
+  "aboutSection": "אודות",
+  "versionTitle": "גרסה",
+  "dateFormatTitle": "פורמט תאריך",
+  "dateFormatAuto": "לפי השפה",
+  "dateFormatDmy": "יום/חודש/שנה",
+  "dateFormatMdy": "חודש/יום/שנה",
+  "dateFormatYmd": "שנה-חודש-יום",
+  "googleSignInFailed": "ההתחברות לגוגל נכשלה. בדוק את החיבור לאינטרנט ונסה שוב.",
+  "googleConnected": "מחובר ליומן גוגל",
+  "googleDisconnected": "נותקת מיומן גוגל"
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../providers/theme_provider.dart';
 import '../providers/settings_provider.dart';
 import 'organization_screen.dart';
@@ -10,6 +11,8 @@ import '../providers/items_provider.dart';
 import '../services/backup_service.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
+import '../widgets/settings_tiles.dart';
+import '../providers/date_format_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -53,6 +56,23 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _pickReminderTime(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final initialTime = ref.read(settingsProvider).reminderTime;
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      helpText: l10n.pickReminderTime,
+      confirmText: l10n.ok,
+      cancelText: l10n.cancel,
+    );
+
+    if (picked != null && picked != initialTime) {
+      await ref.read(settingsProvider.notifier).setReminderTime(picked);
+      if (context.mounted) _showSnack(context, l10n.reminderTimeUpdated);
+    }
+  }
+
   void _showSnack(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
@@ -67,293 +87,216 @@ class SettingsScreen extends ConsumerWidget {
     final googleUser = ref.watch(googleAuthProvider);
     final l10n = AppLocalizations.of(context)!;
     final currentLocale = ref.watch(localeProvider);
+    final notificationsOn = settings.notificationStyle != 'none';
+    final dateFormat = ref.watch(dateFormatProvider);
+
+    // שמות השפות תמיד בשפה עצמה - כדי שכל משתמש ימצא את שלו
+    const languageNames = {'he': 'עברית', 'en': 'English'};
+    final themeNames = {
+      ThemeMode.system: l10n.followSystem,
+      ThemeMode.light: l10n.themeLight,
+      ThemeMode.dark: l10n.themeDark,
+    };
+    final styleNames = {
+      'separated': l10n.notifSeparated,
+      'grouped': l10n.notifGrouped,
+      'none': l10n.notifNone,
+    };
+    final styleDescriptions = {
+      'separated': l10n.notifSeparatedDesc,
+      'grouped': l10n.notifGroupedDesc,
+      'none': l10n.notifNoneDesc,
+    };
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.settingsTitle),
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.paddingOf(context).bottom),
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 24 + MediaQuery.paddingOf(context).bottom),
         children: [
-          // --- מקטע מראה ותצוגה ---
-          Text(
-            l10n.appearanceSection,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          SegmentedButton<ThemeMode>(
-            segments: [
-              ButtonSegment(
-                value: ThemeMode.system,
-                icon: const Icon(Icons.brightness_auto),
-                label: Text(l10n.languageSystem),
-              ),
-              ButtonSegment(
-                value: ThemeMode.light,
-                icon: const Icon(Icons.light_mode),
-                label: Text(l10n.themeLight),
-              ),
-              ButtonSegment(
-                value: ThemeMode.dark,
-                icon: const Icon(Icons.dark_mode),
-                label: Text(l10n.themeDark),
-              ),
-            ],
-            selected: {themeMode},
-            onSelectionChanged: (Set<ThemeMode> newSelection) {
-              ref.read(themeProvider.notifier).setTheme(newSelection.first);
-            },
-          ),
-
-          // --- בחירת שפה ---
-          const SizedBox(height: 24),
-          Text(l10n.languageSection, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          SegmentedButton<String>(
-            segments: [
-              ButtonSegment(value: 'system', icon: const Icon(Icons.phone_android), label: Text(l10n.languageSystem)),
-              // שמות השפות תמיד בשפה עצמה - כדי שכל משתמש ימצא את שלו
-              const ButtonSegment(value: 'he', label: Text('עברית')),
-              const ButtonSegment(value: 'en', label: Text('English')),
-            ],
-            selected: {currentLocale?.languageCode ?? 'system'},
-            onSelectionChanged: (Set<String> newSelection) {
-              final code = newSelection.first;
-              ref.read(localeProvider.notifier).setLocale(code == 'system' ? null : Locale(code));
-            },
-          ),
-
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.0),
-            child: Divider(),
-          ),
-
-          // --- מקטע התראות ותזכורות ---
-          Text(
-            l10n.notificationsSection,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          SegmentedButton<String>(
-            segments: [
-              ButtonSegment(
-                value: 'separated',
-                icon: const Icon(Icons.notifications_active),
-                label: Text(l10n.notifSeparated),
-              ),
-              ButtonSegment(
-                value: 'grouped',
-                icon: const Icon(Icons.list_alt),
-                label: Text(l10n.notifGrouped),
-              ),
-              ButtonSegment(
-                value: 'none',
-                icon: const Icon(Icons.notifications_off),
-                label: Text(l10n.notifNone),
-              ),
-            ],
-            selected: {settings.notificationStyle},
-            onSelectionChanged: (Set<String> newSelection) {
-              ref.read(settingsProvider.notifier).setNotificationStyle(newSelection.first);
-            },
-          ),
-          const SizedBox(height: 8),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              settings.notificationStyle == 'grouped'
-                  ? l10n.notifGroupedDesc
-                  : settings.notificationStyle == 'separated'
-                  ? l10n.notifSeparatedDesc
-                  : l10n.notifNoneDesc,
-              style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // שעת התראה יומית (מאפיר אם "ללא" נבחר)
-          Opacity(
-            opacity: settings.notificationStyle == 'none' ? 0.4 : 1.0,
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                backgroundColor: settings.notificationStyle == 'none'
-                    ? theme.colorScheme.surfaceContainerHighest
-                    : theme.colorScheme.primaryContainer,
-                child: Icon(Icons.access_time,
-                    color: settings.notificationStyle == 'none'
-                        ? theme.colorScheme.onSurfaceVariant
-                        : theme.colorScheme.primary
-                ),
-              ),
-              title: Text(l10n.dailyReminderTime, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(
-                settings.notificationStyle == 'none'
-                    ? l10n.notificationsOff
-                    : l10n.reminderAt(ref.read(settingsProvider.notifier).formattedReminderTime),
-              ),
-              trailing: const Icon(Icons.edit_outlined, size: 20),
-              enabled: settings.notificationStyle != 'none',
-              onTap: () async {
-                final initialTime = settings.reminderTime;
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: initialTime,
-                  helpText: l10n.pickReminderTime,
-                  confirmText: l10n.ok,
-                  cancelText: l10n.cancel,
-                );
-
-                if (picked != null && picked != initialTime) {
-                  await ref.read(settingsProvider.notifier).setReminderTime(picked);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.reminderTimeUpdated),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                }
-              },
-            ),
-          ),
-
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.0),
-            child: Divider(),
-          ),
-
-          // --- מקטע סנכרון ושירותים ---
-          Text(
-            l10n.syncSection,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: googleUser != null
-                    ? theme.colorScheme.primary.withOpacity(0.5)
-                    : theme.colorScheme.outlineVariant.withOpacity(0.5),
-              ),
-              borderRadius: BorderRadius.circular(12),
-              color: googleUser != null
-                  ? theme.colorScheme.primaryContainer.withOpacity(0.2)
-                  : Colors.transparent,
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              leading: CircleAvatar(
-                backgroundColor: googleUser != null ? Colors.white : theme.colorScheme.surfaceContainerHighest,
-                backgroundImage: googleUser?.photoUrl != null ? NetworkImage(googleUser!.photoUrl!) : null,
-                child: googleUser?.photoUrl == null
-                    ? Icon(Icons.calendar_month, color: googleUser != null ? theme.colorScheme.primary : Colors.grey)
-                    : null,
-              ),
-              title: Text(l10n.googleCalendarSync, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(
-                googleUser != null ? l10n.connectedAs(googleUser.email) : l10n.notConnectedGoogle,
-                style: TextStyle(
-                  color: googleUser != null ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                  fontSize: 13,
-                ),
-              ),
-              trailing: FilledButton.tonal(
-                onPressed: () async {
-                  if (googleUser != null) {
-                    await ref.read(googleAuthProvider.notifier).signOut();
-                  } else {
-                    await ref.read(googleAuthProvider.notifier).signIn();
+          // --- כללי ---
+          SettingsSection(
+            title: l10n.generalSection,
+            children: [
+              SettingsTile(
+                icon: Icons.language,
+                title: l10n.languageSection,
+                subtitle: currentLocale == null ? l10n.followSystem : languageNames[currentLocale.languageCode],
+                onTap: () async {
+                  final code = await showChoiceSheet<String>(
+                    context,
+                    title: l10n.languageSection,
+                    selected: currentLocale?.languageCode ?? 'system',
+                    options: [
+                      ChoiceOption(value: 'system', title: l10n.followSystem),
+                      ChoiceOption(value: 'he', title: languageNames['he']!),
+                      ChoiceOption(value: 'en', title: languageNames['en']!),
+                    ],
+                  );
+                  if (code != null) {
+                    ref.read(localeProvider.notifier).setLocale(code == 'system' ? null : Locale(code));
                   }
                 },
-                style: FilledButton.styleFrom(
-                  backgroundColor: googleUser != null ? theme.colorScheme.errorContainer : null,
-                  foregroundColor: googleUser != null ? theme.colorScheme.onErrorContainer : null,
-                ),
-                child: Text(googleUser != null ? l10n.disconnect : l10n.connect),
               ),
-            ),
+              SettingsTile(
+                icon: Icons.palette_outlined,
+                title: l10n.themeTitle,
+                subtitle: themeNames[themeMode],
+                onTap: () async {
+                  final mode = await showChoiceSheet<ThemeMode>(
+                    context,
+                    title: l10n.themeTitle,
+                    selected: themeMode,
+                    options: [
+                      for (final m in [ThemeMode.system, ThemeMode.light, ThemeMode.dark])
+                        ChoiceOption(value: m, title: themeNames[m]!),
+                    ],
+                  );
+                  if (mode != null) ref.read(themeProvider.notifier).setTheme(mode);
+                },
+              ),
+              SettingsTile(
+                icon: Icons.calendar_today_outlined,
+                title: l10n.dateFormatTitle,
+                subtitle: DateFormatNotifier.format(DateTime.now()),
+                onTap: () async {
+                  final now = DateTime.now();
+                  final names = {
+                    'auto': l10n.dateFormatAuto,
+                    'dmy': l10n.dateFormatDmy,
+                    'mdy': l10n.dateFormatMdy,
+                    'ymd': l10n.dateFormatYmd,
+                  };
+                  final pattern = await showChoiceSheet<String>(
+                    context,
+                    title: l10n.dateFormatTitle,
+                    selected: dateFormat,
+                    options: [
+                      // ליד כל אפשרות - דוגמה עם התאריך של היום
+                      for (final o in DateFormatNotifier.options)
+                        ChoiceOption(value: o, title: names[o]!, subtitle: DateFormatNotifier.format(now, pattern: o)),
+                    ],
+                  );
+                  if (pattern != null) ref.read(dateFormatProvider.notifier).setFormat(pattern);
+                },
+              ),
+            ],
           ),
 
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.0),
-            child: Divider(),
+          // --- התראות ---
+          SettingsSection(
+            title: l10n.notificationsSection,
+            children: [
+              SettingsTile(
+                icon: Icons.notifications_outlined,
+                title: l10n.notificationStyleTitle,
+                subtitle: styleNames[settings.notificationStyle],
+                onTap: () async {
+                  final style = await showChoiceSheet<String>(
+                    context,
+                    title: l10n.notificationStyleTitle,
+                    selected: settings.notificationStyle,
+                    options: [
+                      for (final s in ['separated', 'grouped', 'none'])
+                        ChoiceOption(value: s, title: styleNames[s]!, subtitle: styleDescriptions[s]),
+                    ],
+                  );
+                  if (style != null) ref.read(settingsProvider.notifier).setNotificationStyle(style);
+                },
+              ),
+              SettingsTile(
+                icon: Icons.access_time,
+                title: l10n.dailyReminderTime,
+                subtitle: notificationsOn
+                    ? ref.read(settingsProvider.notifier).formattedReminderTime
+                    : l10n.notificationsOff,
+                enabled: notificationsOn,
+                onTap: () => _pickReminderTime(context, ref),
+              ),
+            ],
           ),
 
-          // --- מקטע ניהול תוכן ---
-          Text(
-            l10n.contentSection,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-              backgroundColor: theme.colorScheme.primaryContainer,
-              child: Icon(Icons.folder_copy_outlined, color: theme.colorScheme.primary),
-            ),
-            title: Text(l10n.organizeGroupsItems, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(l10n.organizeSubtitle),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const OrganizationScreen()),
-              );
-            },
+          // --- חשבונות וסנכרון ---
+          SettingsSection(
+            title: l10n.syncSection,
+            children: [
+              SettingsTile(
+                icon: Icons.calendar_month_outlined,
+                leading: googleUser?.photoUrl != null
+                    ? CircleAvatar(radius: 18, backgroundImage: NetworkImage(googleUser!.photoUrl!))
+                    : null,
+                title: l10n.googleCalendarSync,
+                subtitle: googleUser?.email ?? l10n.notConnectedGoogle,
+                trailing: TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: googleUser != null ? theme.colorScheme.error : null,
+                  ),
+                  onPressed: () async {
+                    if (googleUser != null) {
+                      await ref.read(googleAuthProvider.notifier).signOut();
+                      if (context.mounted) _showSnack(context, l10n.googleDisconnected);
+                    } else {
+                      final ok = await ref.read(googleAuthProvider.notifier).signIn();
+                      if (!context.mounted) return;
+                      if (!ok) {
+                        _showSnack(context, l10n.googleSignInFailed);
+                      } else if (ref.read(googleAuthProvider) != null) {
+                        // רק אם באמת התחבר - ביטול בבחירת החשבון אינו הצלחה
+                        _showSnack(context, l10n.googleConnected);
+                      }
+                    }
+                  },
+                  child: Text(googleUser != null ? l10n.disconnect : l10n.connect),
+                ),
+              ),
+            ],
           ),
 
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.0),
-            child: Divider(),
+          // --- נתונים ---
+          SettingsSection(
+            title: l10n.contentSection,
+            children: [
+              SettingsTile(
+                icon: Icons.edit_note,
+                title: l10n.organizeGroupsItems,
+                subtitle: l10n.organizeSubtitle,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const OrganizationScreen()),
+                ),
+              ),
+              SettingsTile(
+                icon: Icons.upload_file,
+                title: l10n.backupExport,
+                subtitle: l10n.backupExportSubtitle,
+                showChevron: false,
+                onTap: () => _exportBackup(context),
+              ),
+              SettingsTile(
+                icon: Icons.restore,
+                title: l10n.backupImport,
+                subtitle: l10n.backupImportSubtitle,
+                isDanger: true,
+                showChevron: false,
+                onTap: () => _importBackup(context, ref),
+              ),
+            ],
           ),
 
-          // --- מקטע גיבוי ושחזור ---
-          Text(
-            l10n.backupSection,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-              backgroundColor: theme.colorScheme.primaryContainer,
-              child: Icon(Icons.upload_file, color: theme.colorScheme.primary),
-            ),
-            title: Text(l10n.backupExport, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(l10n.backupExportSubtitle),
-            onTap: () => _exportBackup(context),
-          ),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-              backgroundColor: theme.colorScheme.errorContainer,
-              child: Icon(Icons.restore, color: theme.colorScheme.error),
-            ),
-            title: Text(l10n.backupImport, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(l10n.backupImportSubtitle),
-            onTap: () => _importBackup(context, ref),
+          // --- אודות ---
+          SettingsSection(
+            title: l10n.aboutSection,
+            children: [
+              FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snapshot) => SettingsTile(
+                  icon: Icons.info_outline,
+                  title: l10n.versionTitle,
+                  subtitle: snapshot.hasData ? '${snapshot.data!.version} (${snapshot.data!.buildNumber})' : '…',
+                ),
+              ),
+            ],
           ),
         ],
       ),

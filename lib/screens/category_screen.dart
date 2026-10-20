@@ -12,23 +12,11 @@ import '../widgets/animated_fab_menu.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/global_search_bar.dart';
 import '../l10n/app_localizations.dart';
-import 'package:intl/intl.dart' show DateFormat;
+import '../widgets/agenda.dart';
 import 'create_entity_screen.dart';
 import '../widgets/task_card.dart';
 import '../widgets/edit_category_sheet.dart';
 import '../widgets/edit_item_sheet.dart';
-
-class CategoryAgendaGroup {
-  final String title;
-  final bool isOverdue;
-  final List<Map<String, dynamic>> tasks;
-
-  CategoryAgendaGroup({
-    required this.title,
-    required this.tasks,
-    this.isOverdue = false,
-  });
-}
 
 class CategoryScreen extends ConsumerStatefulWidget {
   final Category category;
@@ -99,76 +87,6 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
     _ensureChipVisible(itemId);
   }
 
-  List<CategoryAgendaGroup> _buildAgendaGroups(
-    List<Map<String, dynamic>> tasks,
-  ) {
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
-
-    final List<Map<String, dynamic>> overdue = [];
-    final List<Map<String, dynamic>> today = [];
-    final List<Map<String, dynamic>> tomorrow = [];
-    final Map<int, List<Map<String, dynamic>>> upcomingDays = {};
-    final List<Map<String, dynamic>> later = [];
-
-    final l10n = AppLocalizations.of(context)!;
-    final localeTag = Localizations.localeOf(context).toLanguageTag();
-
-    for (final task in tasks) {
-      if (task['next_due_date'] == null) {
-        later.add(task);
-        continue;
-      }
-      final due = DateTime.tryParse(task['next_due_date']);
-      if (due == null) {
-        later.add(task);
-        continue;
-      }
-      final dueStart = DateTime(due.year, due.month, due.day);
-      final diffDays = dueStart.difference(todayStart).inDays;
-
-      if (diffDays < 0) {
-        overdue.add(task);
-      } else if (diffDays == 0) {
-        today.add(task);
-      } else if (diffDays == 1) {
-        tomorrow.add(task);
-      } else if (diffDays >= 2 && diffDays <= 6) {
-        upcomingDays.putIfAbsent(diffDays, () => []).add(task);
-      } else {
-        later.add(task);
-      }
-    }
-
-    final List<CategoryAgendaGroup> groups = [];
-    if (overdue.isNotEmpty) {
-      groups.add(
-        CategoryAgendaGroup(title: l10n.overdueTasks, tasks: overdue, isOverdue: true),
-      );
-    }
-    if (today.isNotEmpty) {
-      groups.add(CategoryAgendaGroup(title: l10n.today, tasks: today));
-    }
-    if (tomorrow.isNotEmpty) {
-      groups.add(CategoryAgendaGroup(title: l10n.tomorrow, tasks: tomorrow));
-    }
-
-    final sortedDiffs = upcomingDays.keys.toList()..sort();
-    for (final diff in sortedDiffs) {
-      final targetDate = todayStart.add(Duration(days: diff));
-      final dayName = DateFormat.EEEE(localeTag).format(targetDate);
-      groups.add(
-        CategoryAgendaGroup(title: dayName, tasks: upcomingDays[diff]!),
-      );
-    }
-
-    if (later.isNotEmpty) {
-      groups.add(CategoryAgendaGroup(title: l10n.later, tasks: later));
-    }
-
-    return groups;
-  }
-
   Future<void> _editItemSheet(Item item, String catId) async {
     // טופס עריכת פריט משותף - אותו טופס כמו במסך הארגון
     await EditItemSheet.show(context, item, catId);
@@ -180,72 +98,6 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
     }
   }
 
-  Widget _buildSectionHeader(
-    CategoryAgendaGroup group,
-    ThemeData theme,
-    bool isDark,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: 16.0,
-        bottom: 6.0,
-        right: 18.0,
-        left: 18.0,
-      ),
-      child: Row(
-        children: [
-          if (group.isOverdue) ...[
-            const Icon(
-              Icons.warning_amber_rounded,
-              size: 18,
-              color: Colors.redAccent,
-            ),
-            const SizedBox(width: 6),
-          ],
-          Text(
-            group.title,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: group.isOverdue
-                  ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800)
-                  : theme.colorScheme.primary,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1.5),
-            decoration: BoxDecoration(
-              color: group.isOverdue
-                  ? Colors.red.withOpacity(0.15)
-                  : theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              '${group.tasks.length}',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: group.isOverdue
-                    ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800)
-                    : theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Divider(
-              color: group.isOverdue
-                  ? Colors.red.withOpacity(0.3)
-                  : theme.colorScheme.outlineVariant.withOpacity(0.5),
-              height: 1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -253,7 +105,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
 
     final categoriesList = ref.watch(categoriesProvider).value ?? [];
     final currentCategory = categoriesList.firstWhere(
-      (c) => c.id == widget.category.id,
+          (c) => c.id == widget.category.id,
       orElse: () => widget.category,
     );
 
@@ -271,44 +123,13 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
 
     return Scaffold(
       appBar: GlobalSearchBar(
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (val) {
-              if (val == 'edit') {
-                EditCategorySheet.show(context, currentCategory);
-              } else if (val == 'add_item') {
-                CreateEntityScreen.show(
-                  context,
-                  type: EntityType.item,
-                  categoryId: currentCategory.id,
-                );
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'add_item',
-                child: Row(
-                  children: [
-                    const Icon(Icons.add_box_outlined),
-                    const SizedBox(width: 12),
-                    Text(AppLocalizations.of(context)!.addItemToGroup),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    const Icon(Icons.edit_outlined),
-                    const SizedBox(width: 12),
-                    Text(AppLocalizations.of(context)!.editGroup),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+        showSettingsMenu: true,
+        onAddItem: () => CreateEntityScreen.show(
+          context,
+          type: EntityType.item,
+          categoryId: currentCategory.id,
+        ),
+        onEditGroup: () => EditCategorySheet.show(context, currentCategory),
       ),
       drawer: AppDrawer(currentCategoryId: currentCategory.id),
       body: Column(
@@ -440,9 +261,9 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       // ב-RTL החלקה ימינה = הצ'יפ הבא (כמו היום); ב-LTR הכיוון מתהפך
                       final velocity =
                           details.primaryVelocity! *
-                          (Directionality.of(context) == TextDirection.rtl
-                              ? 1
-                              : -1);
+                              (Directionality.of(context) == TextDirection.rtl
+                                  ? 1
+                                  : -1);
                       if (velocity > 200 &&
                           currentIndex < allFilterIds.length - 1) {
                         _selectFilterItem(allFilterIds[currentIndex + 1]);
@@ -476,10 +297,10 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       final filteredTasks = _selectedFilterItemId == null
                           ? sortedTasks
                           : sortedTasks
-                                .where(
-                                  (t) => t['item_id'] == _selectedFilterItemId,
-                                )
-                                .toList();
+                          .where(
+                            (t) => t['item_id'] == _selectedFilterItemId,
+                      )
+                          .toList();
 
                       if (filteredTasks.isEmpty) {
                         return Center(
@@ -490,7 +311,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                         );
                       }
 
-                      final agendaGroups = _buildAgendaGroups(filteredTasks);
+                      final agendaGroups = buildAgendaGroups(context, filteredTasks);
                       final List<dynamic> flatList = [];
                       for (final group in agendaGroups) {
                         flatList.add(group);
@@ -504,8 +325,8 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                         itemCount: flatList.length,
                         itemBuilder: (context, index) {
                           final entry = flatList[index];
-                          if (entry is CategoryAgendaGroup) {
-                            return _buildSectionHeader(entry, theme, isDark);
+                          if (entry is AgendaGroup) {
+                            return AgendaSectionHeader(group: entry);
                           }
                           final taskItem = entry as Map<String, dynamic>;
                           return TaskCard(
@@ -529,7 +350,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       );
                     },
                     loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                    const Center(child: CircularProgressIndicator()),
                     error: (err, _) => Center(child: Text(AppLocalizations.of(context)!.errorWithDetails('$err'))),
                   ),
                 );

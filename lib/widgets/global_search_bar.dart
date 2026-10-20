@@ -5,18 +5,21 @@ import '../providers/database_provider.dart';
 import '../screens/category_screen.dart';
 import '../theme/app_icons.dart';
 import '../screens/settings_screen.dart';
+import '../screens/organization_screen.dart';
 import '../l10n/app_localizations.dart';
 
 class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final bool showSettingsMenu;
   final VoidCallback? onAddItem; // אם קיים - מוצג 'הוסף פריט לקבוצה' בתפריט
+  final VoidCallback? onEditGroup; // אם קיים - מוצג 'עריכת קבוצה' בתפריט
 
   const GlobalSearchBar({
     Key? key,
     this.actions,
     this.showSettingsMenu = false,
     this.onAddItem,
+    this.onEditGroup,
   }) : super(key: key);
 
   @override
@@ -99,6 +102,8 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
           searchController: _searchController,
           builder: (context, controller) {
             return SearchBar(
+              // השורה משמשת רק כמפעיל - ההקלדה בתצוגת החיפוש המלאה. כך פוקוס שחוזר אליה לא מקפיץ מקלדת
+              readOnly: true,
               controller: controller,
               elevation: const WidgetStatePropertyAll(1),
               backgroundColor: WidgetStatePropertyAll(theme.colorScheme.surfaceContainerHigh),
@@ -113,10 +118,26 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                 if (widget.showSettingsMenu)
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert),
+                    // נפתח מתחת לשורת החיפוש - הכפתור נשאר גלוי ולחיצה נוספת עליו סוגרת
+                    position: PopupMenuPosition.under,
+                    offset: const Offset(0, 8),
                     tooltip: l10n.settingsTitle,
                     onSelected: (value) {
                       if (value == 'add_item') {
                         widget.onAddItem?.call();
+                        return;
+                      }
+                      if (value == 'edit_group') {
+                        widget.onEditGroup?.call();
+                        return;
+                      }
+                      if (value == 'organize') {
+                        if (controller.isOpen) controller.closeView('');
+                        // נפתח מעל המסך הנוכחי - 'חזור' מחזיר לכאן ולא להגדרות
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const OrganizationScreen()),
+                        );
                         return;
                       }
                       if (value == 'settings') {
@@ -140,17 +161,39 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                             children: [
                               const Icon(Icons.add_box_outlined, size: 20),
                               const SizedBox(width: 12),
-                              Text(AppLocalizations.of(context)!.addItemToGroup),
+                              Flexible(child: Text(AppLocalizations.of(context)!.addItemToGroup)),
                             ],
                           ),
                         ),
+                      if (widget.onEditGroup != null)
+                        PopupMenuItem(
+                          value: 'edit_group',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.edit_outlined, size: 20),
+                              const SizedBox(width: 12),
+                              Flexible(child: Text(l10n.editGroup)),
+                            ],
+                          ),
+                        ),
+                      PopupMenuItem(
+                        value: 'organize',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.edit_note, size: 20),
+                            const SizedBox(width: 12),
+                            Flexible(child: Text(l10n.organizeGroupsItems)),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuDivider(),
                       PopupMenuItem(
                         value: 'settings',
                         child: Row(
                           children: [
                             const Icon(Icons.settings_outlined, size: 20),
                             const SizedBox(width: 12),
-                            Text(l10n.settingsTitle),
+                            Flexible(child: Text(l10n.settingsTitle)),
                           ],
                         ),
                       ),

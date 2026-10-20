@@ -11,6 +11,7 @@ import '../widgets/edit_task_sheet.dart';
 import '../services/notification_service.dart';
 import '../services/google_calendar_service.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/date_format_provider.dart';
 
 class TaskCard extends ConsumerWidget {
   final Map<String, dynamic> task;
@@ -28,13 +29,8 @@ class TaskCard extends ConsumerWidget {
     required this.todayStart,
   }) : super(key: key);
 
-  // פונקציית עזר לעיצוב תאריך אחיד: dd/mm/yy
-  String _formatDate(DateTime date) {
-    final d = date.day.toString().padLeft(2, '0');
-    final m = date.month.toString().padLeft(2, '0');
-    final y = date.year.toString().substring(2);
-    return '$d/$m/$y';
-  }
+  // עיצוב תאריך לפי בחירת המשתמש (הגדרות ← פורמט תאריך)
+  String _formatDate(DateTime date) => DateFormatNotifier.format(date);
 
   // תדירות בשפה הנוכחית, כולל יחיד/זוגי/רבים (כל יום / כל יומיים / כל 3 ימים)
   String _frequencyText(AppLocalizations l10n, int amount, String? unit) {
@@ -131,6 +127,7 @@ class TaskCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    ref.watch(dateFormatProvider); // הכרטיס נבנה מחדש כשמשנים את פורמט התאריך
     final isDark = theme.brightness == Brightness.dark;
 
     final catColor = task['category_color'] != null ? Color(task['category_color']) : theme.colorScheme.primary;
@@ -227,9 +224,9 @@ class TaskCard extends ConsumerWidget {
                             if (showCategoryLabel) ...[
                               Icon(catIcon, size: 16, color: catColor),
                               const SizedBox(width: 4),
-                              Text('$catName | ', style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13, fontWeight: FontWeight.w500)),
+                              Flexible(child: Text('$catName | ', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13, fontWeight: FontWeight.w500))),
                             ],
-                            Text(itemName, style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13, fontWeight: FontWeight.w500)),
+                            Flexible(child: Text(itemName, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13, fontWeight: FontWeight.w500))),
                           ],
                         ),
                         Container(
@@ -243,7 +240,7 @@ class TaskCard extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (isOverdue) ...[const Icon(Icons.schedule, size: 12, color: Colors.redAccent), const SizedBox(width: 4)],
-                              Text(isOverdue ? '${l10n.dueDateLabel(dueDateStr)} · ${l10n.overdueDays(overdueDays)}' : l10n.dueDateLabel(dueDateStr), style: TextStyle(fontSize: 12, fontWeight: isOverdue ? FontWeight.bold : FontWeight.normal, color: isOverdue ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800) : theme.colorScheme.onSurfaceVariant)),
+                              Flexible(child: Text(isOverdue ? '${l10n.dueDateLabel(dueDateStr)} · ${l10n.overdueDays(overdueDays)}' : l10n.dueDateLabel(dueDateStr), style: TextStyle(fontSize: 12, fontWeight: isOverdue ? FontWeight.bold : FontWeight.normal, color: isOverdue ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800) : theme.colorScheme.onSurfaceVariant))),
                             ],
                           ),
                         ),

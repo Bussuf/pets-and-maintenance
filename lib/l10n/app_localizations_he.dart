@@ -662,4 +662,47 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get calendarAutoCreated =>
       'נוצר אוטומטית מאפליקציית Pets & Maintenance';
+
+  @override
+  String get generalSection => 'כללי';
+
+  @override
+  String get themeTitle => 'ערכת נושא';
+
+  @override
+  String get followSystem => 'לפי המערכת';
+
+  @override
+  String get notificationStyleTitle => 'סגנון התראות';
+
+  @override
+  String get aboutSection => 'אודות';
+
+  @override
+  String get versionTitle => 'גרסה';
+
+  @override
+  String get dateFormatTitle => 'פורמט תאריך';
+
+  @override
+  String get dateFormatAuto => 'לפי השפה';
+
+  @override
+  String get dateFormatDmy => 'יום/חודש/שנה';
+
+  @override
+  String get dateFormatMdy => 'חודש/יום/שנה';
+
+  @override
+  String get dateFormatYmd => 'שנה-חודש-יום';
+
+  @override
+  String get googleSignInFailed =>
+      'ההתחברות לגוגל נכשלה. בדוק את החיבור לאינטרנט ונסה שוב.';
+
+  @override
+  String get googleConnected => 'מחובר ליומן גוגל';
+
+  @override
+  String get googleDisconnected => 'נותקת מיומן גוגל';
 }

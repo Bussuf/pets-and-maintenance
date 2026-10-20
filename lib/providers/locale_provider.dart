@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
+import '../services/notification_service.dart';
 
 /// שפת האפליקציה. null = לפי שפת המערכת
 class LocaleNotifier extends Notifier<Locale?> {
@@ -43,6 +44,8 @@ class LocaleNotifier extends Notifier<Locale?> {
     } catch (e) {
       debugPrint('Failed to save locale: $e');
     }
+    // טקסטי ההתראות שכבר תוזמנו - לשפה החדשה
+    await NotificationService.instance.rescheduleAll();
   }
 }
 

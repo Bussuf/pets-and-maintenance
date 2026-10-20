@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/notification_service.dart';
 
 class SettingsState {
   final String notificationStyle; // 'none', 'grouped', 'separated'
@@ -49,7 +50,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('notificationStyle', style);
     
-    // כאן בעתיד נוסיף קריאה למנוע ההתראות למחוק/לארגן מחדש התראות קיימות
+    // תזמון מחדש של כל ההתראות לפי הסגנון החדש
+    await NotificationService.instance.rescheduleAll();
   }
 
   Future<void> setReminderTime(TimeOfDay time) async {
@@ -58,7 +60,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     final timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     await prefs.setString('reminderTime', timeStr);
     
-    // כאן בעתיד נוסיף קריאה לתזמן מחדש את ההתראות לשעה החדשה
+    // תזמון מחדש של כל ההתראות לשעה החדשה
+    await NotificationService.instance.rescheduleAll();
   }
   
   String get formattedReminderTime {

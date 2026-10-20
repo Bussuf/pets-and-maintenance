@@ -230,5 +230,19 @@
   "notifGroupedBody": "You have maintenance tasks due today. Open the app for details.",
   "calendarEventTitle": "🏠 Maintenance: {name}",
   "@calendarEventTitle": { "placeholders": { "name": { "type": "String" } } },
-  "calendarAutoCreated": "Created automatically by Pets & Maintenance"
+  "calendarAutoCreated": "Created automatically by Pets & Maintenance",
+  "generalSection": "General",
+  "themeTitle": "Theme",
+  "followSystem": "System default",
+  "notificationStyleTitle": "Notification style",
+  "aboutSection": "About",
+  "versionTitle": "Version",
+  "dateFormatTitle": "Date format",
+  "dateFormatAuto": "By language",
+  "dateFormatDmy": "Day/Month/Year",
+  "dateFormatMdy": "Month/Day/Year",
+  "dateFormatYmd": "Year-Month-Day",
+  "googleSignInFailed": "Couldn't connect to Google. Check your connection and try again.",
+  "googleConnected": "Connected to Google Calendar",
+  "googleDisconnected": "Disconnected from Google Calendar"
 }

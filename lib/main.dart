@@ -5,6 +5,7 @@ import 'theme/app_theme.dart';
 import 'screens/main_layout.dart';
 import 'providers/theme_provider.dart';
 import 'providers/locale_provider.dart';
+import 'providers/date_format_provider.dart';
 
 import 'services/notification_service.dart';
 
@@ -18,6 +19,7 @@ void main() async {
 
   // טעינת השפה השמורה לפני הצגת המסך הראשון
   await LocaleNotifier.preload();
+  await DateFormatNotifier.preload();
 
   runApp(
     const ProviderScope(

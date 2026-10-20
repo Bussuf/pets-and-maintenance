@@ -1177,6 +1177,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Created automatically by Pets & Maintenance'**
   String get calendarAutoCreated;
+
+  /// No description provided for @generalSection.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get generalSection;
+
+  /// No description provided for @themeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get themeTitle;
+
+  /// No description provided for @followSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get followSystem;
+
+  /// No description provided for @notificationStyleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification style'**
+  String get notificationStyleTitle;
+
+  /// No description provided for @aboutSection.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get aboutSection;
+
+  /// No description provided for @versionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get versionTitle;
+
+  /// No description provided for @dateFormatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Date format'**
+  String get dateFormatTitle;
+
+  /// No description provided for @dateFormatAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'By language'**
+  String get dateFormatAuto;
+
+  /// No description provided for @dateFormatDmy.
+  ///
+  /// In en, this message translates to:
+  /// **'Day/Month/Year'**
+  String get dateFormatDmy;
+
+  /// No description provided for @dateFormatMdy.
+  ///
+  /// In en, this message translates to:
+  /// **'Month/Day/Year'**
+  String get dateFormatMdy;
+
+  /// No description provided for @dateFormatYmd.
+  ///
+  /// In en, this message translates to:
+  /// **'Year-Month-Day'**
+  String get dateFormatYmd;
+
+  /// No description provided for @googleSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t connect to Google. Check your connection and try again.'**
+  String get googleSignInFailed;
+
+  /// No description provided for @googleConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to Google Calendar'**
+  String get googleConnected;
+
+  /// No description provided for @googleDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected from Google Calendar'**
+  String get googleDisconnected;
 }
 
 class _AppLocalizationsDelegate

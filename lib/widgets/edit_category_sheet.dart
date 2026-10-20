@@ -182,7 +182,7 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(l10n.groupIconLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Expanded(child: Text(l10n.groupIconLabel, style: const TextStyle(fontWeight: FontWeight.bold))),
                   OutlinedButton.icon(
                     onPressed: _openIconPickerSheet,
                     icon: Icon(AppIcons.getIcon(_selectedIcon), size: 20),

@@ -659,4 +659,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get calendarAutoCreated =>
       'Created automatically by Pets & Maintenance';
+
+  @override
+  String get generalSection => 'General';
+
+  @override
+  String get themeTitle => 'Theme';
+
+  @override
+  String get followSystem => 'System default';
+
+  @override
+  String get notificationStyleTitle => 'Notification style';
+
+  @override
+  String get aboutSection => 'About';
+
+  @override
+  String get versionTitle => 'Version';
+
+  @override
+  String get dateFormatTitle => 'Date format';
+
+  @override
+  String get dateFormatAuto => 'By language';
+
+  @override
+  String get dateFormatDmy => 'Day/Month/Year';
+
+  @override
+  String get dateFormatMdy => 'Month/Day/Year';
+
+  @override
+  String get dateFormatYmd => 'Year-Month-Day';
+
+  @override
+  String get googleSignInFailed =>
+      'Couldn\'t connect to Google. Check your connection and try again.';
+
+  @override
+  String get googleConnected => 'Connected to Google Calendar';
+
+  @override
+  String get googleDisconnected => 'Disconnected from Google Calendar';
 }

@@ -35,9 +35,14 @@ class AppDrawer extends ConsumerWidget {
               children: [
                 Icon(Icons.pets, size: 48, color: theme.colorScheme.primary),
                 const SizedBox(height: 12),
-                Text(
-                  l10n.appTitle,
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                // שורה אחת שמתכווצת אם צריך - לכותרת הסיידבר יש גובה קבוע
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    l10n.appTitle,
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),

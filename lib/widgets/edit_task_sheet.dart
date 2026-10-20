@@ -13,6 +13,7 @@ import '../services/notification_service.dart';
 import '../providers/google_auth_provider.dart';
 import '../services/google_calendar_service.dart';
 import 'quick_add_dialogs.dart';
+import '../providers/date_format_provider.dart';
 import '../l10n/app_localizations.dart';
 
 class EditTaskSheet extends ConsumerStatefulWidget {
@@ -502,9 +503,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                         icon: const Icon(Icons.calendar_month, size: 16),
                         label: Text(
                           _selectedEndConditionDate != null
-                              ? _selectedEndConditionDate!
-                                    .toIso8601String()
-                                    .split('T')[0]
+                              ? DateFormatNotifier.format(_selectedEndConditionDate!)
                               : l10n.selectDate,
                           style: const TextStyle(fontSize: 12),
                         ),

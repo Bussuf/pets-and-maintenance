@@ -15,6 +15,7 @@ import '../services/notification_service.dart';
 import '../providers/google_auth_provider.dart';
 import '../services/google_calendar_service.dart';
 import '../widgets/quick_add_dialogs.dart';
+import '../providers/date_format_provider.dart';
 
 enum EntityType { task, item, category }
 
@@ -609,9 +610,11 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        l10n.icon,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      Expanded(
+                        child: Text(
+                          l10n.icon,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                       OutlinedButton.icon(
                         onPressed: _openIconPickerSheet,
@@ -763,9 +766,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                             icon: const Icon(Icons.calendar_month, size: 16),
                             label: Text(
                               _endConditionDate != null
-                                  ? _endConditionDate!.toIso8601String().split(
-                                      'T',
-                                    )[0]
+                                  ? DateFormatNotifier.format(_endConditionDate!)
                                   : l10n.selectDate,
                               style: const TextStyle(fontSize: 12),
                             ),

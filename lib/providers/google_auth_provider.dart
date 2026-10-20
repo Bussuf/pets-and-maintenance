@@ -17,13 +17,15 @@ class GoogleAuthNotifier extends StateNotifier<GoogleSignInAccount?> {
     state = account;
   }
 
-  Future<void> signIn() async {
+  /// מחזיר false אם ההתחברות נכשלה. ביטול על ידי המשתמש אינו כישלון
+  Future<bool> signIn() async {
     try {
       final account = await GoogleCalendarService.instance.signIn();
       state = account;
+      return true;
     } catch (e) {
       print('Google sign-in failed: $e');
-      // כאן נוכל להוסיף טיפול בשגיאות בהמשך
+      return false;
     }
   }
 

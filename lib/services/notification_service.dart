@@ -4,6 +4,8 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 import '../providers/locale_provider.dart';
+import '../database/database_helper.dart';
+import 'package:flutter/foundation.dart';
 
 class NotificationService {
   static final NotificationService instance = NotificationService._();
@@ -103,6 +105,19 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
+    }
+  }
+
+  /// תזמון מחדש של כל ההתראות - אחרי שינוי שעה, סגנון או שפה
+  Future<void> rescheduleAll() async {
+    await _notificationsPlugin.cancelAll();
+    final tasks = await DatabaseHelper.instance.getAllTasks();
+    for (final task in tasks) {
+      try {
+        await scheduleTaskReminder(task);
+      } catch (e) {
+        debugPrint('Failed to reschedule ${task.id}: $e');
+      }
     }
   }
 
