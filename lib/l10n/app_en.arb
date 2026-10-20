@@ -251,5 +251,13 @@
   "calendarCreateFailed": "Saved, but not added to Google Calendar. You can try again by editing the task.",
   "calendarSyncFailed": "Changes saved, but Google Calendar wasn't updated. Check your connection and try again.",
   "calendarDeleteFailed": "Task deleted, but the event is still in Google Calendar. You can delete it manually.",
-  "calendarNotUpdated": "Google Calendar wasn't updated (offline?)"
+  "calendarNotUpdated": "Google Calendar wasn't updated (offline?)",
+  "durationDays": "{n, plural, =1{1 day} other{{n} days}}",
+  "@durationDays": { "placeholders": { "n": { "type": "int" } } },
+  "monthsApproxOne": "about a month",
+  "monthsApproxTwo": "about 2 months",
+  "monthsApproxMany": "about {n} months",
+  "@monthsApproxMany": { "placeholders": { "n": { "type": "String" } } },
+  "overdueBy": "{duration} overdue",
+  "@overdueBy": { "placeholders": { "duration": { "type": "String" } } }
 }

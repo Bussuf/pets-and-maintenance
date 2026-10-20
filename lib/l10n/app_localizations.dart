@@ -1303,6 +1303,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google Calendar wasn\'t updated (offline?)'**
   String get calendarNotUpdated;
+
+  /// No description provided for @durationDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 day} other{{n} days}}'**
+  String durationDays(int n);
+
+  /// No description provided for @monthsApproxOne.
+  ///
+  /// In en, this message translates to:
+  /// **'about a month'**
+  String get monthsApproxOne;
+
+  /// No description provided for @monthsApproxTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'about 2 months'**
+  String get monthsApproxTwo;
+
+  /// No description provided for @monthsApproxMany.
+  ///
+  /// In en, this message translates to:
+  /// **'about {n} months'**
+  String monthsApproxMany(String n);
+
+  /// No description provided for @overdueBy.
+  ///
+  /// In en, this message translates to:
+  /// **'{duration} overdue'**
+  String overdueBy(String duration);
 }
 
 class _AppLocalizationsDelegate

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// שים לב: הייבוא של abstract_background.dart הוסר לחלוטין
 import 'dashboard_screen.dart';
-import '../widgets/app_drawer.dart';
-import '../widgets/animated_fab_menu.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/theme_provider.dart';
 
@@ -20,13 +17,9 @@ class MainLayout extends ConsumerWidget {
 
     // ה-Scaffold כעת עומד בפני עצמו ושואב את צבע הרקע מה-Theme באופן טבעי
     return Scaffold(
-      drawer: const AppDrawer(),
+      // ה-FAB וה-Drawer נמצאים בתוך הדשבורד עצמו (שיודע מה הצ'יפ המסומן) - לא כאן
       body: const DashboardScreen(),
-      floatingActionButton: _buildContextAwareFab(context),
     );
   }
 
-  Widget _buildContextAwareFab(BuildContext context) {
-    return const AnimatedFabMenu();
-  }
 }

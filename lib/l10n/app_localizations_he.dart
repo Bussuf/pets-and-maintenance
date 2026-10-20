@@ -729,4 +729,32 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get calendarNotUpdated => 'יומן גוגל לא עודכן (אין חיבור?)';
+
+  @override
+  String durationDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n ימים',
+      two: 'יומיים',
+      one: 'יום אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get monthsApproxOne => 'כחודש';
+
+  @override
+  String get monthsApproxTwo => 'כחודשיים';
+
+  @override
+  String monthsApproxMany(String n) {
+    return 'כ-$n חודשים';
+  }
+
+  @override
+  String overdueBy(String duration) {
+    return 'באיחור $duration';
+  }
 }

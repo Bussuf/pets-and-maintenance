@@ -206,5 +206,10 @@
   "calendarCreateFailed": "נשמר, אבל לא נוסף ליומן גוגל. אפשר לנסות שוב בעריכת המשימה.",
   "calendarSyncFailed": "השינויים נשמרו, אבל יומן גוגל לא עודכן. בדוק את החיבור לאינטרנט ונסה שוב.",
   "calendarDeleteFailed": "המשימה נמחקה, אבל האירוע נשאר ביומן גוגל. אפשר למחוק אותו ידנית.",
-  "calendarNotUpdated": "יומן גוגל לא עודכן (אין חיבור?)"
+  "calendarNotUpdated": "יומן גוגל לא עודכן (אין חיבור?)",
+  "durationDays": "{n, plural, =1{יום אחד} =2{יומיים} other{{n} ימים}}",
+  "monthsApproxOne": "כחודש",
+  "monthsApproxTwo": "כחודשיים",
+  "monthsApproxMany": "כ-{n} חודשים",
+  "overdueBy": "באיחור {duration}"
 }

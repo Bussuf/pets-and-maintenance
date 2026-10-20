@@ -14,6 +14,7 @@ import '../services/google_calendar_service.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/date_format_provider.dart';
 import '../models/task_status.dart';
+import '../utils/duration_text.dart';
 
 class TaskCard extends ConsumerWidget {
   final Map<String, dynamic> task;
@@ -49,10 +50,10 @@ class TaskCard extends ConsumerWidget {
   }
 
   Future<void> _completeTaskAtDate(
-      BuildContext context,
-      WidgetRef ref,
-      DateTime completedDate,
-      ) async {
+    BuildContext context,
+    WidgetRef ref,
+    DateTime completedDate,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final db = ref.read(databaseProvider);
     final rawDb = await db.database;
@@ -82,7 +83,9 @@ class TaskCard extends ConsumerWidget {
     if (googleEventId != null && isLastTime) {
       // המשימה הסתיימה - האירוע הבא ביומן כבר לא רלוונטי
       try {
-        calendarOk = await GoogleCalendarService.instance.deleteEvent(googleEventId);
+        calendarOk = await GoogleCalendarService.instance.deleteEvent(
+          googleEventId,
+        );
       } catch (e) {
         debugPrint('Failed to delete Google Calendar event on finish: $e');
       }
@@ -142,8 +145,11 @@ class TaskCard extends ConsumerWidget {
         SnackBar(
           content: Text(
             (isLastTime
-                ? l10n.extraCompletionLogged
-                : l10n.taskCompletedNext(task['name'], _formatDate(nextDate))) +
+                    ? l10n.extraCompletionLogged
+                    : l10n.taskCompletedNext(
+                        task['name'],
+                        _formatDate(nextDate),
+                      )) +
                 (calendarOk ? '' : '\n${l10n.calendarNotUpdated}'),
           ),
           behavior: SnackBarBehavior.floating,
@@ -153,9 +159,9 @@ class TaskCard extends ConsumerWidget {
   }
 
   Future<void> _pickManualCompletionDate(
-      BuildContext context,
-      WidgetRef ref,
-      ) async {
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -196,9 +202,9 @@ class TaskCard extends ConsumerWidget {
           // עיגול שעות ל-ימים, כדי שמעבר שעון קיץ/חורף לא יחסיר יום
           overdueDays =
               (todayStart
-                  .difference(DateTime(due.year, due.month, due.day))
-                  .inHours /
-                  24)
+                          .difference(DateTime(due.year, due.month, due.day))
+                          .inHours /
+                      24)
                   .round();
         }
         dueDateStr = _formatDate(due);
@@ -327,13 +333,13 @@ class TaskCard extends ConsumerWidget {
                             color: isOverdue
                                 ? Colors.red.withOpacity(isDark ? 0.25 : 0.1)
                                 : theme.colorScheme.surfaceContainerHighest
-                                .withOpacity(0.5),
+                                      .withOpacity(0.5),
                             borderRadius: BorderRadius.circular(6),
                             border: isOverdue
                                 ? Border.all(
-                              color: Colors.red.withOpacity(0.3),
-                              width: 1,
-                            )
+                                    color: Colors.red.withOpacity(0.3),
+                                    width: 1,
+                                  )
                                 : null,
                           ),
                           child: Row(
@@ -352,7 +358,7 @@ class TaskCard extends ConsumerWidget {
                                   isFinished
                                       ? '✓ ${l10n.taskFinishedLabel}'
                                       : isOverdue
-                                      ? '${l10n.dueDateLabel(dueDateStr)} · ${l10n.overdueDays(overdueDays)}'
+                                      ? '${l10n.dueDateLabel(dueDateStr)} · ${l10n.overdueBy(DurationText.days(l10n, overdueDays, task['interval_unit']))}'
                                       : l10n.dueDateLabel(dueDateStr),
                                   style: TextStyle(
                                     fontSize: 12,
@@ -361,8 +367,8 @@ class TaskCard extends ConsumerWidget {
                                         : FontWeight.normal,
                                     color: isOverdue
                                         ? (isDark
-                                        ? Colors.redAccent.shade100
-                                        : Colors.red.shade800)
+                                              ? Colors.redAccent.shade100
+                                              : Colors.red.shade800)
                                         : theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
@@ -460,8 +466,7 @@ class TaskCard extends ConsumerWidget {
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.history, size: 18),
                       tooltip: l10n.manualCompletion,
-                      onPressed: () =>
-                          _pickManualCompletionDate(context, ref),
+                      onPressed: () => _pickManualCompletionDate(context, ref),
                     ),
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,

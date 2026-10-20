@@ -666,6 +666,8 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                         flex: 2,
                         child: TextFormField(
                           controller: _intervalAmountController,
+                          // לחיצה מסמנת את כל המספר - בעברית הסמן נכנס בצד הלא נכון של הספרות
+                          onTap: () => _intervalAmountController.selection = TextSelection(baseOffset: 0, extentOffset: _intervalAmountController.text.length),
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
                             labelText: l10n.repeatEvery,
@@ -748,6 +750,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                           flex: 1,
                           child: TextFormField(
                             controller: _endConditionCountController,
+                            onTap: () => _endConditionCountController.selection = TextSelection(baseOffset: 0, extentOffset: _endConditionCountController.text.length),
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
                               labelText: l10n.quantity,

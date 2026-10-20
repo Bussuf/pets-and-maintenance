@@ -726,4 +726,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendarNotUpdated => 'Google Calendar wasn\'t updated (offline?)';
+
+  @override
+  String durationDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get monthsApproxOne => 'about a month';
+
+  @override
+  String get monthsApproxTwo => 'about 2 months';
+
+  @override
+  String monthsApproxMany(String n) {
+    return 'about $n months';
+  }
+
+  @override
+  String overdueBy(String duration) {
+    return '$duration overdue';
+  }
 }
