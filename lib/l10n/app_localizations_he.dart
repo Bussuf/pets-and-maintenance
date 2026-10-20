@@ -955,4 +955,68 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get noCompletionsYet =>
       'עוד אין ביצועים. אחרי הביצוע הראשון יופיע כאן הניתוח.';
+
+  @override
+  String get paceTitle => 'הקצב שלך';
+
+  @override
+  String paceLateInLast(int late, int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      late,
+      locale: localeName,
+      other: '$late איחורים ב-$n האחרונים',
+      one: 'איחור אחד ב-$n האחרונים',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String paceAllOnTime(int n) {
+    return 'כולם בזמן ב-$n האחרונים';
+  }
+
+  @override
+  String get paceLastOnTime => 'האחרון בזמן';
+
+  @override
+  String get paceLastLate => 'האחרון באיחור';
+
+  @override
+  String paceCaptionDays(String target) {
+    return 'הקדמה (↓) או איחור (↑) ביחס ליעד של $target ימים';
+  }
+
+  @override
+  String paceCaptionMonths(String target) {
+    return 'הקדמה (↓) או איחור (↑) ביחס ליעד של $target חודשים';
+  }
+
+  @override
+  String paceFastSlow(String fast, String slow) {
+    return 'הכי מהר: $fast · הכי לאט: $slow';
+  }
+
+  @override
+  String get paceNeedTwo => 'צריך לפחות 2 ביצועים כדי לראות קצב.';
+
+  @override
+  String get calTitle => 'לוח ביצועים';
+
+  @override
+  String get calMonthly => 'חודשי';
+
+  @override
+  String get calYearly => 'שנתי';
+
+  @override
+  String calChip(String period, int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n ביצועים',
+      one: 'ביצוע אחד',
+      zero: 'אין ביצועים',
+    );
+    return '$period: $_temp0';
+  }
 }

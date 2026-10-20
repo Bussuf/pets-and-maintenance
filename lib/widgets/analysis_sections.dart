@@ -3,6 +3,7 @@ import 'package:intl/intl.dart' show DateFormat;
 import '../l10n/app_localizations.dart';
 import '../models/task_stats.dart';
 import 'analysis_widgets.dart';
+import '../utils/duration_text.dart';
 
 /// הסקשנים המתקפלים של דף ניתוח מעקב משימה (#25), כל אחד בווידג'ט משלו
 
@@ -251,4 +252,586 @@ class _MonthPartBar extends StatelessWidget {
       },
     );
   }
+}
+
+// ---------------- הקצב שלך ----------------
+
+class PaceSection extends StatelessWidget {
+  final TaskStats stats;
+  final String? unit; // יחידת התדירות של המשימה - קובעת ימים או חודשים
+
+  const PaceSection({Key? key, required this.stats, required this.unit}) : super(key: key);
+
+  /// הסטייה מהיעד ביחידה של המשימה: ימים שלמים, או חודשים בעיגול לעשירית.
+  /// חיובי = איחור (מעל הקו), שלילי = הקדמה (מתחת לקו)
+  double _deviation(int days) {
+    final diff = days - stats.targetDays;
+    if (!DurationText.usesMonths(unit)) return diff.roundToDouble();
+    return ((diff / 30.44) * 10).round() / 10;
+  }
+
+  /// היעד ביחידה של המשימה (לכותרת)
+  String _targetText() {
+    if (!DurationText.usesMonths(unit)) return stats.targetDays.round().toString();
+    final months = ((stats.targetDays / 30.44) * 10).round() / 10;
+    return months == months.roundToDouble() ? months.toInt().toString() : months.toStringAsFixed(1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final points = stats.intervals;
+    final n = points.length;
+    final deviations = [for (final p in points) _deviation(p.days)];
+    // איחור = מעל הקו - אותה הגדרה כמו הצבע בגרף
+    final late = deviations.where((d) => d > 0).length;
+
+    String? chip;
+    if (n == 1) {
+      chip = late > 0 ? l10n.paceLastLate : l10n.paceLastOnTime;
+    } else if (n > 1) {
+      chip = late > 0 ? l10n.paceLateInLast(late, n) : l10n.paceAllOnTime(n);
+    }
+
+    return AnalysisSection(
+      id: 'pace',
+      title: Text(l10n.paceTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+      chip: chip,
+      child: n == 0
+          ? Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Text(l10n.paceNeedTwo, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+      )
+          : Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 6, bottom: 10),
+            child: Text(
+              DurationText.usesMonths(unit) ? l10n.paceCaptionMonths(_targetText()) : l10n.paceCaptionDays(_targetText()),
+              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ),
+          _PaceChart(points: points, deviations: deviations, yearLabels: DurationText.usesMonths(unit)),
+          if (stats.fastestDays != null && stats.slowestDays != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                l10n.paceFastSlow(
+                  DurationText.days(l10n, stats.fastestDays!, unit),
+                  DurationText.days(l10n, stats.slowestDays!, unit),
+                ),
+                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// גרף סטייה מהיעד: הקו המקווקו באמצע הוא היעד. עמודה למעלה (כתומה) = איחור, למטה (כחולה) = הקדמה.
+/// המספר ליד כל עמודה הוא ההפרש ('+3', '−1', '0'). תווית זמן רק כשהחודש (או השנה) מתחלפים
+class _PaceChart extends StatelessWidget {
+  final List<IntervalPoint> points;
+  final List<double> deviations;
+  final bool yearLabels; // משימות חודשים/שנים - תוויות שנה במקום חודש
+
+  const _PaceChart({required this.points, required this.deviations, required this.yearLabels});
+
+  static String _signed(double d) {
+    if (d == 0) return '0';
+    final abs = d.abs();
+    final text = abs == abs.roundToDouble() ? abs.toInt().toString() : abs.toStringAsFixed(1);
+    return d > 0 ? '+$text' : '−$text';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final lateColor = isDark ? Colors.orange.shade300 : Colors.orange.shade700;
+    final labelStyle = TextStyle(fontSize: 10, color: scheme.onSurfaceVariant);
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+
+    final maxAbs = deviations.fold<double>(0, (a, d) => d.abs() > a ? d.abs() : a);
+    final scale = maxAbs == 0 ? 1.0 : maxAbs * 1.15;
+    final valueRowHeight = MediaQuery.textScalerOf(context).scale(10) + 6;
+
+    // תווית זמן רק כשהתקופה מתחלפת (ובראשונה), ולא בשתי עמודות צמודות
+    bool samePeriod(DateTime a, DateTime b) => yearLabels ? a.year == b.year : (a.year == b.year && a.month == b.month);
+    final labelAt = <int>{};
+    int lastLabel = -2;
+    for (int i = 0; i < points.length; i++) {
+      final changed = i == 0 || !samePeriod(points[i].completedAt, points[i - 1].completedAt);
+      if (changed && i - lastLabel > 1) {
+        labelAt.add(i);
+        lastLabel = i;
+      }
+    }
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 150,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final half = constraints.maxHeight / 2;
+              final barMax = half - valueRowHeight; // גובה מקסימלי לעמודה בכל חצי
+              return Stack(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final d in deviations)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // חצי עליון: איחור
+                                SizedBox(
+                                  height: half,
+                                  child: Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: d < 0
+                                        ? null
+                                        : Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        Text(_signed(d), maxLines: 1, textAlign: TextAlign.center, style: labelStyle),
+                                        const SizedBox(height: 2),
+                                        Container(
+                                          height: d == 0 ? 3 : barMax * (d / scale).clamp(0.06, 1.0),
+                                          decoration: BoxDecoration(
+                                            color: d == 0 ? scheme.primary.withOpacity(0.35) : lateColor,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                // חצי תחתון: הקדמה
+                                SizedBox(
+                                  height: half,
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: d >= 0
+                                        ? null
+                                        : Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        Container(
+                                          height: barMax * (-d / scale).clamp(0.06, 1.0),
+                                          decoration: BoxDecoration(
+                                            color: scheme.primary,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(_signed(d), maxLines: 1, textAlign: TextAlign.center, style: labelStyle),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  // קו היעד המקווקו - באמצע
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: half,
+                    child: CustomPaint(
+                      size: const Size(double.infinity, 1),
+                      painter: _DashedLinePainter(color: scheme.onSurfaceVariant.withOpacity(0.7)),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            for (int i = 0; i < points.length; i++)
+              Expanded(
+                child: labelAt.contains(i)
+                    ? Text(
+                  yearLabels
+                      ? '${points[i].completedAt.year}'
+                      : DateFormat.MMM(localeTag).format(points[i].completedAt),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.visible,
+                  textAlign: TextAlign.center,
+                  style: labelStyle,
+                )
+                    : const SizedBox.shrink(),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _DashedLinePainter extends CustomPainter {
+  final Color color;
+
+  _DashedLinePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+    const dash = 5.0, gap = 4.0;
+    for (double x = 0; x < size.width; x += dash + gap) {
+      canvas.drawLine(Offset(x, 0), Offset((x + dash).clamp(0, size.width), 0), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedLinePainter oldDelegate) => oldDelegate.color != color;
+}
+
+// ---------------- לוח ביצועים ----------------
+
+/// לוח חודשי (ימים) או שנתי (חודשים), עם בורר תצוגה. ברירת המחדל לפי יחידת המשימה:
+/// ימים/שבועות - חודשי, חודשים/שנים - שנתי. ביצוע בזמן = צבע ראשי, באיחור = כתום,
+/// היום = מסגרת, יעד הבא = מסגרת מקווקוות. דפדוף מהביצוע הראשון ועד היעד הבא
+class CalendarSection extends StatefulWidget {
+  final TaskStats stats;
+  final String? unit;
+  final DateTime? nextDue;
+
+  const CalendarSection({Key? key, required this.stats, required this.unit, required this.nextDue}) : super(key: key);
+
+  @override
+  State<CalendarSection> createState() => _CalendarSectionState();
+}
+
+class _CalendarSectionState extends State<CalendarSection> {
+  late bool _yearly = DurationText.usesMonths(widget.unit);
+  late DateTime _month; // החודש המוצג (היום הראשון בו)
+  late int _year; // השנה המוצגת
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _month = DateTime(now.year, now.month);
+    _year = now.year;
+  }
+
+  /// גבולות הדפדוף: מהביצוע הראשון (או החודש הנוכחי) ועד היעד הבא (או החודש הנוכחי)
+  DateTime get _minMonth {
+    final now = DateTime.now();
+    final first = widget.stats.logs.isNotEmpty ? widget.stats.logs.first.log.completedAt : now;
+    final d = first.isBefore(now) ? first : now;
+    return DateTime(d.year, d.month);
+  }
+
+  DateTime get _maxMonth {
+    final now = DateTime.now();
+    final last = widget.nextDue != null && widget.nextDue!.isAfter(now) ? widget.nextDue! : now;
+    return DateTime(last.year, last.month);
+  }
+
+  /// ביצועים בטווח תאריכים [from, to)
+  List<LogStat> _logsBetween(DateTime from, DateTime to) => widget.stats.logs
+      .where((s) => !s.log.completedAt.isBefore(from) && s.log.completedAt.isBefore(to))
+      .toList();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final now = DateTime.now();
+
+    // הצ'יפ - תמיד לפי התקופה הנוכחית (לא משתנה בדפדוף), ביחידה של ברירת המחדל
+    final String chip;
+    if (DurationText.usesMonths(widget.unit)) {
+      final n = _logsBetween(DateTime(now.year), DateTime(now.year + 1)).length;
+      chip = l10n.calChip('${now.year}', n);
+    } else {
+      final n = _logsBetween(DateTime(now.year, now.month), DateTime(now.year, now.month + 1)).length;
+      chip = l10n.calChip(DateFormat.MMMM(localeTag).format(now), n);
+    }
+
+    return AnalysisSection(
+      id: 'calendar',
+      title: Text(l10n.calTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+      chip: chip,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 8),
+          // בורר תצוגה: שתי האפשרויות תמיד זמינות
+          Center(
+            child: SegmentedButton<bool>(
+              showSelectedIcon: false,
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
+              segments: [
+                ButtonSegment(value: false, label: Text(l10n.calMonthly)),
+                ButtonSegment(value: true, label: Text(l10n.calYearly)),
+              ],
+              selected: {_yearly},
+              onSelectionChanged: (s) => setState(() => _yearly = s.first),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _yearly ? _buildYear(context, localeTag) : _buildMonth(context, localeTag),
+          const SizedBox(height: 10),
+          const _CalendarLegend(),
+        ],
+      ),
+    );
+  }
+
+  /// שורת ניווט: חץ אחורה, כותרת, חץ קדימה (החצים מתהפכים לבד ב-RTL)
+  Widget _navRow(String title, {required bool canBack, required bool canForward, required VoidCallback onBack, required VoidCallback onForward}) {
+    return Row(
+      children: [
+        IconButton(onPressed: canBack ? onBack : null, icon: const Icon(Icons.chevron_left)),
+        Expanded(
+          child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        IconButton(onPressed: canForward ? onForward : null, icon: const Icon(Icons.chevron_right)),
+      ],
+    );
+  }
+
+  // --- חודשי ---
+  Widget _buildMonth(BuildContext context, String localeTag) {
+    final scheme = Theme.of(context).colorScheme;
+    final first = MaterialLocalizations.of(context).firstDayOfWeekIndex; // 0 = ראשון
+    final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
+    final leading = (_month.weekday % 7 - first + 7) % 7; // תאים ריקים לפני היום הראשון
+    final today = DateTime.now();
+
+    // ביצועים לפי יום בחודש
+    final byDay = <int, List<LogStat>>{};
+    for (final s in _logsBetween(_month, DateTime(_month.year, _month.month + 1))) {
+      byDay.putIfAbsent(s.log.completedAt.day, () => []).add(s);
+    }
+
+    final headerStyle = TextStyle(fontSize: 11, color: scheme.onSurfaceVariant);
+    final weekdayOrder = [for (int i = 0; i < 7; i++) ((first + i) % 7 == 0 ? DateTime.sunday : (first + i) % 7)];
+
+    return Column(
+      children: [
+        _navRow(
+          DateFormat.yMMMM(localeTag).format(_month),
+          canBack: _month.isAfter(_minMonth),
+          canForward: _month.isBefore(_maxMonth),
+          onBack: () => setState(() => _month = DateTime(_month.year, _month.month - 1)),
+          onForward: () => setState(() => _month = DateTime(_month.year, _month.month + 1)),
+        ),
+        Row(
+          children: [
+            for (final d in weekdayOrder)
+              Expanded(
+                child: Text(_weekdayName(context, d, short: true), textAlign: TextAlign.center, style: headerStyle),
+              ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        GridView.count(
+          crossAxisCount: 7,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 4,
+          crossAxisSpacing: 4,
+          children: [
+            for (int i = 0; i < leading; i++) const SizedBox.shrink(),
+            for (int day = 1; day <= daysInMonth; day++)
+              _CalendarCell(
+                label: '$day',
+                logs: byDay[day] ?? const [],
+                isToday: today.year == _month.year && today.month == _month.month && today.day == day,
+                isNextDue: widget.nextDue != null &&
+                    widget.nextDue!.year == _month.year &&
+                    widget.nextDue!.month == _month.month &&
+                    widget.nextDue!.day == day,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // --- שנתי ---
+  Widget _buildYear(BuildContext context, String localeTag) {
+    final today = DateTime.now();
+    return Column(
+      children: [
+        _navRow(
+          '$_year',
+          canBack: _year > _minMonth.year,
+          canForward: _year < _maxMonth.year,
+          onBack: () => setState(() => _year--),
+          onForward: () => setState(() => _year++),
+        ),
+        GridView.count(
+          crossAxisCount: 4,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 6,
+          crossAxisSpacing: 6,
+          childAspectRatio: 1.6,
+          children: [
+            for (int m = 1; m <= 12; m++)
+              _CalendarCell(
+                label: DateFormat.MMM(localeTag).format(DateTime(_year, m)),
+                logs: _logsBetween(DateTime(_year, m), DateTime(_year, m + 1)),
+                showCount: true,
+                isToday: today.year == _year && today.month == m,
+                isNextDue: widget.nextDue != null && widget.nextDue!.year == _year && widget.nextDue!.month == m,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// תא בלוח (יום או חודש): מלא אם היה ביצוע - כתום אם אחד מהם באיחור.
+/// מספר קטן בפינה כשיש יותר מביצוע אחד (בלוח השנתי - תמיד, כשיש ביצועים)
+class _CalendarCell extends StatelessWidget {
+  final String label;
+  final List<LogStat> logs;
+  final bool isToday;
+  final bool isNextDue;
+  final bool showCount;
+
+  const _CalendarCell({
+    required this.label,
+    required this.logs,
+    required this.isToday,
+    required this.isNextDue,
+    this.showCount = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final lateColor = isDark ? Colors.orange.shade300 : Colors.orange.shade700;
+
+    final done = logs.isNotEmpty;
+    final anyLate = logs.any((s) => !s.onTime);
+    final fill = !done ? scheme.surfaceContainerHighest.withOpacity(0.4) : (anyLate ? lateColor : scheme.primary);
+    final textColor = !done ? scheme.onSurfaceVariant : (anyLate ? Colors.black87 : scheme.onPrimary);
+    final count = logs.length;
+
+    Widget cell = Container(
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: BorderRadius.circular(6),
+        border: isToday ? Border.all(color: scheme.primary, width: 2) : null,
+      ),
+      child: Stack(
+        children: [
+          Center(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12, color: textColor, fontWeight: done ? FontWeight.bold : FontWeight.normal),
+            ),
+          ),
+          if (done && (showCount || count > 1))
+            PositionedDirectional(
+              top: 1,
+              end: 3,
+              child: Text('$count', style: TextStyle(fontSize: 9, color: textColor)),
+            ),
+        ],
+      ),
+    );
+
+    if (isNextDue && !isToday) {
+      cell = CustomPaint(
+        foregroundPainter: _DashedRectPainter(color: scheme.onSurfaceVariant),
+        child: cell,
+      );
+    }
+    return cell;
+  }
+}
+
+/// מקרא: בזמן / באיחור / היום / יעד הבא
+class _CalendarLegend extends StatelessWidget {
+  const _CalendarLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final lateColor = isDark ? Colors.orange.shade300 : Colors.orange.shade700;
+    final style = TextStyle(fontSize: 12, color: scheme.onSurfaceVariant);
+
+    Widget item(Widget box, String text) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [box, const SizedBox(width: 4), Text(text, style: style)],
+    );
+    Widget box({Color? fill, Border? border}) => Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(color: fill, border: border, borderRadius: BorderRadius.circular(3)),
+    );
+
+    return Wrap(
+      spacing: 14,
+      runSpacing: 6,
+      children: [
+        item(box(fill: scheme.primary), l10n.statOnTime),
+        item(box(fill: lateColor), l10n.overdueTasks),
+        item(box(border: Border.all(color: scheme.primary, width: 2)), l10n.today),
+        item(
+          CustomPaint(foregroundPainter: _DashedRectPainter(color: scheme.onSurfaceVariant), child: box()),
+          l10n.detailNextDue,
+        ),
+      ],
+    );
+  }
+}
+
+/// מסגרת מקווקוות מעוגלת (ל'יעד הבא')
+class _DashedRectPainter extends CustomPainter {
+  final Color color;
+
+  _DashedRectPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    final path = Path()..addRRect(RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(6)));
+    for (final metric in path.computeMetrics()) {
+      for (double d = 0; d < metric.length; d += 7) {
+        canvas.drawPath(metric.extractPath(d, d + 4), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedRectPainter oldDelegate) => oldDelegate.color != color;
 }

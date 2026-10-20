@@ -255,5 +255,18 @@
   "monthPartStartShort": "תחילת",
   "monthPartMiddleShort": "אמצע",
   "monthPartEndShort": "סוף",
-  "noCompletionsYet": "עוד אין ביצועים. אחרי הביצוע הראשון יופיע כאן הניתוח."
+  "noCompletionsYet": "עוד אין ביצועים. אחרי הביצוע הראשון יופיע כאן הניתוח.",
+  "paceTitle": "הקצב שלך",
+  "paceLateInLast": "{late, plural, =1{איחור אחד ב-{n} האחרונים} other{{late} איחורים ב-{n} האחרונים}}",
+  "paceAllOnTime": "כולם בזמן ב-{n} האחרונים",
+  "paceLastOnTime": "האחרון בזמן",
+  "paceLastLate": "האחרון באיחור",
+  "paceCaptionDays": "הקדמה (↓) או איחור (↑) ביחס ליעד של {target} ימים",
+  "paceCaptionMonths": "הקדמה (↓) או איחור (↑) ביחס ליעד של {target} חודשים",
+  "paceFastSlow": "הכי מהר: {fast} · הכי לאט: {slow}",
+  "paceNeedTwo": "צריך לפחות 2 ביצועים כדי לראות קצב.",
+  "calTitle": "לוח ביצועים",
+  "calMonthly": "חודשי",
+  "calYearly": "שנתי",
+  "calChip": "{period}: {n, plural, =0{אין ביצועים} =1{ביצוע אחד} other{{n} ביצועים}}"
 }

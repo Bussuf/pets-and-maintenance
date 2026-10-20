@@ -947,4 +947,68 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noCompletionsYet =>
       'No completions yet. The analysis will appear after the first one.';
+
+  @override
+  String get paceTitle => 'Your pace';
+
+  @override
+  String paceLateInLast(int late, int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      late,
+      locale: localeName,
+      other: '$late late in the last $n',
+      one: '1 late in the last $n',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String paceAllOnTime(int n) {
+    return 'All on time in the last $n';
+  }
+
+  @override
+  String get paceLastOnTime => 'Last one on time';
+
+  @override
+  String get paceLastLate => 'Last one late';
+
+  @override
+  String paceCaptionDays(String target) {
+    return 'Early (↓) or late (↑) vs. the $target-day target';
+  }
+
+  @override
+  String paceCaptionMonths(String target) {
+    return 'Early (↓) or late (↑) vs. the $target-month target';
+  }
+
+  @override
+  String paceFastSlow(String fast, String slow) {
+    return 'Fastest: $fast · Slowest: $slow';
+  }
+
+  @override
+  String get paceNeedTwo => 'At least 2 completions are needed to show a pace.';
+
+  @override
+  String get calTitle => 'Completion calendar';
+
+  @override
+  String get calMonthly => 'Monthly';
+
+  @override
+  String get calYearly => 'Yearly';
+
+  @override
+  String calChip(String period, int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n completions',
+      one: '1 completion',
+      zero: 'no completions',
+    );
+    return '$period: $_temp0';
+  }
 }

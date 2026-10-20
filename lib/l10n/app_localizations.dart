@@ -1603,6 +1603,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No completions yet. The analysis will appear after the first one.'**
   String get noCompletionsYet;
+
+  /// No description provided for @paceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your pace'**
+  String get paceTitle;
+
+  /// No description provided for @paceLateInLast.
+  ///
+  /// In en, this message translates to:
+  /// **'{late, plural, =1{1 late in the last {n}} other{{late} late in the last {n}}}'**
+  String paceLateInLast(int late, int n);
+
+  /// No description provided for @paceAllOnTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All on time in the last {n}'**
+  String paceAllOnTime(int n);
+
+  /// No description provided for @paceLastOnTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Last one on time'**
+  String get paceLastOnTime;
+
+  /// No description provided for @paceLastLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Last one late'**
+  String get paceLastLate;
+
+  /// No description provided for @paceCaptionDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Early (↓) or late (↑) vs. the {target}-day target'**
+  String paceCaptionDays(String target);
+
+  /// No description provided for @paceCaptionMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'Early (↓) or late (↑) vs. the {target}-month target'**
+  String paceCaptionMonths(String target);
+
+  /// No description provided for @paceFastSlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest: {fast} · Slowest: {slow}'**
+  String paceFastSlow(String fast, String slow);
+
+  /// No description provided for @paceNeedTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 2 completions are needed to show a pace.'**
+  String get paceNeedTwo;
+
+  /// No description provided for @calTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion calendar'**
+  String get calTitle;
+
+  /// No description provided for @calMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get calMonthly;
+
+  /// No description provided for @calYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get calYearly;
+
+  /// No description provided for @calChip.
+  ///
+  /// In en, this message translates to:
+  /// **'{period}: {n, plural, =0{no completions} =1{1 completion} other{{n} completions}}'**
+  String calChip(String period, int n);
 }
 
 class _AppLocalizationsDelegate
