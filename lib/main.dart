@@ -8,10 +8,14 @@ import 'providers/locale_provider.dart';
 import 'providers/date_format_provider.dart';
 
 import 'services/notification_service.dart';
+import 'services/crash_reporting.dart';
 
 void main() async {
   // חובה לאתחל את ה-Binding לפני הרצת פקודות אסינכרוניות (כמו התראות ו-SQLite) באתחול
   WidgetsFlutterBinding.ensureInitialized();
+
+  // דוחות שגיאה (#64) - ראשון, כדי לתפוס גם תקלות באתחול של השאר
+  await CrashReporting.init();
 
   // אתחול מנוע ההתראות המקומיות ובקשת הרשאות מאנדרואיד
   await NotificationService.instance.init();
