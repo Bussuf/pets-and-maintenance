@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
-
 import '../models/category.dart';
-import '../providers/database_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
 import '../theme/app_icons.dart';
@@ -16,7 +13,6 @@ import 'category_screen.dart';
 import '../widgets/task_card.dart';
 import '../widgets/edit_category_sheet.dart';
 import '../l10n/app_localizations.dart';
-
 import '../widgets/agenda.dart';
 import '../models/task_status.dart';
 
@@ -29,7 +25,6 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final _uuid = const Uuid();
   DateTime? _lastBackPressTime;
   String? _selectedCategoryId;
   final Set<String> _expandedTaskIds = {};

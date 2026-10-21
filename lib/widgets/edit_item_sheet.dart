@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 import '../models/item.dart';
-import '../models/category.dart';
+
 import '../providers/database_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/items_provider.dart';
@@ -23,10 +22,10 @@ class EditItemSheet extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   static Future<void> show(
-      BuildContext context,
-      Item item,
-      String currentCategoryId,
-      ) {
+    BuildContext context,
+    Item item,
+    String currentCategoryId,
+  ) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -47,7 +46,6 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
   late TextEditingController _nameController;
   late TextEditingController _descController;
   late String _selectedCatId;
-  final _uuid = const Uuid();
 
   @override
   void initState() {
@@ -103,7 +101,10 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                          ),
                           tooltip: l10n.deleteItem,
                           onPressed: () async {
                             final confirm = await ConfirmDeleteDialog.show(
@@ -113,7 +114,9 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                               onConfirm: () {},
                             );
                             if (confirm == true) {
-                              final rawDb = await ref.read(databaseProvider).database;
+                              final rawDb = await ref
+                                  .read(databaseProvider)
+                                  .database;
                               await rawDb.delete(
                                 'tasks',
                                 where: 'item_id = ?',
@@ -126,10 +129,14 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                               );
 
                               ref.invalidate(
-                                itemsByCategoryProvider(widget.currentCategoryId),
+                                itemsByCategoryProvider(
+                                  widget.currentCategoryId,
+                                ),
                               );
                               ref.invalidate(
-                                tasksByCategoryProvider(widget.currentCategoryId),
+                                tasksByCategoryProvider(
+                                  widget.currentCategoryId,
+                                ),
                               );
                               ref.invalidate(dashboardTasksProvider);
 
@@ -169,13 +176,14 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                             items: categories
                                 .map(
                                   (c) => DropdownMenuItem(
-                                value: c.id,
-                                child: Text(c.name),
-                              ),
-                            )
+                                    value: c.id,
+                                    child: Text(c.name),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null) setState(() => _selectedCatId = val);
+                              if (val != null)
+                                setState(() => _selectedCatId = val);
                             },
                           ),
                         ),
@@ -184,7 +192,10 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                           icon: const Icon(Icons.add),
                           tooltip: l10n.newGroup,
                           onPressed: () async {
-                            final id = await QuickAddDialogs.category(context, ref);
+                            final id = await QuickAddDialogs.category(
+                              context,
+                              ref,
+                            );
                             if (id == null) return;
                             // מחכים שרשימת הקבוצות תתעדכן - אחרת הרשימה הנפתחת לא תכיר את הקבוצה החדשה
                             await ref.read(categoriesProvider.future);

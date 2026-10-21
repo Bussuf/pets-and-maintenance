@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/category.dart';
 import '../models/item.dart';
-import '../providers/database_provider.dart';
 import '../providers/items_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
