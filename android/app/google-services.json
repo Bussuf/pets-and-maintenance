@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "226036797847",
+    "project_id": "pets-and-maintenance",
+    "storage_bucket": "pets-and-maintenance.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:226036797847:android:4ca5d21bfc4e633be3f4d2",
+        "android_client_info": {
+          "package_name": "com.bussuf.pets"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcaSDgS9BGwZoGhIgMQ5FIX_AWD8BdthI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
