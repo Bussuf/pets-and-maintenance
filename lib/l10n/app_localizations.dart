@@ -779,26 +779,14 @@ abstract class AppLocalizations {
   /// No description provided for @remindMe.
   ///
   /// In en, this message translates to:
-  /// **'Get a device reminder'**
+  /// **'Device reminder'**
   String get remindMe;
-
-  /// No description provided for @reminderSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Shown according to your notification settings'**
-  String get reminderSubtitle;
 
   /// No description provided for @syncGoogleCalendar.
   ///
   /// In en, this message translates to:
-  /// **'Sync to Google Calendar'**
+  /// **'Google Calendar'**
   String get syncGoogleCalendar;
-
-  /// No description provided for @willCreateAllDayEvent.
-  ///
-  /// In en, this message translates to:
-  /// **'An all-day event will be created'**
-  String get willCreateAllDayEvent;
 
   /// No description provided for @connectInSettings.
   ///
@@ -859,12 +847,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose a group first'**
   String get chooseGroupFirst;
-
-  /// No description provided for @eventWillUpdate.
-  ///
-  /// In en, this message translates to:
-  /// **'The calendar event will be updated'**
-  String get eventWillUpdate;
 
   /// No description provided for @fillNameAndItem.
   ///

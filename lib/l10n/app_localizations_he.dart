@@ -439,16 +439,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get quantity => 'כמות';
 
   @override
-  String get remindMe => 'קבל תזכורת למכשיר';
+  String get remindMe => 'תזכורת במכשיר';
 
   @override
-  String get reminderSubtitle => 'התראה תופיע בהתאם להגדרות המערכת';
-
-  @override
-  String get syncGoogleCalendar => 'סנכרן ליומן גוגל';
-
-  @override
-  String get willCreateAllDayEvent => 'ייווצר אירוע יום שלם';
+  String get syncGoogleCalendar => 'יומן גוגל';
 
   @override
   String get connectInSettings => 'יש להתחבר דרך מסך ההגדרות';
@@ -483,9 +477,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get chooseGroupFirst => 'בחר קבוצה קודם';
-
-  @override
-  String get eventWillUpdate => 'האירוע יעודכן ביומן';
 
   @override
   String get fillNameAndItem => 'נא למלא שם משימה ולשייך לפריט';

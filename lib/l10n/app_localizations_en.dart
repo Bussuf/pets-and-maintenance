@@ -436,17 +436,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quantity => 'Count';
 
   @override
-  String get remindMe => 'Get a device reminder';
+  String get remindMe => 'Device reminder';
 
   @override
-  String get reminderSubtitle =>
-      'Shown according to your notification settings';
-
-  @override
-  String get syncGoogleCalendar => 'Sync to Google Calendar';
-
-  @override
-  String get willCreateAllDayEvent => 'An all-day event will be created';
+  String get syncGoogleCalendar => 'Google Calendar';
 
   @override
   String get connectInSettings => 'Sign in from the Settings screen';
@@ -481,9 +474,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseGroupFirst => 'Choose a group first';
-
-  @override
-  String get eventWillUpdate => 'The calendar event will be updated';
 
   @override
   String get fillNameAndItem => 'Please enter a task name and choose an item';

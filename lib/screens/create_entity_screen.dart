@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/scroll_fade_hint.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -399,477 +400,487 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
         ),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n.createNew,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // --- הצגת צ'יפים של סוגי ישויות באופן דינמי ---
-                if (widget.allowedTypes.length > 1) ...[
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: widget.allowedTypes.map((type) {
-                        String label = '';
-                        if (type == EntityType.task) label = l10n.task;
-                        if (type == EntityType.item) label = l10n.item;
-                        if (type == EntityType.category) label = l10n.category;
-                        return Padding(
-                          padding: const EdgeInsetsDirectional.only(end: 8.0),
-                          child: _buildTypeChip(label, type),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: _currentType == EntityType.category
-                        ? l10n.addCategoryTitleHint
-                        : _currentType == EntityType.item
-                        ? l10n.addItemTitleHint
-                        : l10n.addTaskTitleHint,
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (val) => val == null || val.trim().isEmpty
-                      ? l10n.requiredField
-                      : null,
-                ),
-                const SizedBox(height: 12),
-
-                TextFormField(
-                  controller: _descController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    labelText: l10n.description,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                if (_currentType == EntityType.item ||
-                    _currentType == EntityType.task) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest
-                          .withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: theme.colorScheme.outlineVariant.withOpacity(
-                          0.5,
-                        ),
-                      ),
-                    ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Flexible(
+                child: ScrollFadeHint(
+                  child: SingleChildScrollView(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: categoriesAsync.when(
-                                data: (cats) {
-                                  final displayCats = cats.toList();
-                                  if (_selectedCategoryId != null &&
-                                      !displayCats.any(
-                                            (c) => c.id == _selectedCategoryId,
-                                      )) {
-                                    displayCats.add(
-                                      Category(
-                                        id: _selectedCategoryId!,
-                                        name: '...',
-                                        createdAt: DateTime.now(),
-                                      ),
-                                    );
-                                  }
-                                  return DropdownButtonFormField<String>(
-                                    isExpanded: true,
-                                    value: _selectedCategoryId,
-                                    decoration: InputDecoration(
-                                      labelText: l10n.selectCategory,
-                                      border: const OutlineInputBorder(),
-                                      isDense: true,
-                                    ),
-                                    items: displayCats
-                                        .map(
-                                          (c) => DropdownMenuItem(
-                                        value: c.id,
-                                        child: Text(c.name),
-                                      ),
-                                    )
-                                        .toList(),
-                                    onChanged: (val) => setState(() {
-                                      _selectedCategoryId = val;
-                                      _selectedItemId = null;
-                                    }),
-                                    validator: (val) =>
-                                    val == null ? l10n.requiredField : null,
-                                  );
-                                },
-                                loading: () => const LinearProgressIndicator(),
-                                error: (err, _) =>
-                                    Text(l10n.errorWithDetails('$err')),
+                            Text(
+                              l10n.createNew,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            IconButton.filledTonal(
-                              icon: const Icon(Icons.add),
-                              onPressed: () => _showQuickAddCategory(l10n),
-                              tooltip: l10n.addQuick,
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.pop(context),
                             ),
                           ],
                         ),
-                        if (_currentType == EntityType.task) ...[
+                        const SizedBox(height: 0),
+
+                        // --- הצגת צ'יפים של סוגי ישויות באופן דינמי ---
+                        if (widget.allowedTypes.length > 1) ...[
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: widget.allowedTypes.map((type) {
+                                String label = '';
+                                if (type == EntityType.task) label = l10n.task;
+                                if (type == EntityType.item) label = l10n.item;
+                                if (type == EntityType.category) label = l10n.category;
+                                return Padding(
+                                  padding: const EdgeInsetsDirectional.only(end: 8.0),
+                                  child: _buildTypeChip(label, type),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                        ],
+
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            labelText: _currentType == EntityType.category
+                                ? l10n.addCategoryTitleHint
+                                : _currentType == EntityType.item
+                                ? l10n.addItemTitleHint
+                                : l10n.addTaskTitleHint,
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? l10n.requiredField
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+
+                        TextFormField(
+                          controller: _descController,
+                          minLines: 1,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            labelText: l10n.description,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        if (_currentType == EntityType.item ||
+                            _currentType == EntityType.task) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerHighest
+                                  .withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: theme.colorScheme.outlineVariant.withOpacity(
+                                  0.5,
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: categoriesAsync.when(
+                                        data: (cats) {
+                                          final displayCats = cats.toList();
+                                          if (_selectedCategoryId != null &&
+                                              !displayCats.any(
+                                                    (c) => c.id == _selectedCategoryId,
+                                              )) {
+                                            displayCats.add(
+                                              Category(
+                                                id: _selectedCategoryId!,
+                                                name: '...',
+                                                createdAt: DateTime.now(),
+                                              ),
+                                            );
+                                          }
+                                          return DropdownButtonFormField<String>(
+                                            isExpanded: true,
+                                            value: _selectedCategoryId,
+                                            decoration: InputDecoration(
+                                              labelText: l10n.selectCategory,
+                                              border: const OutlineInputBorder(),
+                                              isDense: true,
+                                            ),
+                                            items: displayCats
+                                                .map(
+                                                  (c) => DropdownMenuItem(
+                                                value: c.id,
+                                                child: Text(c.name),
+                                              ),
+                                            )
+                                                .toList(),
+                                            onChanged: (val) => setState(() {
+                                              _selectedCategoryId = val;
+                                              _selectedItemId = null;
+                                            }),
+                                            validator: (val) =>
+                                            val == null ? l10n.requiredField : null,
+                                          );
+                                        },
+                                        loading: () => const LinearProgressIndicator(),
+                                        error: (err, _) =>
+                                            Text(l10n.errorWithDetails('$err')),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton.filledTonal(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () => _showQuickAddCategory(l10n),
+                                      tooltip: l10n.addQuick,
+                                    ),
+                                  ],
+                                ),
+                                if (_currentType == EntityType.task) ...[
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ref
+                                            .watch(
+                                          itemsByCategoryProvider(
+                                            _selectedCategoryId ?? '',
+                                          ),
+                                        )
+                                            .when(
+                                          data: (items) {
+                                            final displayItems = items.toList();
+                                            if (_selectedItemId != null &&
+                                                !displayItems.any(
+                                                      (i) => i.id == _selectedItemId,
+                                                )) {
+                                              displayItems.add(
+                                                Item(
+                                                  id: _selectedItemId!,
+                                                  categoryId: _selectedCategoryId!,
+                                                  name: '...',
+                                                ),
+                                              );
+                                            }
+                                            return DropdownButtonFormField<String>(
+                                              isExpanded: true,
+                                              value: _selectedItemId,
+                                              decoration: InputDecoration(
+                                                labelText: l10n.selectItem,
+                                                border: const OutlineInputBorder(),
+                                                isDense: true,
+                                              ),
+                                              items: displayItems
+                                                  .map(
+                                                    (i) => DropdownMenuItem(
+                                                  value: i.id,
+                                                  child: Text(i.name),
+                                                ),
+                                              )
+                                                  .toList(),
+                                              onChanged: (val) => setState(
+                                                    () => _selectedItemId = val,
+                                              ),
+                                              validator: (val) => val == null
+                                                  ? l10n.requiredField
+                                                  : null,
+                                            );
+                                          },
+                                          loading: () =>
+                                          const LinearProgressIndicator(),
+                                          error: (err, _) =>
+                                              Text(l10n.errorWithDetails('$err')),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      IconButton.filledTonal(
+                                        icon: const Icon(Icons.add),
+                                        onPressed: _selectedCategoryId == null
+                                            ? null
+                                            : () => _showQuickAddItem(l10n),
+                                        tooltip: l10n.addQuick,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        if (_currentType == EntityType.category) ...[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  l10n.icon,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: _openIconPickerSheet,
+                                icon: Icon(AppIcons.getIcon(_selectedIcon), size: 20),
+                                label: Text(
+                                  _selectedIcon != null
+                                      ? l10n.changeIcon
+                                      : l10n.chooseIcon,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.color,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: _availableColors
+                                .map(
+                                  (color) => GestureDetector(
+                                onTap: () =>
+                                    setState(() => _selectedColor = color.value),
+                                child: CircleAvatar(
+                                  backgroundColor: color,
+                                  child: _selectedColor == color.value
+                                      ? const Icon(Icons.check, color: Colors.white)
+                                      : null,
+                                ),
+                              ),
+                            )
+                                .toList(),
+                          ),
+                        ],
+
+                        if (_currentType == EntityType.task) ...[
                           Row(
                             children: [
                               Expanded(
-                                child: ref
-                                    .watch(
-                                  itemsByCategoryProvider(
-                                    _selectedCategoryId ?? '',
+                                flex: 2,
+                                child: TextFormField(
+                                  controller: _intervalAmountController,
+                                  // לחיצה מסמנת את כל המספר - בעברית הסמן נכנס בצד הלא נכון של הספרות
+                                  onTap: () => _intervalAmountController.selection = TextSelection(baseOffset: 0, extentOffset: _intervalAmountController.text.length),
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.repeatEvery,
+                                    border: const OutlineInputBorder(),
                                   ),
-                                )
-                                    .when(
-                                  data: (items) {
-                                    final displayItems = items.toList();
-                                    if (_selectedItemId != null &&
-                                        !displayItems.any(
-                                              (i) => i.id == _selectedItemId,
-                                        )) {
-                                      displayItems.add(
-                                        Item(
-                                          id: _selectedItemId!,
-                                          categoryId: _selectedCategoryId!,
-                                          name: '...',
-                                        ),
-                                      );
-                                    }
-                                    return DropdownButtonFormField<String>(
-                                      isExpanded: true,
-                                      value: _selectedItemId,
-                                      decoration: InputDecoration(
-                                        labelText: l10n.selectItem,
-                                        border: const OutlineInputBorder(),
-                                        isDense: true,
-                                      ),
-                                      items: displayItems
-                                          .map(
-                                            (i) => DropdownMenuItem(
-                                          value: i.id,
-                                          child: Text(i.name),
-                                        ),
-                                      )
-                                          .toList(),
-                                      onChanged: (val) => setState(
-                                            () => _selectedItemId = val,
-                                      ),
-                                      validator: (val) => val == null
-                                          ? l10n.requiredField
-                                          : null,
-                                    );
-                                  },
-                                  loading: () =>
-                                  const LinearProgressIndicator(),
-                                  error: (err, _) =>
-                                      Text(l10n.errorWithDetails('$err')),
+                                  validator: (val) =>
+                                  (val == null || int.tryParse(val) == null)
+                                      ? l10n.requiredField
+                                      : null,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              IconButton.filledTonal(
-                                icon: const Icon(Icons.add),
-                                onPressed: _selectedCategoryId == null
-                                    ? null
-                                    : () => _showQuickAddItem(l10n),
-                                tooltip: l10n.addQuick,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 3,
+                                child: DropdownButtonFormField<String>(
+                                  isExpanded: true,
+                                  value: _selectedIntervalUnit,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 'days',
+                                      child: Text(l10n.days),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'weeks',
+                                      child: Text(l10n.weeks),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'months',
+                                      child: Text(l10n.months),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'years',
+                                      child: Text(l10n.years),
+                                    ),
+                                  ],
+                                  onChanged: (val) =>
+                                      setState(() => _selectedIntervalUnit = val!),
+                                ),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                flex: _endCondition == 'always' ? 1 : 2,
+                                child: DropdownButtonFormField<String>(
+                                  isExpanded: true,
+                                  value: _endCondition,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.endConditionTitle,
+                                    border: const OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 'always',
+                                      child: Text(l10n.endConditionAlways),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'count',
+                                      child: Text(l10n.endConditionCount),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'until_date',
+                                      child: Text(l10n.endConditionUntil),
+                                    ),
+                                  ],
+                                  onChanged: (v) => setState(() => _endCondition = v!),
+                                ),
+                              ),
+                              if (_endCondition == 'count') ...[
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 1,
+                                  child: TextFormField(
+                                    controller: _endConditionCountController,
+                                    onTap: () => _endConditionCountController.selection = TextSelection(baseOffset: 0, extentOffset: _endConditionCountController.text.length),
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      labelText: l10n.quantity,
+                                      border: const OutlineInputBorder(),
+                                      isDense: true,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              if (_endCondition == 'until_date') ...[
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 1,
+                                  child: OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                    onPressed: _pickEndDate,
+                                    icon: const Icon(Icons.calendar_month, size: 16),
+                                    label: Text(
+                                      _endConditionDate != null
+                                          ? DateFormatNotifier.format(_endConditionDate!)
+                                          : l10n.selectDate,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // --- אזור התראות וסנכרון ---
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: theme.colorScheme.outlineVariant.withOpacity(
+                                  0.5,
+                                ),
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                SwitchListTile(
+                                  title: Text(
+                                    l10n.remindMe,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  secondary: Icon(
+                                    _isReminderEnabled
+                                        ? Icons.notifications_active
+                                        : Icons.notifications_off_outlined,
+                                    color: _isReminderEnabled
+                                        ? theme.colorScheme.primary
+                                        : Colors.grey,
+                                  ),
+                                  value: _isReminderEnabled,
+                                  onChanged: (bool value) =>
+                                      setState(() => _isReminderEnabled = value),
+                                ),
+                                Divider(
+                                  height: 1,
+                                  color: theme.colorScheme.outlineVariant.withOpacity(
+                                    0.3,
+                                  ),
+                                ),
+                                SwitchListTile(
+                                  title: Text(
+                                    l10n.syncGoogleCalendar,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  // הסבר רק כשאין חיבור - כדי שיהיה ברור למה המתג כבוי
+                                  subtitle: googleUser != null
+                                      ? null
+                                      : Text(l10n.connectInSettings),
+                                  secondary: Icon(
+                                    Icons.calendar_month,
+                                    color: _isGoogleSyncEnabled
+                                        ? theme.colorScheme.primary
+                                        : Colors.grey,
+                                  ),
+                                  value: _isGoogleSyncEnabled,
+                                  onChanged: googleUser != null
+                                      ? (bool value) =>
+                                      setState(() => _isGoogleSyncEnabled = value)
+                                      : null,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
-
-                if (_currentType == EntityType.category) ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          l10n.icon,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: _openIconPickerSheet,
-                        icon: Icon(AppIcons.getIcon(_selectedIcon), size: 20),
-                        label: Text(
-                          _selectedIcon != null
-                              ? l10n.changeIcon
-                              : l10n.chooseIcon,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.color,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: _availableColors
-                        .map(
-                          (color) => GestureDetector(
-                        onTap: () =>
-                            setState(() => _selectedColor = color.value),
-                        child: CircleAvatar(
-                          backgroundColor: color,
-                          child: _selectedColor == color.value
-                              ? const Icon(Icons.check, color: Colors.white)
-                              : null,
-                        ),
-                      ),
-                    )
-                        .toList(),
-                  ),
-                ],
-
-                if (_currentType == EntityType.task) ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: TextFormField(
-                          controller: _intervalAmountController,
-                          // לחיצה מסמנת את כל המספר - בעברית הסמן נכנס בצד הלא נכון של הספרות
-                          onTap: () => _intervalAmountController.selection = TextSelection(baseOffset: 0, extentOffset: _intervalAmountController.text.length),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: l10n.repeatEvery,
-                            border: const OutlineInputBorder(),
-                          ),
-                          validator: (val) =>
-                          (val == null || int.tryParse(val) == null)
-                              ? l10n.requiredField
-                              : null,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 3,
-                        child: DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          value: _selectedIntervalUnit,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                          ),
-                          items: [
-                            DropdownMenuItem(
-                              value: 'days',
-                              child: Text(l10n.days),
-                            ),
-                            DropdownMenuItem(
-                              value: 'weeks',
-                              child: Text(l10n.weeks),
-                            ),
-                            DropdownMenuItem(
-                              value: 'months',
-                              child: Text(l10n.months),
-                            ),
-                            DropdownMenuItem(
-                              value: 'years',
-                              child: Text(l10n.years),
-                            ),
-                          ],
-                          onChanged: (val) =>
-                              setState(() => _selectedIntervalUnit = val!),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        flex: _endCondition == 'always' ? 1 : 2,
-                        child: DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          value: _endCondition,
-                          decoration: InputDecoration(
-                            labelText: l10n.endConditionTitle,
-                            border: const OutlineInputBorder(),
-                            isDense: true,
-                          ),
-                          items: [
-                            DropdownMenuItem(
-                              value: 'always',
-                              child: Text(l10n.endConditionAlways),
-                            ),
-                            DropdownMenuItem(
-                              value: 'count',
-                              child: Text(l10n.endConditionCount),
-                            ),
-                            DropdownMenuItem(
-                              value: 'until_date',
-                              child: Text(l10n.endConditionUntil),
-                            ),
-                          ],
-                          onChanged: (v) => setState(() => _endCondition = v!),
-                        ),
-                      ),
-                      if (_endCondition == 'count') ...[
-                        const SizedBox(width: 12),
-                        Expanded(
-                          flex: 1,
-                          child: TextFormField(
-                            controller: _endConditionCountController,
-                            onTap: () => _endConditionCountController.selection = TextSelection(baseOffset: 0, extentOffset: _endConditionCountController.text.length),
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: l10n.quantity,
-                              border: const OutlineInputBorder(),
-                              isDense: true,
-                            ),
-                          ),
-                        ),
-                      ],
-                      if (_endCondition == 'until_date') ...[
-                        const SizedBox(width: 12),
-                        Expanded(
-                          flex: 1,
-                          child: OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                            onPressed: _pickEndDate,
-                            icon: const Icon(Icons.calendar_month, size: 16),
-                            label: Text(
-                              _endConditionDate != null
-                                  ? DateFormatNotifier.format(_endConditionDate!)
-                                  : l10n.selectDate,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // --- אזור התראות וסנכרון ---
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: theme.colorScheme.outlineVariant.withOpacity(
-                          0.5,
-                        ),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        SwitchListTile(
-                          title: Text(
-                            l10n.remindMe,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          subtitle: Text(l10n.reminderSubtitle),
-                          secondary: Icon(
-                            _isReminderEnabled
-                                ? Icons.notifications_active
-                                : Icons.notifications_off_outlined,
-                            color: _isReminderEnabled
-                                ? theme.colorScheme.primary
-                                : Colors.grey,
-                          ),
-                          value: _isReminderEnabled,
-                          onChanged: (bool value) =>
-                              setState(() => _isReminderEnabled = value),
-                        ),
-                        Divider(
-                          height: 1,
-                          color: theme.colorScheme.outlineVariant.withOpacity(
-                            0.3,
-                          ),
-                        ),
-                        SwitchListTile(
-                          title: Text(
-                            l10n.syncGoogleCalendar,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          subtitle: Text(
-                            googleUser != null
-                                ? l10n.willCreateAllDayEvent
-                                : l10n.connectInSettings,
-                          ),
-                          secondary: Icon(
-                            Icons.calendar_month,
-                            color: _isGoogleSyncEnabled
-                                ? theme.colorScheme.primary
-                                : Colors.grey,
-                          ),
-                          value: _isGoogleSyncEnabled,
-                          onChanged: googleUser != null
-                              ? (bool value) =>
-                              setState(() => _isGoogleSyncEnabled = value)
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 24),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  onPressed: _save,
-                  child: Text(
-                    l10n.save,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // כפתור השמירה מחוץ לגלילה - תמיד גלוי, גם בטופס ארוך ועם מקלדת פתוחה (#58)
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: _save,
+                child: Text(
+                  l10n.save,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

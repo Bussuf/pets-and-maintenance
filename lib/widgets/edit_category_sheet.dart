@@ -118,129 +118,138 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final l10n = AppLocalizations.of(context)!;
-    
+
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
           left: 20, right: 20, top: 20,
           bottom: media.viewInsets.bottom + 16,
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(l10n.editGroup, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    tooltip: l10n.deleteGroup,
-                    onPressed: () async {
-                      final confirm = await ConfirmDeleteDialog.show(
-                        context,
-                        title: l10n.deleteGroup,
-                        content: l10n.deleteGroupConfirm(widget.category.name),
-                        onConfirm: () {}, // <--- הוספנו את הפרמטר החסר
-                      );
-                      if (confirm == true) {
-                        final db = ref.read(databaseProvider);
-                        final rawDb = await db.database;
-                        final items = await rawDb.query('items', where: 'category_id = ?', whereArgs: [widget.category.id]);
-                        for (final item in items) {
-                          await rawDb.delete('tasks', where: 'item_id = ?', whereArgs: [item['id']]);
-                        }
-                        await rawDb.delete('items', where: 'category_id = ?', whereArgs: [widget.category.id]);
-                        await rawDb.delete('categories', where: 'id = ?', whereArgs: [widget.category.id]);
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(l10n.editGroup, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          tooltip: l10n.deleteGroup,
+                          onPressed: () async {
+                            final confirm = await ConfirmDeleteDialog.show(
+                              context,
+                              title: l10n.deleteGroup,
+                              content: l10n.deleteGroupConfirm(widget.category.name),
+                              onConfirm: () {}, // <--- הוספנו את הפרמטר החסר
+                            );
+                            if (confirm == true) {
+                              final db = ref.read(databaseProvider);
+                              final rawDb = await db.database;
+                              final items = await rawDb.query('items', where: 'category_id = ?', whereArgs: [widget.category.id]);
+                              for (final item in items) {
+                                await rawDb.delete('tasks', where: 'item_id = ?', whereArgs: [item['id']]);
+                              }
+                              await rawDb.delete('items', where: 'category_id = ?', whereArgs: [widget.category.id]);
+                              await rawDb.delete('categories', where: 'id = ?', whereArgs: [widget.category.id]);
 
-                        ref.invalidate(categoriesProvider);
-                        ref.invalidate(dashboardTasksProvider);
+                              ref.invalidate(categoriesProvider);
+                              ref.invalidate(dashboardTasksProvider);
 
-                        if (mounted) {
-                          Navigator.pop(context); // סוגר את חלונית העריכה
-                          // אם אנחנו לא בדאשבורד אלא בתוך מסך הקבוצה עצמו, סגור גם אותו
-                          if (Navigator.canPop(context)) Navigator.pop(context);
-                        }
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: l10n.addCategoryTitleHint, border: const OutlineInputBorder(), errorText: _errorMessage),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _descController,
-                decoration: InputDecoration(labelText: l10n.description, border: const OutlineInputBorder()),
-              ),
-              const SizedBox(height: 20),
-              
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(child: Text(l10n.groupIconLabel, style: const TextStyle(fontWeight: FontWeight.bold))),
-                  OutlinedButton.icon(
-                    onPressed: _openIconPickerSheet,
-                    icon: Icon(AppIcons.getIcon(_selectedIcon), size: 20),
-                    label: Text(l10n.changeIcon),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(l10n.groupColorLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: _availableColors.map((color) {
-                  final isSel = _selectedColor == color.value;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedColor = color.value),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: color,
-                      child: isSel ? const Icon(Icons.check, size: 20, color: Colors.white) : null,
+                              if (mounted) {
+                                Navigator.pop(context); // סוגר את חלונית העריכה
+                                // אם אנחנו לא בדאשבורד אלא בתוך מסך הקבוצה עצמו, סגור גם אותו
+                                if (Navigator.canPop(context)) Navigator.pop(context);
+                              }
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                onPressed: () async {
-                  final newName = _nameController.text.trim();
-                  if (newName.isEmpty) {
-                    setState(() => _errorMessage = l10n.requiredField);
-                    return;
-                  }
-                  final db = ref.read(databaseProvider);
-                  final isDup = await db.isCategoryNameExists(newName, excludeId: widget.category.id);
-                  if (isDup) {
-                    setState(() => _errorMessage = l10n.groupNameExists);
-                    return;
-                  }
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(labelText: l10n.addCategoryTitleHint, border: const OutlineInputBorder(), errorText: _errorMessage),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _descController,
+                      decoration: InputDecoration(labelText: l10n.description, border: const OutlineInputBorder()),
+                    ),
+                    const SizedBox(height: 20),
 
-                  final updated = widget.category.copyWith(
-                    name: newName,
-                    description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
-                    color: _selectedColor,
-                    icon: _selectedIcon,
-                  );
-                  
-                  await db.updateCategory(updated);
-                  ref.invalidate(categoriesProvider);
-                  ref.invalidate(dashboardTasksProvider);
-
-                  if (mounted) Navigator.pop(context);
-                },
-                child: Text(l10n.saveChanges, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(child: Text(l10n.groupIconLabel, style: const TextStyle(fontWeight: FontWeight.bold))),
+                        OutlinedButton.icon(
+                          onPressed: _openIconPickerSheet,
+                          icon: Icon(AppIcons.getIcon(_selectedIcon), size: 20),
+                          label: Text(l10n.changeIcon),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(l10n.groupColorLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: _availableColors.map((color) {
+                        final isSel = _selectedColor == color.value;
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedColor = color.value),
+                          child: CircleAvatar(
+                            radius: 18,
+                            backgroundColor: color,
+                            child: isSel ? const Icon(Icons.check, size: 20, color: Colors.white) : null,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+            // כפתור השמירה מחוץ לגלילה - תמיד גלוי, גם בטופס ארוך ועם מקלדת פתוחה (#58)
+            FilledButton(
+              style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+              onPressed: () async {
+                final newName = _nameController.text.trim();
+                if (newName.isEmpty) {
+                  setState(() => _errorMessage = l10n.requiredField);
+                  return;
+                }
+                final db = ref.read(databaseProvider);
+                final isDup = await db.isCategoryNameExists(newName, excludeId: widget.category.id);
+                if (isDup) {
+                  setState(() => _errorMessage = l10n.groupNameExists);
+                  return;
+                }
+
+                final updated = widget.category.copyWith(
+                  name: newName,
+                  description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+                  color: _selectedColor,
+                  icon: _selectedIcon,
+                );
+
+                await db.updateCategory(updated);
+                ref.invalidate(categoriesProvider);
+                ref.invalidate(dashboardTasksProvider);
+
+                if (mounted) Navigator.pop(context);
+              },
+              child: Text(l10n.saveChanges, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+          ],
         ),
       ),
     );

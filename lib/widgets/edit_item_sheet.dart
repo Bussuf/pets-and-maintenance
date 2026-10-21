@@ -23,10 +23,10 @@ class EditItemSheet extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   static Future<void> show(
-    BuildContext context,
-    Item item,
-    String currentCategoryId,
-  ) {
+      BuildContext context,
+      Item item,
+      String currentCategoryId,
+      ) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -80,161 +80,170 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
           top: 20,
           bottom: media.viewInsets.bottom + 16,
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      l10n.editItemNamed(widget.item.name),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.editItemNamed(widget.item.name),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          tooltip: l10n.deleteItem,
+                          onPressed: () async {
+                            final confirm = await ConfirmDeleteDialog.show(
+                              context,
+                              title: l10n.deleteItem,
+                              content: l10n.deleteItemConfirm(widget.item.name),
+                              onConfirm: () {},
+                            );
+                            if (confirm == true) {
+                              final rawDb = await ref.read(databaseProvider).database;
+                              await rawDb.delete(
+                                'tasks',
+                                where: 'item_id = ?',
+                                whereArgs: [widget.item.id],
+                              );
+                              await rawDb.delete(
+                                'items',
+                                where: 'id = ?',
+                                whereArgs: [widget.item.id],
+                              );
+
+                              ref.invalidate(
+                                itemsByCategoryProvider(widget.currentCategoryId),
+                              );
+                              ref.invalidate(
+                                tasksByCategoryProvider(widget.currentCategoryId),
+                              );
+                              ref.invalidate(dashboardTasksProvider);
+
+                              if (mounted) Navigator.pop(context);
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    tooltip: l10n.deleteItem,
-                    onPressed: () async {
-                      final confirm = await ConfirmDeleteDialog.show(
-                        context,
-                        title: l10n.deleteItem,
-                        content: l10n.deleteItemConfirm(widget.item.name),
-                        onConfirm: () {},
-                      );
-                      if (confirm == true) {
-                        final rawDb = await ref.read(databaseProvider).database;
-                        await rawDb.delete(
-                          'tasks',
-                          where: 'item_id = ?',
-                          whereArgs: [widget.item.id],
-                        );
-                        await rawDb.delete(
-                          'items',
-                          where: 'id = ?',
-                          whereArgs: [widget.item.id],
-                        );
-
-                        ref.invalidate(
-                          itemsByCategoryProvider(widget.currentCategoryId),
-                        );
-                        ref.invalidate(
-                          tasksByCategoryProvider(widget.currentCategoryId),
-                        );
-                        ref.invalidate(dashboardTasksProvider);
-
-                        if (mounted) Navigator.pop(context);
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: l10n.addItemTitleHint,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _descController,
-                decoration: InputDecoration(
-                  labelText: l10n.description,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: _selectedCatId,
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _nameController,
                       decoration: InputDecoration(
-                        labelText: l10n.selectCategory,
+                        labelText: l10n.addItemTitleHint,
                         border: const OutlineInputBorder(),
                       ),
-                      items: categories
-                          .map(
-                            (c) => DropdownMenuItem(
-                              value: c.id,
-                              child: Text(c.name),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _selectedCatId = val);
-                      },
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filledTonal(
-                    icon: const Icon(Icons.add),
-                    tooltip: l10n.newGroup,
-                    onPressed: () async {
-                      final id = await QuickAddDialogs.category(context, ref);
-                      if (id == null) return;
-                      // מחכים שרשימת הקבוצות תתעדכן - אחרת הרשימה הנפתחת לא תכיר את הקבוצה החדשה
-                      await ref.read(categoriesProvider.future);
-                      if (mounted) setState(() => _selectedCatId = id);
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                onPressed: () async {
-                  final newName = _nameController.text.trim();
-                  if (newName.isEmpty) return;
-
-                  final rawDb = await ref.read(databaseProvider).database;
-                  await rawDb.update(
-                    'items',
-                    {
-                      'name': newName,
-                      'description': _descController.text.trim().isEmpty
-                          ? null
-                          : _descController.text.trim(),
-                      'category_id': _selectedCatId,
-                    },
-                    where: 'id = ?',
-                    whereArgs: [widget.item.id],
-                  );
-
-                  ref.invalidate(
-                    itemsByCategoryProvider(widget.currentCategoryId),
-                  );
-                  ref.invalidate(
-                    tasksByCategoryProvider(widget.currentCategoryId),
-                  );
-                  if (_selectedCatId != widget.currentCategoryId) {
-                    ref.invalidate(itemsByCategoryProvider(_selectedCatId));
-                    ref.invalidate(tasksByCategoryProvider(_selectedCatId));
-                  }
-                  ref.invalidate(dashboardTasksProvider);
-
-                  if (mounted) Navigator.pop(context);
-                },
-                child: Text(
-                  l10n.saveChanges,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _descController,
+                      decoration: InputDecoration(
+                        labelText: l10n.description,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            value: _selectedCatId,
+                            decoration: InputDecoration(
+                              labelText: l10n.selectCategory,
+                              border: const OutlineInputBorder(),
+                            ),
+                            items: categories
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                value: c.id,
+                                child: Text(c.name),
+                              ),
+                            )
+                                .toList(),
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedCatId = val);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton.filledTonal(
+                          icon: const Icon(Icons.add),
+                          tooltip: l10n.newGroup,
+                          onPressed: () async {
+                            final id = await QuickAddDialogs.category(context, ref);
+                            if (id == null) return;
+                            // מחכים שרשימת הקבוצות תתעדכן - אחרת הרשימה הנפתחת לא תכיר את הקבוצה החדשה
+                            await ref.read(categoriesProvider.future);
+                            if (mounted) setState(() => _selectedCatId = id);
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+            // כפתור השמירה מחוץ לגלילה - תמיד גלוי, גם בטופס ארוך ועם מקלדת פתוחה (#58)
+            FilledButton(
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              onPressed: () async {
+                final newName = _nameController.text.trim();
+                if (newName.isEmpty) return;
+
+                final rawDb = await ref.read(databaseProvider).database;
+                await rawDb.update(
+                  'items',
+                  {
+                    'name': newName,
+                    'description': _descController.text.trim().isEmpty
+                        ? null
+                        : _descController.text.trim(),
+                    'category_id': _selectedCatId,
+                  },
+                  where: 'id = ?',
+                  whereArgs: [widget.item.id],
+                );
+
+                ref.invalidate(
+                  itemsByCategoryProvider(widget.currentCategoryId),
+                );
+                ref.invalidate(
+                  tasksByCategoryProvider(widget.currentCategoryId),
+                );
+                if (_selectedCatId != widget.currentCategoryId) {
+                  ref.invalidate(itemsByCategoryProvider(_selectedCatId));
+                  ref.invalidate(tasksByCategoryProvider(_selectedCatId));
+                }
+                ref.invalidate(dashboardTasksProvider);
+
+                if (mounted) Navigator.pop(context);
+              },
+              child: Text(
+                l10n.saveChanges,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
