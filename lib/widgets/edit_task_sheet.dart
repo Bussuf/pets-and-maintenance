@@ -21,7 +21,7 @@ import '../l10n/app_localizations.dart';
 class EditTaskSheet extends ConsumerStatefulWidget {
   final Map<String, dynamic> taskMap;
 
-  const EditTaskSheet({Key? key, required this.taskMap}) : super(key: key);
+  const EditTaskSheet({super.key, required this.taskMap});
 
   static Future<void> show(BuildContext context, Map<String, dynamic> task) {
     return showModalBottomSheet(
@@ -101,11 +101,12 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
 
   Future<void> _showQuickAddCategory() async {
     final id = await QuickAddDialogs.category(context, ref);
-    if (id != null && mounted)
+    if (id != null && mounted) {
       setState(() {
         _selectedCategoryId = id;
         _selectedItemId = '';
       });
+    }
   }
 
   Future<void> _showQuickAddItem() async {
@@ -185,12 +186,12 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest.withOpacity(
-                            0.3,
+                          color: theme.colorScheme.surfaceContainerHighest.withValues(
+                            alpha: 0.3,
                           ),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                           ),
                         ),
                         child: Column(
@@ -217,7 +218,8 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                                       }
                                       return DropdownButtonFormField<String>(
                                         isExpanded: true,
-                                        value: _selectedCategoryId.isEmpty
+                                        key: ValueKey('cat_$_selectedCategoryId'),
+                                        initialValue: _selectedCategoryId.isEmpty
                                             ? null
                                             : _selectedCategoryId,
                                         decoration: InputDecoration(
@@ -285,7 +287,8 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                                       }
                                       return DropdownButtonFormField<String>(
                                         isExpanded: true,
-                                        value: _selectedItemId.isEmpty
+                                        key: ValueKey('item_$_selectedItemId'),
+                                        initialValue: _selectedItemId.isEmpty
                                             ? null
                                             : _selectedItemId,
                                         decoration: InputDecoration(
@@ -352,7 +355,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                             flex: 3,
                             child: DropdownButtonFormField<String>(
                               isExpanded: true,
-                              value: _selectedUnit,
+                              initialValue: _selectedUnit,
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                               ),
@@ -385,7 +388,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                             flex: _selectedEndCondition == 'always' ? 1 : 2,
                             child: DropdownButtonFormField<String>(
                               isExpanded: true,
-                              value: _selectedEndCondition,
+                              initialValue: _selectedEndCondition,
                               decoration: InputDecoration(
                                 labelText: l10n.endConditionTitle,
                                 border: const OutlineInputBorder(),
@@ -450,8 +453,9 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                                     firstDate: DateTime.now(),
                                     lastDate: DateTime(2035),
                                   );
-                                  if (p != null)
+                                  if (p != null) {
                                     setState(() => _selectedEndConditionDate = p);
+                                  }
                                 },
                                 icon: const Icon(Icons.calendar_month, size: 16),
                                 label: Text(
@@ -473,7 +477,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       Container(
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -501,7 +505,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                             ),
                             Divider(
                               height: 1,
-                              color: theme.colorScheme.outlineVariant.withOpacity(0.3),
+                              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
                             ),
                             SwitchListTile(
                               title: Text(

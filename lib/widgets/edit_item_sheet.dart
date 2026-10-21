@@ -16,10 +16,10 @@ class EditItemSheet extends ConsumerStatefulWidget {
   final String currentCategoryId;
 
   const EditItemSheet({
-    Key? key,
+    super.key,
     required this.item,
     required this.currentCategoryId,
-  }) : super(key: key);
+  });
 
   static Future<void> show(
     BuildContext context,
@@ -168,7 +168,8 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                         Expanded(
                           child: DropdownButtonFormField<String>(
                             isExpanded: true,
-                            value: _selectedCatId,
+                            key: ValueKey('cat_$_selectedCatId'),
+                            initialValue: _selectedCatId,
                             decoration: InputDecoration(
                               labelText: l10n.selectCategory,
                               border: const OutlineInputBorder(),
@@ -182,8 +183,9 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                                 )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null)
+                              if (val != null) {
                                 setState(() => _selectedCatId = val);
+                              }
                             },
                           ),
                         ),

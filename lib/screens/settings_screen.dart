@@ -15,7 +15,7 @@ import '../widgets/settings_tiles.dart';
 import '../providers/date_format_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   Future<void> _exportBackup(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;

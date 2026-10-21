@@ -28,7 +28,7 @@ class CreateEntityScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? initialDuplicateData;
 
   const CreateEntityScreen({
-    Key? key,
+    super.key,
     this.initialType = EntityType.task,
     this.allowedTypes = const [
       EntityType.task,
@@ -38,7 +38,7 @@ class CreateEntityScreen extends ConsumerStatefulWidget {
     this.preselectedCategoryId,
     this.preselectedItemId,
     this.initialDuplicateData,
-  }) : super(key: key);
+  });
 
   static Future<void> show(
       BuildContext context, {
@@ -205,7 +205,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: Colors.grey.withOpacity(0.2),
+                            color: Colors.grey.withValues(alpha: 0.2),
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -224,11 +224,12 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
 
   Future<void> _showQuickAddCategory(AppLocalizations l10n) async {
     final id = await QuickAddDialogs.category(context, ref);
-    if (id != null && mounted)
+    if (id != null && mounted) {
       setState(() {
         _selectedCategoryId = id;
         _selectedItemId = null;
       });
+    }
   }
 
   Future<void> _showQuickAddItem(AppLocalizations l10n) async {
@@ -312,9 +313,9 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
         );
 
         String? endVal;
-        if (_endCondition == 'count')
+        if (_endCondition == 'count') {
           endVal = _endConditionCountController.text.trim();
-        else if (_endCondition == 'until_date' && _endConditionDate != null)
+        } else if (_endCondition == 'until_date' && _endConditionDate != null)
           endVal = _endConditionDate!.toIso8601String();
 
         AppTask task = AppTask(
@@ -482,11 +483,11 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surfaceContainerHighest
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: theme.colorScheme.outlineVariant.withOpacity(
-                                  0.5,
+                                color: theme.colorScheme.outlineVariant.withValues(
+                                  alpha: 0.5,
                                 ),
                               ),
                             ),
@@ -512,7 +513,8 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                                           }
                                           return DropdownButtonFormField<String>(
                                             isExpanded: true,
-                                            value: _selectedCategoryId,
+                                            key: ValueKey('cat_$_selectedCategoryId'),
+                                            initialValue: _selectedCategoryId,
                                             decoration: InputDecoration(
                                               labelText: l10n.selectCategory,
                                               border: const OutlineInputBorder(),
@@ -575,7 +577,8 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                                             }
                                             return DropdownButtonFormField<String>(
                                               isExpanded: true,
-                                              value: _selectedItemId,
+                                              key: ValueKey('item_$_selectedItemId'),
+                                              initialValue: _selectedItemId,
                                               decoration: InputDecoration(
                                                 labelText: l10n.selectItem,
                                                 border: const OutlineInputBorder(),
@@ -654,10 +657,10 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                                 .map(
                                   (color) => GestureDetector(
                                 onTap: () =>
-                                    setState(() => _selectedColor = color.value),
+                                    setState(() => _selectedColor = color.toARGB32()),
                                 child: CircleAvatar(
                                   backgroundColor: color,
-                                  child: _selectedColor == color.value
+                                  child: _selectedColor == color.toARGB32()
                                       ? const Icon(Icons.check, color: Colors.white)
                                       : null,
                                 ),
@@ -692,7 +695,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                                 flex: 3,
                                 child: DropdownButtonFormField<String>(
                                   isExpanded: true,
-                                  value: _selectedIntervalUnit,
+                                  initialValue: _selectedIntervalUnit,
                                   decoration: const InputDecoration(
                                     border: OutlineInputBorder(),
                                   ),
@@ -729,7 +732,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                                 flex: _endCondition == 'always' ? 1 : 2,
                                 child: DropdownButtonFormField<String>(
                                   isExpanded: true,
-                                  value: _endCondition,
+                                  initialValue: _endCondition,
                                   decoration: InputDecoration(
                                     labelText: l10n.endConditionTitle,
                                     border: const OutlineInputBorder(),
@@ -798,8 +801,8 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                           Container(
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: theme.colorScheme.outlineVariant.withOpacity(
-                                  0.5,
+                                color: theme.colorScheme.outlineVariant.withValues(
+                                  alpha: 0.5,
                                 ),
                               ),
                               borderRadius: BorderRadius.circular(12),
@@ -828,8 +831,8 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                                 ),
                                 Divider(
                                   height: 1,
-                                  color: theme.colorScheme.outlineVariant.withOpacity(
-                                    0.3,
+                                  color: theme.colorScheme.outlineVariant.withValues(
+                                    alpha: 0.3,
                                   ),
                                 ),
                                 SwitchListTile(

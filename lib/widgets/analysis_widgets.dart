@@ -10,12 +10,12 @@ class AnalysisSection extends StatefulWidget {
   final Widget child;
 
   const AnalysisSection({
-    Key? key,
+    super.key,
     required this.id,
     required this.title,
     required this.child,
     this.chip,
-  }) : super(key: key);
+  });
 
   @override
   State<AnalysisSection> createState() => _AnalysisSectionState();
@@ -92,7 +92,7 @@ class _AnalysisSectionState extends State<AnalysisSection> {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+        side: BorderSide(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -141,7 +141,7 @@ class _AnalysisSectionState extends State<AnalysisSection> {
             ),
           ),
           if (_open) ...[
-            Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+            Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
               child: widget.child,
@@ -157,7 +157,7 @@ class _AnalysisSectionState extends State<AnalysisSection> {
 class SummaryChip extends StatelessWidget {
   final String text;
 
-  const SummaryChip({Key? key, required this.text}) : super(key: key);
+  const SummaryChip({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +184,7 @@ class StatTile extends StatelessWidget {
   final String value;
   final String? unit;
 
-  const StatTile({Key? key, required this.label, required this.value, this.unit}) : super(key: key);
+  const StatTile({super.key, required this.label, required this.value, this.unit});
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +194,7 @@ class StatTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,13 +237,12 @@ class DetailRow extends StatelessWidget {
   final String value;
   final bool muted;
 
-  const DetailRow({Key? key, required this.icon, required this.label, required this.value, this.muted = false})
-      : super(key: key);
+  const DetailRow({super.key, required this.icon, required this.label, required this.value, this.muted = false});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final valueColor = muted ? theme.colorScheme.onSurfaceVariant.withOpacity(0.6) : theme.colorScheme.onSurface;
+    final valueColor = muted ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6) : theme.colorScheme.onSurface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),

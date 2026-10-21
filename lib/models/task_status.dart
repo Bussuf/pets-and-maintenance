@@ -1,4 +1,5 @@
 /// תנאי סיום של משימה (#51)
+library;
 
 /// האם תנאי הסיום הושג: מספר פעמים שהושלם, או שהמועד הבא אחרי תאריך הסיום
 bool isEndReached(String? condition, String? value, int completedCount, DateTime? nextDate) {

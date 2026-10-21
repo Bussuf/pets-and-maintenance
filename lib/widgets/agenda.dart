@@ -75,7 +75,7 @@ List<AgendaGroup> buildAgendaGroups(BuildContext context, List<Map<String, dynam
 class AgendaSectionHeader extends StatelessWidget {
   final AgendaGroup group;
 
-  const AgendaSectionHeader({Key? key, required this.group}) : super(key: key);
+  const AgendaSectionHeader({super.key, required this.group});
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +103,7 @@ class AgendaSectionHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1.5),
             decoration: BoxDecoration(
-              color: group.isOverdue ? Colors.red.withOpacity(0.15) : theme.colorScheme.surfaceContainerHighest,
+              color: group.isOverdue ? Colors.red.withValues(alpha: 0.15) : theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
@@ -118,7 +118,7 @@ class AgendaSectionHeader extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Divider(
-              color: group.isOverdue ? Colors.red.withOpacity(0.3) : theme.colorScheme.outlineVariant.withOpacity(0.5),
+              color: group.isOverdue ? Colors.red.withValues(alpha: 0.3) : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
               height: 1,
             ),
           ),

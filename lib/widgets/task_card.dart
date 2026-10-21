@@ -25,13 +25,13 @@ class TaskCard extends ConsumerWidget {
   final DateTime todayStart;
 
   const TaskCard({
-    Key? key,
+    super.key,
     required this.task,
     required this.isExpanded,
     required this.onToggleExpand,
     this.showCategoryLabel = true,
     required this.todayStart,
-  }) : super(key: key);
+  });
 
   // עיצוב תאריך לפי בחירת המשתמש (הגדרות ← פורמט תאריך)
   String _formatDate(DateTime date) => DateFormatNotifier.format(date);
@@ -333,13 +333,13 @@ class TaskCard extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isOverdue
-                                ? Colors.red.withOpacity(isDark ? 0.25 : 0.1)
+                                ? Colors.red.withValues(alpha: isDark ? 0.25 : 0.1)
                                 : theme.colorScheme.surfaceContainerHighest
-                                .withOpacity(0.5),
+                                .withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(6),
                             border: isOverdue
                                 ? Border.all(
-                              color: Colors.red.withOpacity(0.3),
+                              color: Colors.red.withValues(alpha: 0.3),
                               width: 1,
                             )
                                 : null,
@@ -395,7 +395,7 @@ class TaskCard extends ConsumerWidget {
               if (isExpanded) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: Divider(color: catColor.withOpacity(0.4), height: 1),
+                  child: Divider(color: catColor.withValues(alpha: 0.4), height: 1),
                 ),
                 if (task['description'] != null &&
                     task['description'].toString().isNotEmpty) ...[

@@ -17,7 +17,7 @@ import '../widgets/agenda.dart';
 import '../models/task_status.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
@@ -205,20 +205,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(
-                      isDark ? 0.2 : 0.08,
+                    color: theme.colorScheme.primary.withValues(
+                      alpha: isDark ? 0.2 : 0.08,
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: theme.colorScheme.primary.withOpacity(0.25),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.25),
                     ),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: theme.colorScheme.primary.withOpacity(
-                          0.2,
+                        backgroundColor: theme.colorScheme.primary.withValues(
+                          alpha: 0.2,
                         ),
                         child: Icon(
                           Icons.grid_view,
@@ -340,7 +340,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     height: 44,
                     child: Center(child: LinearProgressIndicator()),
                   ),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
                 const Divider(height: 1),
 

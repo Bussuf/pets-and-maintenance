@@ -23,11 +23,11 @@ class CategoryScreen extends ConsumerStatefulWidget {
   final String? initialTaskId;
 
   const CategoryScreen({
-    Key? key,
+    super.key,
     required this.category,
     this.initialItemId,
     this.initialTaskId,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<CategoryScreen> createState() => _CategoryScreenState();
@@ -138,15 +138,15 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
             margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: catColor.withOpacity(isDark ? 0.2 : 0.1),
+              color: catColor.withValues(alpha: isDark ? 0.2 : 0.1),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: catColor.withOpacity(0.3)),
+              border: Border.all(color: catColor.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: catColor.withOpacity(0.2),
+                  backgroundColor: catColor.withValues(alpha: 0.2),
                   child: Icon(catIcon, color: catColor, size: 30),
                 ),
                 const SizedBox(width: 16),
@@ -161,7 +161,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                           fontWeight: FontWeight.bold,
                           color: isDark
                               ? Colors.white
-                              : catColor.withOpacity(0.9),
+                              : catColor.withValues(alpha: 0.9),
                         ),
                       ),
                       if (currentCategory.description != null &&
@@ -239,7 +239,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
               height: 44,
               child: Center(child: LinearProgressIndicator()),
             ),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
           const Divider(height: 1),
 

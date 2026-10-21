@@ -8,7 +8,7 @@ import '../theme/app_icons.dart';
 class AppDrawer extends ConsumerWidget {
   final String? currentCategoryId;
 
-  const AppDrawer({Key? key, this.currentCategoryId}) : super(key: key);
+  const AppDrawer({super.key, this.currentCategoryId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +27,7 @@ class AppDrawer extends ConsumerWidget {
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,7 +116,7 @@ class AppDrawer extends ConsumerWidget {
                         ),
                         selected: isSelected,
                         focusColor: Colors.transparent,
-                        selectedTileColor: theme.colorScheme.primaryContainer.withOpacity(0.5),
+                        selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                         onTap: () {
                           Navigator.pop(context);

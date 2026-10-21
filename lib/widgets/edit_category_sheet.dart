@@ -11,7 +11,7 @@ import '../l10n/app_localizations.dart';
 class EditCategorySheet extends ConsumerStatefulWidget {
   final Category category;
 
-  const EditCategorySheet({Key? key, required this.category}) : super(key: key);
+  const EditCategorySheet({super.key, required this.category});
 
   static Future<void> show(BuildContext context, Category category) {
     return showModalBottomSheet(
@@ -98,7 +98,7 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(icon, size: 28),
@@ -202,9 +202,9 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
                       spacing: 12,
                       runSpacing: 12,
                       children: _availableColors.map((color) {
-                        final isSel = _selectedColor == color.value;
+                        final isSel = _selectedColor == color.toARGB32();
                         return GestureDetector(
-                          onTap: () => setState(() => _selectedColor = color.value),
+                          onTap: () => setState(() => _selectedColor = color.toARGB32()),
                           child: CircleAvatar(
                             radius: 18,
                             backgroundColor: color,

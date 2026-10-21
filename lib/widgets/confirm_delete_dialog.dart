@@ -9,11 +9,11 @@ class ConfirmDeleteDialog extends StatelessWidget {
   final VoidCallback onConfirm;
 
   const ConfirmDeleteDialog({
-    Key? key,
+    super.key,
     required this.title,
     required this.content,
     required this.onConfirm,
-  }) : super(key: key);
+  });
 
   static Future<bool?> show(
     BuildContext context, {
@@ -41,7 +41,7 @@ class ConfirmDeleteDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: AppTheme.dangerColor, width: 2),
         ),
-        backgroundColor: Colors.white.withOpacity(0.92),
+        backgroundColor: Colors.white.withValues(alpha: 0.92),
         title: Row(
           children: [
             const Icon(Icons.warning_amber_rounded, color: AppTheme.dangerColor, size: 28),

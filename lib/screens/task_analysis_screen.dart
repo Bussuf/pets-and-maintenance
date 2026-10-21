@@ -17,7 +17,7 @@ import '../widgets/edit_task_sheet.dart';
 class TaskAnalysisScreen extends ConsumerStatefulWidget {
   final String taskId;
 
-  const TaskAnalysisScreen({Key? key, required this.taskId}) : super(key: key);
+  const TaskAnalysisScreen({super.key, required this.taskId});
 
   @override
   ConsumerState<TaskAnalysisScreen> createState() => _TaskAnalysisScreenState();
@@ -210,7 +210,7 @@ class _TaskAnalysisScreenState extends ConsumerState<TaskAnalysisScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (int i = 0; i < rows.length; i++) ...[
-            if (i > 0) Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+            if (i > 0) Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
             rows[i],
           ],
         ],
@@ -271,13 +271,13 @@ class _TaskAnalysisScreenState extends ConsumerState<TaskAnalysisScreen> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: color.withOpacity(0.15),
+            backgroundColor: color.withValues(alpha: 0.15),
             child: Icon(icon, color: color),
           ),
           const SizedBox(width: 12),

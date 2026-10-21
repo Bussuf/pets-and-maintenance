@@ -16,7 +16,7 @@ import '../l10n/app_localizations.dart';
 class OrganizationScreen extends ConsumerStatefulWidget {
   final Category? parentCategory;
 
-  const OrganizationScreen({Key? key, this.parentCategory}) : super(key: key);
+  const OrganizationScreen({super.key, this.parentCategory});
 
   @override
   ConsumerState<OrganizationScreen> createState() => _OrganizationScreenState();
@@ -167,7 +167,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
 
           return ListTile(
             leading: CircleAvatar(
-              backgroundColor: catColor.withOpacity(0.2),
+              backgroundColor: catColor.withValues(alpha: 0.2),
               child: Icon(AppIcons.getIcon(cat.icon), color: catColor),
             ),
             title: Text(cat.name, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -221,7 +221,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
             key: ValueKey(cat.id),
             leading: const Icon(Icons.drag_handle, color: Colors.grey),
             title: Text(cat.name),
-            tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           );
         } else {
@@ -230,7 +230,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
             key: ValueKey(item.id),
             leading: const Icon(Icons.drag_handle, color: Colors.grey),
             title: Text(item.name),
-            tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           );
         }

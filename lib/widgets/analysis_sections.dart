@@ -57,7 +57,7 @@ class _SubTitle extends StatelessWidget {
 class WhenSection extends StatelessWidget {
   final TaskStats stats;
 
-  const WhenSection({Key? key, required this.stats}) : super(key: key);
+  const WhenSection({super.key, required this.stats});
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +273,7 @@ class PaceSection extends StatelessWidget {
   final TaskStats stats;
   final String? unit; // יחידת התדירות של המשימה - קובעת ימים או חודשים
 
-  const PaceSection({Key? key, required this.stats, required this.unit}) : super(key: key);
+  const PaceSection({super.key, required this.stats, required this.unit});
 
   /// הסטייה מהיעד ביחידה של המשימה: ימים שלמים, או חודשים בעיגול לעשירית.
   /// חיובי = איחור (מעל הקו), שלילי = הקדמה (מתחת לקו)
@@ -329,13 +329,13 @@ class PaceSection extends StatelessWidget {
           _PaceChart(points: points, deviations: deviations, yearLabels: DurationText.usesMonths(unit)),
           if (stats.fastestDays != null && stats.slowestDays != null) ...[
             const SizedBox(height: 10),
-            Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+            Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
             DetailRow(
               icon: Icons.directions_run,
               label: l10n.paceFastest,
               value: DurationText.days(l10n, stats.fastestDays!, unit),
             ),
-            Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+            Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
             DetailRow(
               icon: Icons.directions_walk,
               label: l10n.paceSlowest,
@@ -425,7 +425,7 @@ class _PaceChart extends StatelessWidget {
                                         Container(
                                           height: d == 0 ? 3 : barMax * (d / scale).clamp(0.06, 1.0),
                                           decoration: BoxDecoration(
-                                            color: d == 0 ? scheme.primary.withOpacity(0.35) : lateColor,
+                                            color: d == 0 ? scheme.primary.withValues(alpha: 0.35) : lateColor,
                                             borderRadius: BorderRadius.circular(4),
                                           ),
                                         ),
@@ -470,7 +470,7 @@ class _PaceChart extends StatelessWidget {
                     top: half,
                     child: CustomPaint(
                       size: const Size(double.infinity, 1),
-                      painter: _DashedLinePainter(color: scheme.onSurfaceVariant.withOpacity(0.7)),
+                      painter: _DashedLinePainter(color: scheme.onSurfaceVariant.withValues(alpha: 0.7)),
                     ),
                   ),
                 ],
@@ -533,7 +533,7 @@ class CalendarSection extends StatefulWidget {
   final String? unit;
   final DateTime? nextDue;
 
-  const CalendarSection({Key? key, required this.stats, required this.unit, required this.nextDue}) : super(key: key);
+  const CalendarSection({super.key, required this.stats, required this.unit, required this.nextDue});
 
   @override
   State<CalendarSection> createState() => _CalendarSectionState();
@@ -752,7 +752,7 @@ class _CalendarCell extends StatelessWidget {
 
     final done = logs.isNotEmpty;
     final anyLate = logs.any((s) => !s.onTime);
-    final fill = !done ? scheme.surfaceContainerHighest.withOpacity(0.4) : (anyLate ? lateColor : scheme.primary);
+    final fill = !done ? scheme.surfaceContainerHighest.withValues(alpha: 0.4) : (anyLate ? lateColor : scheme.primary);
     final textColor = !done ? scheme.onSurfaceVariant : (anyLate ? Colors.black87 : scheme.onPrimary);
     final count = logs.length;
 
@@ -871,14 +871,14 @@ class _CalendarRecords extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+        Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
         DetailRow(
           icon: Icons.local_fire_department_outlined,
           label: l10n.recordLongestStreak,
           value: l10n.recordStreakValue(stats.longestOnTimeStreak),
           muted: stats.longestOnTimeStreak == 0,
         ),
-        Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+        Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
         DetailRow(
           icon: Icons.schedule,
           label: l10n.recordBiggestLate,
@@ -900,7 +900,7 @@ class HistorySection extends StatefulWidget {
   final TaskStats stats;
   final Map<String, dynamic> task;
 
-  const HistorySection({Key? key, required this.stats, required this.task}) : super(key: key);
+  const HistorySection({super.key, required this.stats, required this.task});
 
   @override
   State<HistorySection> createState() => _HistorySectionState();
@@ -929,7 +929,7 @@ class _HistorySectionState extends State<HistorySection> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (int i = 0; i < visible.length; i++) ...[
-            if (i > 0) Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+            if (i > 0) Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
             _HistoryRow(entry: visible[i], task: widget.task),
           ],
           if (logs.length > _collapsedCount)
@@ -978,7 +978,7 @@ class _HistoryRow extends ConsumerWidget {
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
             child: Text(
               entry.onTime
                   ? l10n.statOnTime

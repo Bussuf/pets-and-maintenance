@@ -7,10 +7,10 @@ class AnimatedFabMenu extends StatelessWidget {
   final String? currentItemId;
 
   const AnimatedFabMenu({
-    Key? key,
+    super.key,
     this.currentCategoryId,
     this.currentItemId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class AnimatedFabMenu extends StatelessWidget {
         Navigator.of(context).push(
           PageRouteBuilder(
             opaque: false,
-            barrierColor: Colors.black.withOpacity(0.6),
+            barrierColor: Colors.black.withValues(alpha: 0.6),
             barrierDismissible: true,
             transitionDuration: const Duration(milliseconds: 250),
             pageBuilder: (context, animation, secondaryAnimation) {

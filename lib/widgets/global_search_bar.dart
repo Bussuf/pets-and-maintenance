@@ -15,12 +15,12 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
   final VoidCallback? onEditGroup; // אם קיים - מוצג 'עריכת קבוצה' בתפריט
 
   const GlobalSearchBar({
-    Key? key,
+    super.key,
     this.actions,
     this.showSettingsMenu = false,
     this.onAddItem,
     this.onEditGroup,
-  }) : super(key: key);
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(68);
@@ -82,7 +82,7 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        Navigator.of(this.context).push(
+        Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => destination),
         );
       }
@@ -299,7 +299,7 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                   ListTile(
                     leading: CircleAvatar(
                       radius: 18,
-                      backgroundColor: catColor.withOpacity(0.2),
+                      backgroundColor: catColor.withValues(alpha: 0.2),
                       child: Icon(catIcon, color: catColor, size: 20),
                     ),
                     title: Text(cat['name'], style: const TextStyle(fontWeight: FontWeight.bold)),

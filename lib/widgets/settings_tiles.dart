@@ -5,7 +5,7 @@ class SettingsSection extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
-  const SettingsSection({Key? key, required this.title, required this.children}) : super(key: key);
+  const SettingsSection({super.key, required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class SettingsSection extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+            side: BorderSide(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
           ),
           child: Column(
             children: [
@@ -40,7 +40,7 @@ class SettingsSection extends StatelessWidget {
                   Divider(
                     height: 1,
                     indent: 64,
-                    color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
                   ),
                 children[i],
               ],
@@ -65,7 +65,7 @@ class SettingsTile extends StatelessWidget {
   final bool enabled;
 
   const SettingsTile({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     this.leading,
@@ -75,7 +75,7 @@ class SettingsTile extends StatelessWidget {
     this.showChevron = true,
     this.isDanger = false,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
