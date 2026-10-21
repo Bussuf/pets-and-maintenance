@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
 import '../database/database_helper.dart';
 import 'notification_service.dart';
+import 'crash_reporting.dart';
 
 /// גיבוי ושחזור של כל נתוני האפליקציה לקובץ JSON מקומי
 class BackupService {
@@ -64,8 +65,8 @@ class BackupService {
     for (final task in await DatabaseHelper.instance.getAllTasks()) {
       try {
         await NotificationService.instance.cancelReminder(task.id);
-      } catch (e) {
-        debugPrint('Failed to cancel reminder: $e');
+      } catch (e, st) {
+        CrashReporting.recordError(e, st, reason: 'Failed to cancel reminder');
       }
     }
 
@@ -87,8 +88,8 @@ class BackupService {
     for (final task in await DatabaseHelper.instance.getAllTasks()) {
       try {
         await NotificationService.instance.scheduleTaskReminder(task);
-      } catch (e) {
-        debugPrint('Failed to schedule reminder: $e');
+      } catch (e, st) {
+        CrashReporting.recordError(e, st, reason: 'Failed to schedule reminder');
       }
     }
     return true;

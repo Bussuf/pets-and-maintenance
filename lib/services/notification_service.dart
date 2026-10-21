@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 import '../providers/locale_provider.dart';
 import '../database/database_helper.dart';
-import 'package:flutter/foundation.dart';
+import 'crash_reporting.dart';
 
 class NotificationService {
   static final NotificationService instance = NotificationService._();
@@ -115,8 +115,8 @@ class NotificationService {
     for (final task in tasks) {
       try {
         await scheduleTaskReminder(task);
-      } catch (e) {
-        debugPrint('Failed to reschedule ${task.id}: $e');
+      } catch (e, st) {
+        CrashReporting.recordError(e, st, reason: 'Failed to reschedule reminder');
       }
     }
   }

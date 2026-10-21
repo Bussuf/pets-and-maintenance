@@ -973,4 +973,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get completionDeleted => 'Completion deleted';
+
+  @override
+  String get crashReportsTitle => 'Send error reports';
+
+  @override
+  String get crashReportsSubtitle => 'Anonymous, without your content';
+
+  @override
+  String get crashReportsInfoTitle => 'Anonymous error reports';
+
+  @override
+  String get crashReportsInfoIntro =>
+      'When something goes wrong in the app (a crash, or an action that failed, like syncing to the calendar), a short technical report is sent so the problem can be found and fixed.';
+
+  @override
+  String get crashReportsInfoSentTitle => 'What is sent';
+
+  @override
+  String get crashReportsInfoSent =>
+      'A description of the error and where it happened in the code, the device model, the Android version and the app version.';
+
+  @override
+  String get crashReportsInfoNotSentTitle => 'What is never sent';
+
+  @override
+  String get crashReportsInfoNotSent =>
+      'Names of tasks, groups and items, dates, your email, or any other content you entered.';
+
+  @override
+  String get crashReportsInfoFooter =>
+      'Reports are stored in Google Firebase. You can turn sending off at any time with the switch.';
+
+  @override
+  String get gotIt => 'Got it';
 }

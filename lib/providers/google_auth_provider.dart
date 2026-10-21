@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/google_calendar_service.dart';
+import '../services/crash_reporting.dart';
 
 final googleAuthProvider = StateNotifierProvider<GoogleAuthNotifier, GoogleSignInAccount?>((ref) {
   return GoogleAuthNotifier();
@@ -24,8 +24,8 @@ class GoogleAuthNotifier extends StateNotifier<GoogleSignInAccount?> {
       final account = await GoogleCalendarService.instance.signIn();
       state = account;
       return true;
-    } catch (e) {
-      debugPrint('Google sign-in failed: $e');
+    } catch (e, st) {
+      CrashReporting.recordError(e, st, reason: 'Google sign-in failed');
       return false;
     }
   }

@@ -298,5 +298,15 @@
   "deleteCompletionConfirm": "Delete the completion from {date}? The count and last-done date will update. The next due date won't change.",
   "@deleteCompletionConfirm": {"placeholders":{"date":{"type":"String"}}},
   "completionUpdated": "Completion date updated",
-  "completionDeleted": "Completion deleted"
+  "completionDeleted": "Completion deleted",
+  "crashReportsTitle": "Send error reports",
+  "crashReportsSubtitle": "Anonymous, without your content",
+  "crashReportsInfoTitle": "Anonymous error reports",
+  "crashReportsInfoIntro": "When something goes wrong in the app (a crash, or an action that failed, like syncing to the calendar), a short technical report is sent so the problem can be found and fixed.",
+  "crashReportsInfoSentTitle": "What is sent",
+  "crashReportsInfoSent": "A description of the error and where it happened in the code, the device model, the Android version and the app version.",
+  "crashReportsInfoNotSentTitle": "What is never sent",
+  "crashReportsInfoNotSent": "Names of tasks, groups and items, dates, your email, or any other content you entered.",
+  "crashReportsInfoFooter": "Reports are stored in Google Firebase. You can turn sending off at any time with the switch.",
+  "gotIt": "Got it"
 }

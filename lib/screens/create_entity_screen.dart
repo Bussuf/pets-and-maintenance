@@ -13,6 +13,7 @@ import '../providers/items_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
 import '../theme/app_icons.dart';
 import '../services/notification_service.dart';
+import '../services/crash_reporting.dart';
 import '../providers/google_auth_provider.dart';
 import '../services/google_calendar_service.dart';
 import '../widgets/quick_add_dialogs.dart';
@@ -375,7 +376,8 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
           duration: const Duration(seconds: 3),
         ),
       );
-    } catch (e) {
+    } catch (e, st) {
+      CrashReporting.recordError(e, st, reason: 'Create save failed');
       messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.saveFailed('$e')),

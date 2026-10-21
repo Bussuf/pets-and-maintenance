@@ -250,5 +250,15 @@
   "deleteCompletion": "מחיקת ביצוע",
   "deleteCompletionConfirm": "למחוק את הביצוע מ-{date}? המונה ותאריך הביצוע האחרון יתעדכנו. תאריך היעד הבא לא ישתנה.",
   "completionUpdated": "תאריך הביצוע עודכן",
-  "completionDeleted": "הביצוע נמחק"
+  "completionDeleted": "הביצוע נמחק",
+  "crashReportsTitle": "שליחת דוחות שגיאה",
+  "crashReportsSubtitle": "אנונימי, בלי התוכן שלך",
+  "crashReportsInfoTitle": "דוחות שגיאה אנונימיים",
+  "crashReportsInfoIntro": "כשמשהו משתבש באפליקציה (קריסה, או פעולה שנכשלה כמו סנכרון ליומן), נשלח דוח טכני קצר - כדי שאפשר יהיה למצוא ולתקן את הבעיה.",
+  "crashReportsInfoSentTitle": "מה נשלח",
+  "crashReportsInfoSent": "תיאור השגיאה ומיקומה בקוד, דגם המכשיר, גרסת אנדרואיד וגרסת האפליקציה.",
+  "crashReportsInfoNotSentTitle": "מה לא נשלח, אף פעם",
+  "crashReportsInfoNotSent": "שמות משימות, קבוצות ופריטים, תאריכים, המייל שלך, או כל תוכן אחר שהזנת.",
+  "crashReportsInfoFooter": "הדוחות נשמרים ב-Firebase של Google. אפשר לכבות את השליחה בכל רגע במתג.",
+  "gotIt": "הבנתי"
 }

@@ -9,6 +9,7 @@ import '../providers/categories_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
 import '../providers/items_provider.dart';
 import '../services/backup_service.dart';
+import '../services/crash_reporting.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 import '../widgets/settings_tiles.dart';
@@ -21,7 +22,8 @@ class SettingsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     try {
       await BackupService.instance.exportToFile();
-    } catch (e) {
+    } catch (e, st) {
+      CrashReporting.recordError(e, st, reason: 'Backup export failed');
       if (context.mounted) _showSnack(context, l10n.backupFailed('$e'));
     }
   }
@@ -51,7 +53,8 @@ class SettingsScreen extends ConsumerWidget {
       ref.invalidate(itemsByCategoryProvider);
       ref.invalidate(tasksByCategoryProvider);
       if (context.mounted) _showSnack(context, l10n.backupImportSuccess);
-    } catch (e) {
+    } catch (e, st) {
+      CrashReporting.recordError(e, st, reason: 'Backup import failed');
       if (context.mounted) _showSnack(context, l10n.backupFailed('$e'));
     }
   }
@@ -71,6 +74,52 @@ class SettingsScreen extends ConsumerWidget {
       await ref.read(settingsProvider.notifier).setReminderTime(picked);
       if (context.mounted) _showSnack(context, l10n.reminderTimeUpdated);
     }
+  }
+
+  // הסבר מלא על דוחות השגיאה (#64) - ארוך מדי לשורה בהגדרות, אז בחלונית מלמטה
+  void _showCrashReportsInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) {
+        final textTheme = Theme.of(ctx).textTheme;
+        final headingStyle = textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold);
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.crashReportsInfoTitle,
+                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Text(l10n.crashReportsInfoIntro),
+                const SizedBox(height: 16),
+                Text(l10n.crashReportsInfoSentTitle, style: headingStyle),
+                const SizedBox(height: 4),
+                Text(l10n.crashReportsInfoSent),
+                const SizedBox(height: 16),
+                Text(l10n.crashReportsInfoNotSentTitle, style: headingStyle),
+                const SizedBox(height: 4),
+                Text(l10n.crashReportsInfoNotSent),
+                const SizedBox(height: 16),
+                Text(l10n.crashReportsInfoFooter),
+                const SizedBox(height: 20),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.gotIt),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showSnack(BuildContext context, String message) {
@@ -288,6 +337,24 @@ class SettingsScreen extends ConsumerWidget {
           SettingsSection(
             title: l10n.aboutSection,
             children: [
+              // דוחות שגיאה אנונימיים (#64) - StatefulBuilder כי המסך עצמו לא מחזיק state
+              StatefulBuilder(
+                builder: (context, setTileState) => SettingsTile(
+                  icon: Icons.bug_report_outlined,
+                  title: l10n.crashReportsTitle,
+                  subtitle: l10n.crashReportsSubtitle,
+                  showChevron: false,
+                  // לחיצה על השורה = הסבר מלא; המתג לבדו מדליק ומכבה
+                  onTap: () => _showCrashReportsInfo(context),
+                  trailing: Switch(
+                    value: CrashReporting.enabled,
+                    onChanged: (value) async {
+                      await CrashReporting.setEnabled(value);
+                      setTileState(() {});
+                    },
+                  ),
+                ),
+              ),
               FutureBuilder<PackageInfo>(
                 future: PackageInfo.fromPlatform(),
                 builder: (context, snapshot) => SettingsTile(

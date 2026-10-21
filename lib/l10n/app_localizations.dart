@@ -1597,6 +1597,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completion deleted'**
   String get completionDeleted;
+
+  /// No description provided for @crashReportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send error reports'**
+  String get crashReportsTitle;
+
+  /// No description provided for @crashReportsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous, without your content'**
+  String get crashReportsSubtitle;
+
+  /// No description provided for @crashReportsInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous error reports'**
+  String get crashReportsInfoTitle;
+
+  /// No description provided for @crashReportsInfoIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'When something goes wrong in the app (a crash, or an action that failed, like syncing to the calendar), a short technical report is sent so the problem can be found and fixed.'**
+  String get crashReportsInfoIntro;
+
+  /// No description provided for @crashReportsInfoSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is sent'**
+  String get crashReportsInfoSentTitle;
+
+  /// No description provided for @crashReportsInfoSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A description of the error and where it happened in the code, the device model, the Android version and the app version.'**
+  String get crashReportsInfoSent;
+
+  /// No description provided for @crashReportsInfoNotSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is never sent'**
+  String get crashReportsInfoNotSentTitle;
+
+  /// No description provided for @crashReportsInfoNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Names of tasks, groups and items, dates, your email, or any other content you entered.'**
+  String get crashReportsInfoNotSent;
+
+  /// No description provided for @crashReportsInfoFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports are stored in Google Firebase. You can turn sending off at any time with the switch.'**
+  String get crashReportsInfoFooter;
+
+  /// No description provided for @gotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
 }
 
 class _AppLocalizationsDelegate

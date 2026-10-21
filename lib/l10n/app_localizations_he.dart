@@ -981,4 +981,38 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get completionDeleted => 'הביצוע נמחק';
+
+  @override
+  String get crashReportsTitle => 'שליחת דוחות שגיאה';
+
+  @override
+  String get crashReportsSubtitle => 'אנונימי, בלי התוכן שלך';
+
+  @override
+  String get crashReportsInfoTitle => 'דוחות שגיאה אנונימיים';
+
+  @override
+  String get crashReportsInfoIntro =>
+      'כשמשהו משתבש באפליקציה (קריסה, או פעולה שנכשלה כמו סנכרון ליומן), נשלח דוח טכני קצר - כדי שאפשר יהיה למצוא ולתקן את הבעיה.';
+
+  @override
+  String get crashReportsInfoSentTitle => 'מה נשלח';
+
+  @override
+  String get crashReportsInfoSent =>
+      'תיאור השגיאה ומיקומה בקוד, דגם המכשיר, גרסת אנדרואיד וגרסת האפליקציה.';
+
+  @override
+  String get crashReportsInfoNotSentTitle => 'מה לא נשלח, אף פעם';
+
+  @override
+  String get crashReportsInfoNotSent =>
+      'שמות משימות, קבוצות ופריטים, תאריכים, המייל שלך, או כל תוכן אחר שהזנת.';
+
+  @override
+  String get crashReportsInfoFooter =>
+      'הדוחות נשמרים ב-Firebase של Google. אפשר לכבות את השליחה בכל רגע במתג.';
+
+  @override
+  String get gotIt => 'הבנתי';
 }

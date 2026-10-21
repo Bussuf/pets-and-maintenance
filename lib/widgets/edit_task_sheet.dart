@@ -11,6 +11,7 @@ import '../providers/categories_provider.dart';
 import '../providers/items_provider.dart';
 import '../services/task_actions.dart';
 import '../services/notification_service.dart';
+import '../services/crash_reporting.dart';
 import '../providers/google_auth_provider.dart';
 import '../services/google_calendar_service.dart';
 import 'quick_add_dialogs.dart';
@@ -700,8 +701,8 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                         updatedTask,
                       );
                     }
-                  } catch (e) {
-                    debugPrint('Failed to schedule reminder: $e');
+                  } catch (e, st) {
+                    CrashReporting.recordError(e, st, reason: 'Failed to schedule reminder');
                   }
 
                   // רענון כפול - מונע באג שבו הרשימה לא מתעדכנת לאחר שינוי קבוצה או מחיקה
@@ -729,7 +730,8 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       ),
                     );
                   }
-                } catch (e) {
+                } catch (e, st) {
+                  CrashReporting.recordError(e, st, reason: 'Edit task save failed');
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

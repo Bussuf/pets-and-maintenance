@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as cal;
 import 'package:http/http.dart' as http;
 import '../models/task.dart';
+import 'crash_reporting.dart';
 import '../providers/locale_provider.dart';
 
 // עוטף את קריאות הרשת ומוסיף להן את טוקן האימות של גוגל
@@ -77,8 +77,8 @@ class GoogleCalendarService {
       // primary = היומן הראשי של המשתמש
       final createdEvent = await api.events.insert(event, 'primary');
       return createdEvent.id;
-    } catch (e) {
-      debugPrint('Google Calendar create failed: $e');
+    } catch (e, st) {
+      CrashReporting.recordError(e, st, reason: 'Google Calendar create failed');
       return null;
     }
   }
@@ -104,8 +104,8 @@ class GoogleCalendarService {
     try {
       await api.events.update(event, 'primary', task.googleEventId!);
       return true;
-    } catch (e) {
-      debugPrint('Google Calendar update failed: $e');
+    } catch (e, st) {
+      CrashReporting.recordError(e, st, reason: 'Google Calendar update failed');
       return false;
     }
   }
@@ -119,8 +119,8 @@ class GoogleCalendarService {
     try {
       await api.events.delete('primary', eventId);
       return true;
-    } catch (e) {
-      debugPrint('Google Calendar delete failed: $e');
+    } catch (e, st) {
+      CrashReporting.recordError(e, st, reason: 'Google Calendar delete failed');
       return false;
     }
   }

@@ -9,6 +9,7 @@ import '../models/task_log.dart';
 import '../providers/date_format_provider.dart';
 import 'google_calendar_service.dart';
 import 'notification_service.dart';
+import 'crash_reporting.dart';
 
 /// מחיקת משימה עם אישור - משותף לעריכת משימה ולדף ניתוח מעקב משימה (#25).
 /// כולל: אירוע ביומן גוגל, התראה, ורענון המסכים. מחזיר true אם המשימה נמחקה
@@ -36,8 +37,8 @@ Future<bool> deleteTaskWithConfirm(BuildContext context, WidgetRef ref, Map<Stri
     // הגנה מפני קריסה שקטה בשירות ההתראות
     try {
       await NotificationService.instance.cancelReminder(task['id']);
-    } catch (e) {
-      debugPrint('Failed to cancel reminder: $e');
+    } catch (e, st) {
+      CrashReporting.recordError(e, st, reason: 'Failed to cancel reminder');
     }
 
     // רענון ריאקטיבי מיידי של הממשק
@@ -53,7 +54,8 @@ Future<bool> deleteTaskWithConfirm(BuildContext context, WidgetRef ref, Map<Stri
       ),
     );
     return true;
-  } catch (e) {
+  } catch (e, st) {
+    CrashReporting.recordError(e, st, reason: 'Delete task failed');
     messenger.showSnackBar(
       SnackBar(content: Text(l10n.deleteFailed('$e')), backgroundColor: Colors.red),
     );
