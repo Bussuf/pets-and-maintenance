@@ -90,6 +90,7 @@ class _TaskAnalysisScreenState extends ConsumerState<TaskAnalysisScreen> {
             unit: currentTask['interval_unit'],
             nextDue: DateTime.tryParse(currentTask['next_due_date']?.toString() ?? ''),
           ),
+          HistorySection(stats: stats, task: currentTask),
         ],
       ),
     );
@@ -326,8 +327,8 @@ class _TaskAnalysisScreenState extends ConsumerState<TaskAnalysisScreen> {
             unit: stats.avgIntervalDays == null
                 ? null
                 : avgValue == '1'
-                    ? (months ? l10n.unitMonth : l10n.unitDay)
-                    : (months ? l10n.months : l10n.days),
+                ? (months ? l10n.unitMonth : l10n.unitDay)
+                : (months ? l10n.months : l10n.days),
           ),
         ),
       ],

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/task_actions.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import '../l10n/app_localizations.dart';
 import '../models/task_stats.dart';
 import 'analysis_widgets.dart';
 import '../utils/duration_text.dart';
+import '../providers/date_format_provider.dart';
 
 /// הסקשנים המתקפלים של דף ניתוח מעקב משימה (#25), כל אחד בווידג'ט משלו
 
@@ -87,9 +90,19 @@ class WhenSection extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 6),
-            child: Text(
-              l10n.whenSentence(dayName, partNames[topPart]),
-              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            // התובנה - עם אייקון, בלי קווים מפרידים
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.lightbulb_outline, size: 18, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.whenSentence(dayName, partNames[topPart]),
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              ],
             ),
           ),
           _SubTitle(l10n.whenWeekdays),
@@ -314,17 +327,21 @@ class PaceSection extends StatelessWidget {
             ),
           ),
           _PaceChart(points: points, deviations: deviations, yearLabels: DurationText.usesMonths(unit)),
-          if (stats.fastestDays != null && stats.slowestDays != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                l10n.paceFastSlow(
-                  DurationText.days(l10n, stats.fastestDays!, unit),
-                  DurationText.days(l10n, stats.slowestDays!, unit),
-                ),
-                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-              ),
+          if (stats.fastestDays != null && stats.slowestDays != null) ...[
+            const SizedBox(height: 10),
+            Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+            DetailRow(
+              icon: Icons.directions_run,
+              label: l10n.paceFastest,
+              value: DurationText.days(l10n, stats.fastestDays!, unit),
             ),
+            Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+            DetailRow(
+              icon: Icons.directions_walk,
+              label: l10n.paceSlowest,
+              value: DurationText.days(l10n, stats.slowestDays!, unit),
+            ),
+          ],
         ],
       ),
     );
@@ -523,7 +540,8 @@ class CalendarSection extends StatefulWidget {
 }
 
 class _CalendarSectionState extends State<CalendarSection> {
-  late bool _yearly = DurationText.usesMonths(widget.unit);
+  // התצוגה נקבעת לפי סוג המשימה בלבד: ימים/שבועות - חודשי, חודשים/שנים - שנתי
+  late final bool _yearly = DurationText.usesMonths(widget.unit);
   late DateTime _month; // החודש המוצג (היום הראשון בו)
   late int _year; // השנה המוצגת
 
@@ -577,24 +595,15 @@ class _CalendarSectionState extends State<CalendarSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 8),
-          // בורר תצוגה: שתי האפשרויות תמיד זמינות
-          Center(
-            child: SegmentedButton<bool>(
-              showSelectedIcon: false,
-              style: const ButtonStyle(visualDensity: VisualDensity.compact),
-              segments: [
-                ButtonSegment(value: false, label: Text(l10n.calMonthly)),
-                ButtonSegment(value: true, label: Text(l10n.calYearly)),
-              ],
-              selected: {_yearly},
-              onSelectionChanged: (s) => setState(() => _yearly = s.first),
-            ),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 0),
+
           _yearly ? _buildYear(context, localeTag) : _buildMonth(context, localeTag),
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
           const _CalendarLegend(),
+          if (widget.stats.completions > 0) ...[
+            const SizedBox(height: 10),
+            _CalendarRecords(stats: widget.stats, unit: widget.unit),
+          ],
         ],
       ),
     );
@@ -602,6 +611,14 @@ class _CalendarSectionState extends State<CalendarSection> {
 
   /// שורת ניווט: חץ אחורה, כותרת, חץ קדימה (החצים מתהפכים לבד ב-RTL)
   Widget _navRow(String title, {required bool canBack, required bool canForward, required VoidCallback onBack, required VoidCallback onForward}) {
+    // אין לאן לדפדף - בלי חיצים בכלל, רק הכותרת
+    if (!canBack && !canForward) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+      );
+    }
+    // יש לאן לדפדף - שני החיצים תמיד (החץ שאין לאן להמשיך בכיוונו - מעומעם), כדי שהכותרת לא תזוז
     return Row(
       children: [
         IconButton(onPressed: canBack ? onBack : null, icon: const Icon(Icons.chevron_left)),
@@ -649,6 +666,7 @@ class _CalendarSectionState extends State<CalendarSection> {
         ),
         const SizedBox(height: 4),
         GridView.count(
+          padding: EdgeInsets.zero, // בלי ריפוד אוטומטי של שטח המערכת (שורה ריקה בסוף)
           crossAxisCount: 7,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -685,6 +703,7 @@ class _CalendarSectionState extends State<CalendarSection> {
           onForward: () => setState(() => _year++),
         ),
         GridView.count(
+          padding: EdgeInsets.zero, // בלי ריפוד אוטומטי של שטח המערכת (שורה ריקה בסוף)
           crossAxisCount: 4,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -834,4 +853,170 @@ class _DashedRectPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DashedRectPainter oldDelegate) => oldDelegate.color != color;
+}
+
+/// שיאים לאורך כל ההיסטוריה (לא רק התקופה המוצגת): הרצף הכי ארוך בזמן, והאיחור הכי גדול
+class _CalendarRecords extends StatelessWidget {
+  final TaskStats stats;
+  final String? unit;
+
+  const _CalendarRecords({required this.stats, required this.unit});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final late = stats.biggestLate;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+        DetailRow(
+          icon: Icons.local_fire_department_outlined,
+          label: l10n.recordLongestStreak,
+          value: l10n.recordStreakValue(stats.longestOnTimeStreak),
+          muted: stats.longestOnTimeStreak == 0,
+        ),
+        Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+        DetailRow(
+          icon: Icons.schedule,
+          label: l10n.recordBiggestLate,
+          value: late == null
+              ? l10n.recordNoLate
+              : '${DurationText.days(l10n, late.lateDays, unit)} · ${DateFormatNotifier.format(late.log.completedAt)}',
+          muted: late == null,
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------- היסטוריה ----------------
+
+/// רשימת הביצועים מהחדש לישן: 5 אחרונים, ו'הצג הכול' מרחיב באותו סקשן.
+/// ⋮ לכל שורה: תיקון תאריך / מחיקה (משותף - lib/services/task_actions.dart)
+class HistorySection extends StatefulWidget {
+  final TaskStats stats;
+  final Map<String, dynamic> task;
+
+  const HistorySection({Key? key, required this.stats, required this.task}) : super(key: key);
+
+  @override
+  State<HistorySection> createState() => _HistorySectionState();
+}
+
+class _HistorySectionState extends State<HistorySection> {
+  static const _collapsedCount = 5;
+  bool _showAll = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final logs = widget.stats.logs.reversed.toList(); // מהחדש לישן
+    final visible = _showAll ? logs : logs.take(_collapsedCount).toList();
+
+    return AnalysisSection(
+      id: 'history',
+      title: Text(l10n.historyTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+      chip: logs.isEmpty
+          ? null
+          : l10n.historyChip(logs.length, DateFormatNotifier.format(logs.first.log.completedAt)),
+      child: logs.isEmpty
+          ? const _NoData()
+          : Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (int i = 0; i < visible.length; i++) ...[
+            if (i > 0) Divider(height: 1, color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+            _HistoryRow(entry: visible[i], task: widget.task),
+          ],
+          if (logs.length > _collapsedCount)
+            Center(
+              child: TextButton(
+                onPressed: () => setState(() => _showAll = !_showAll),
+                child: Text(_showAll ? l10n.historyShowLess : l10n.historyShowAll(logs.length)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// שורה בהיסטוריה: אייקון, תאריך + יום, תגית בזמן/באיחור, ו-⋮
+class _HistoryRow extends ConsumerWidget {
+  final LogStat entry;
+  final Map<String, dynamic> task;
+
+  const _HistoryRow({required this.entry, required this.task});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final okColor = isDark ? Colors.green.shade300 : Colors.green.shade700;
+    final lateColor = isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    final color = entry.onTime ? okColor : lateColor;
+    final date = entry.log.completedAt;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Icon(entry.onTime ? Icons.check : Icons.schedule, size: 18, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '${DateFormatNotifier.format(date)} · ${_weekdayName(context, date.weekday)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+            child: Text(
+              entry.onTime
+                  ? l10n.statOnTime
+                  : l10n.overdueBy(DurationText.days(l10n, entry.lateDays, task['interval_unit'])),
+              style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600),
+            ),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, size: 20),
+            position: PopupMenuPosition.under,
+            onSelected: (value) {
+              if (value == 'date') {
+                editCompletionDate(context, ref, entry.log, task);
+              } else if (value == 'delete') {
+                deleteCompletionWithConfirm(context, ref, entry.log, task);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'date',
+                child: Row(children: [
+                  const Icon(Icons.edit_calendar_outlined, size: 20),
+                  const SizedBox(width: 12),
+                  Flexible(child: Text(l10n.fixCompletionDate)),
+                ]),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(children: [
+                  const Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                  const SizedBox(width: 12),
+                  Flexible(child: Text(l10n.deleteCompletion, style: const TextStyle(color: Colors.red))),
+                ]),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }

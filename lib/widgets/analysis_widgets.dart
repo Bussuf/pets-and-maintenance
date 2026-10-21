@@ -55,9 +55,35 @@ class _AnalysisSectionState extends State<AnalysisSection> {
     }
   }
 
+  /// האם הכותרת והצ'יפ נכנסים יחד בשורה אחת (מודדים את הטקסט בפועל, כולל גודל הגופן במכשיר)
+  // מקבלת את הגופן/כיוון/סגנון מבחוץ - כדי לא לשאול עליהם מתוך שלב הפריסה (LayoutBuilder),
+  // מה שגרם לשגיאה '_dependents.isEmpty' בסגירת הדף
+  bool _fitsOneLine(double maxWidth, TextStyle baseStyle, TextScaler scaler, TextDirection direction) {
+    final title = widget.title;
+    if (title is! Text || title.data == null) return false;
+    double width(String text, TextStyle style) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: baseStyle.merge(style)),
+        textDirection: direction,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout();
+      final w = painter.width;
+      painter.dispose();
+      return w;
+    }
+    final titleWidth = width(title.data!, title.style ?? const TextStyle());
+    final chipWidth = width(widget.chip!, const TextStyle(fontSize: 12)) + 20; // ריפוד הצ'יפ
+    return titleWidth + 8 + chipWidth <= maxWidth;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // נשאלים כאן (בבנייה) ולא בתוך LayoutBuilder - ראו _fitsOneLine
+    final baseStyle = DefaultTextStyle.of(context).style;
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
 
     return Card(
       margin: const EdgeInsets.only(top: 8),
@@ -84,16 +110,30 @@ class _AnalysisSectionState extends State<AnalysisSection> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    // הצ'יפ מתחת לכותרת - כדי שהכותרת לא תישבר והצ'יפ לא ייחתך
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        widget.title,
-                        if (widget.chip != null) ...[
-                          const SizedBox(height: 6),
-                          SummaryChip(text: widget.chip!),
-                        ],
-                      ],
+                    // הצ'יפ באותה שורה עם הכותרת כשיש מקום, ואחרת בשורה מתחת - כך אף פעם לא נחתך
+                    child: widget.chip == null
+                        ? widget.title
+                        : LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (_fitsOneLine(constraints.maxWidth, baseStyle, scaler, direction)) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(child: widget.title),
+                              const SizedBox(width: 8),
+                              SummaryChip(text: widget.chip!),
+                            ],
+                          );
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            widget.title,
+                            const SizedBox(height: 6),
+                            SummaryChip(text: widget.chip!),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ],

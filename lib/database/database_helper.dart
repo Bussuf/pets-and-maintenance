@@ -312,6 +312,32 @@ class DatabaseHelper {
     return maps.map((map) => TaskLog.fromMap(map)).toList();
   }
 
+  /// תיקון תאריך של ביצוע (#25.9) - רק completed_at; תאריך היעד שסגר (due_at) נשאר
+  Future<void> updateTaskLogDate(String logId, DateTime completedAt) async {
+    final db = await database;
+    await db.update('task_logs', {'completed_at': completedAt.toIso8601String()}, where: 'id = ?', whereArgs: [logId]);
+  }
+
+  Future<void> deleteTaskLog(String logId) async {
+    final db = await database;
+    await db.delete('task_logs', where: 'id = ?', whereArgs: [logId]);
+  }
+
+  /// עדכון המונה ו'בוצע לאחרונה' של משימה לפי הביצועים שנשארו. לא נוגע ביעד הבא (החלטת משתמש #25.9)
+  Future<void> recalcTaskFromLogs(String taskId) async {
+    final db = await database;
+    final rows = await db.rawQuery(
+      'SELECT COUNT(*) AS cnt, MAX(completed_at) AS last FROM task_logs WHERE task_id = ?',
+      [taskId],
+    );
+    await db.update(
+      'tasks',
+      {'completed_count': rows.first['cnt'] ?? 0, 'last_completed_date': rows.first['last']},
+      where: 'id = ?',
+      whereArgs: [taskId],
+    );
+  }
+
   /// חיפוש גלובלי בכל המאגר (משימות, פריטים וקבוצות) כולל מידע הקשרי
   Future<Map<String, List<Map<String, dynamic>>>> searchAll(String query) async {
     final db = await database;

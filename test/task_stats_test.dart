@@ -122,6 +122,29 @@ void main() {
     expect(s.monthPartCounts, [1, 1, 1]);
   });
 
+  test('הרצף הכי ארוך בזמן והאיחור הכי גדול', () {
+    final s = TaskStats.compute(task(amount: 7, next: DateTime(2026, 10, 30)), [
+      log(DateTime(2026, 9, 1)), // בזמן (ראשון)
+      log(DateTime(2026, 9, 8)), // בזמן
+      log(DateTime(2026, 9, 15)), // בזמן - רצף של 3
+      log(DateTime(2026, 9, 26)), // באיחור 4 (יעד 22/9)
+      log(DateTime(2026, 10, 3)), // בזמן
+      log(DateTime(2026, 10, 12)), // באיחור 2 (יעד 10/10)
+    ], now: now);
+    expect(s.longestOnTimeStreak, 3);
+    expect(s.biggestLate!.lateDays, 4);
+    expect(s.biggestLate!.log.completedAt, DateTime(2026, 9, 26));
+  });
+
+  test('בלי איחורים - אין איחור הכי גדול, והרצף הוא כל הביצועים', () {
+    final s = TaskStats.compute(task(next: DateTime(2026, 10, 30)), [
+      log(DateTime(2026, 10, 1)),
+      log(DateTime(2026, 10, 8)),
+    ], now: now);
+    expect(s.biggestLate, isNull);
+    expect(s.longestOnTimeStreak, 2);
+  });
+
   test('משימה חודשית: קו היעד בימים', () {
     final s = TaskStats.compute(task(amount: 6, unit: 'months', next: DateTime(2027, 3, 1)), [], now: now);
     expect(s.targetDays, closeTo(182.6, 0.1));

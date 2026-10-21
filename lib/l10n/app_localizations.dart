@@ -1541,7 +1541,7 @@ abstract class AppLocalizations {
   /// No description provided for @whenTitle.
   ///
   /// In en, this message translates to:
-  /// **'When you do it'**
+  /// **'Habits'**
   String get whenTitle;
 
   /// No description provided for @whenSentence.
@@ -1652,6 +1652,18 @@ abstract class AppLocalizations {
   /// **'Fastest: {fast} · Slowest: {slow}'**
   String paceFastSlow(String fast, String slow);
 
+  /// No description provided for @paceFastest.
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest'**
+  String get paceFastest;
+
+  /// No description provided for @paceSlowest.
+  ///
+  /// In en, this message translates to:
+  /// **'Slowest'**
+  String get paceSlowest;
+
   /// No description provided for @paceNeedTwo.
   ///
   /// In en, this message translates to:
@@ -1661,7 +1673,7 @@ abstract class AppLocalizations {
   /// No description provided for @calTitle.
   ///
   /// In en, this message translates to:
-  /// **'Completion calendar'**
+  /// **'Task calendar'**
   String get calTitle;
 
   /// No description provided for @calMonthly.
@@ -1681,6 +1693,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{period}: {n, plural, =0{no completions} =1{1 completion} other{{n} completions}}'**
   String calChip(String period, int n);
+
+  /// No description provided for @recordLongestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest streak'**
+  String get recordLongestStreak;
+
+  /// No description provided for @recordStreakValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{none yet} =1{1 on time} other{{n} on time in a row}}'**
+  String recordStreakValue(int n);
+
+  /// No description provided for @recordBiggestLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Biggest delay'**
+  String get recordBiggestLate;
+
+  /// No description provided for @recordNoLate.
+  ///
+  /// In en, this message translates to:
+  /// **'No delays 🎉'**
+  String get recordNoLate;
+
+  /// No description provided for @historyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get historyTitle;
+
+  /// No description provided for @historyChip.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 completion · {date}} other{{n} completions · last {date}}}'**
+  String historyChip(int n, String date);
+
+  /// No description provided for @historyShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all ({n})'**
+  String historyShowAll(int n);
+
+  /// No description provided for @historyShowLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get historyShowLess;
+
+  /// No description provided for @fixCompletionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix date'**
+  String get fixCompletionDate;
+
+  /// No description provided for @deleteCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete completion'**
+  String get deleteCompletion;
+
+  /// No description provided for @deleteCompletionConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the completion from {date}? The count and last-done date will update. The next due date won\'t change.'**
+  String deleteCompletionConfirm(String date);
+
+  /// No description provided for @completionUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion date updated'**
+  String get completionUpdated;
+
+  /// No description provided for @completionDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion deleted'**
+  String get completionDeleted;
 }
 
 class _AppLocalizationsDelegate

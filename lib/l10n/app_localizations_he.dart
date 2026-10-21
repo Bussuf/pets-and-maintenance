@@ -921,7 +921,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get unitMonth => 'חודש';
 
   @override
-  String get whenTitle => 'מתי אתה עושה את זה';
+  String get whenTitle => 'זמני ביצוע';
 
   @override
   String whenSentence(String day, String part) {
@@ -997,6 +997,12 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
+  String get paceFastest => 'הכי מהר';
+
+  @override
+  String get paceSlowest => 'הכי לאט';
+
+  @override
   String get paceNeedTwo => 'צריך לפחות 2 ביצועים כדי לראות קצב.';
 
   @override
@@ -1019,4 +1025,64 @@ class AppLocalizationsHe extends AppLocalizations {
     );
     return '$period: $_temp0';
   }
+
+  @override
+  String get recordLongestStreak => 'הרצף הכי ארוך';
+
+  @override
+  String recordStreakValue(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n ביצועים בזמן',
+      one: 'ביצוע אחד בזמן',
+      zero: 'אין עדיין',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recordBiggestLate => 'האיחור הכי גדול';
+
+  @override
+  String get recordNoLate => 'אין איחורים 🎉';
+
+  @override
+  String get historyTitle => 'היסטוריה';
+
+  @override
+  String historyChip(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n ביצועים · אחרון $date',
+      one: 'ביצוע אחד · $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyShowAll(int n) {
+    return 'הצג הכול ($n)';
+  }
+
+  @override
+  String get historyShowLess => 'הצג פחות';
+
+  @override
+  String get fixCompletionDate => 'תיקון תאריך';
+
+  @override
+  String get deleteCompletion => 'מחיקת ביצוע';
+
+  @override
+  String deleteCompletionConfirm(String date) {
+    return 'למחוק את הביצוע מ-$date? המונה ותאריך הביצוע האחרון יתעדכנו. תאריך היעד הבא לא ישתנה.';
+  }
+
+  @override
+  String get completionUpdated => 'תאריך הביצוע עודכן';
+
+  @override
+  String get completionDeleted => 'הביצוע נמחק';
 }

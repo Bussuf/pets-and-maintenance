@@ -43,6 +43,8 @@ class TaskStats {
   final int? fastestDays;
   final int? slowestDays;
   final int onTimeStreak; // ביצועים רצופים בזמן, מהאחרון אחורה
+  final int longestOnTimeStreak; // הרצף הכי ארוך של ביצועים בזמן, בכל ההיסטוריה
+  final LogStat? biggestLate; // הביצוע עם האיחור הכי גדול (null אם לא היה איחור)
   final int? daysUntilDue; // שלילי = באיחור; null = אין יעד (הסתיימה)
   final double targetDays; // התדירות בימים - קו היעד בגרף
   final Map<int, int> weekdayCounts; // DateTime.monday..sunday → כמות
@@ -58,6 +60,8 @@ class TaskStats {
     required this.fastestDays,
     required this.slowestDays,
     required this.onTimeStreak,
+    required this.longestOnTimeStreak,
+    required this.biggestLate,
     required this.daysUntilDue,
     required this.targetDays,
     required this.weekdayCounts,
@@ -115,6 +119,15 @@ class TaskStats {
       streak++;
     }
 
+    // --- הרצף הכי ארוך בזמן, והאיחור הכי גדול ---
+    int longest = 0, run = 0;
+    LogStat? biggestLate;
+    for (final s in stats) {
+      run = s.onTime ? run + 1 : 0;
+      if (run > longest) longest = run;
+      if (s.lateDays > 0 && (biggestLate == null || s.lateDays > biggestLate.lateDays)) biggestLate = s;
+    }
+
     // --- מתי: ימים בשבוע וחלק בחודש ---
     final weekdays = {for (int d = DateTime.monday; d <= DateTime.sunday; d++) d: 0};
     final monthParts = [0, 0, 0];
@@ -152,6 +165,8 @@ class TaskStats {
       fastestDays: intervalDays.isEmpty ? null : intervalDays.reduce((a, b) => a < b ? a : b),
       slowestDays: intervalDays.isEmpty ? null : intervalDays.reduce((a, b) => a > b ? a : b),
       onTimeStreak: streak,
+      longestOnTimeStreak: longest,
+      biggestLate: biggestLate,
       daysUntilDue: daysUntilDue,
       targetDays: _unitDays(amount, unit),
       weekdayCounts: weekdays,

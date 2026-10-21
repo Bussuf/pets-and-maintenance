@@ -913,7 +913,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unitMonth => 'month';
 
   @override
-  String get whenTitle => 'When you do it';
+  String get whenTitle => 'Habits';
 
   @override
   String whenSentence(String day, String part) {
@@ -989,10 +989,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get paceFastest => 'Fastest';
+
+  @override
+  String get paceSlowest => 'Slowest';
+
+  @override
   String get paceNeedTwo => 'At least 2 completions are needed to show a pace.';
 
   @override
-  String get calTitle => 'Completion calendar';
+  String get calTitle => 'Task calendar';
 
   @override
   String get calMonthly => 'Monthly';
@@ -1011,4 +1017,64 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$period: $_temp0';
   }
+
+  @override
+  String get recordLongestStreak => 'Longest streak';
+
+  @override
+  String recordStreakValue(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n on time in a row',
+      one: '1 on time',
+      zero: 'none yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recordBiggestLate => 'Biggest delay';
+
+  @override
+  String get recordNoLate => 'No delays 🎉';
+
+  @override
+  String get historyTitle => 'History';
+
+  @override
+  String historyChip(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n completions · last $date',
+      one: '1 completion · $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyShowAll(int n) {
+    return 'Show all ($n)';
+  }
+
+  @override
+  String get historyShowLess => 'Show less';
+
+  @override
+  String get fixCompletionDate => 'Fix date';
+
+  @override
+  String get deleteCompletion => 'Delete completion';
+
+  @override
+  String deleteCompletionConfirm(String date) {
+    return 'Delete the completion from $date? The count and last-done date will update. The next due date won\'t change.';
+  }
+
+  @override
+  String get completionUpdated => 'Completion date updated';
+
+  @override
+  String get completionDeleted => 'Completion deleted';
 }
