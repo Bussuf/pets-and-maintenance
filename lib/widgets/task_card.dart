@@ -433,25 +433,29 @@ class TaskCard extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-                // Wrap ולא Row: בגופן ענק הכפתורים יורדים שורה במקום להיחתך. בגודל רגיל - נראה בדיוק אותו דבר
-                Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  runSpacing: 8,
+                // #66: "השלם" רחב (ממלא את המקום הפנוי) + 4 אייקונים במרווח קבוע - תמיד שורה אחת.
+                // בגופן ענק הטקסט של "השלם" מתכווץ במקום להיחתך או לשבור שורה
+                Row(
                   children: [
-                    FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                    Expanded(
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                        ),
+                        onPressed: () =>
+                            _completeTaskAtDate(context, ref, DateTime.now()),
+                        icon: const Icon(Icons.check, size: 16),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(l10n.complete, maxLines: 1),
                         ),
                       ),
-                      onPressed: () =>
-                          _completeTaskAtDate(context, ref, DateTime.now()),
-                      icon: const Icon(Icons.check, size: 16),
-                      label: Text(l10n.complete),
                     ),
+                    const SizedBox(width: 8),
                     // כפתור הסטטיסטיקות החדש - ממוקם שני מימין
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
@@ -463,12 +467,14 @@ class TaskCard extends ConsumerWidget {
                         MaterialPageRoute(builder: (_) => TaskAnalysisScreen(taskId: task['id'])),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.history, size: 18),
                       tooltip: l10n.manualCompletion,
                       onPressed: () => _pickManualCompletionDate(context, ref),
                     ),
+                    const SizedBox(width: 8),
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.copy_outlined, size: 18),
@@ -481,6 +487,7 @@ class TaskCard extends ConsumerWidget {
                         duplicateData: task,
                       ),
                     ),
+                    const SizedBox(width: 8),
                     IconButton.outlined(
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.edit_outlined, size: 18),

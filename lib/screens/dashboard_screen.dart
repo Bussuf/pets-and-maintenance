@@ -151,6 +151,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         body: tasksAsync.when(
           data: (tasks) {
             final categories = categoriesAsync.value ?? [];
+
+            // #67: הקבוצה המסומנת נמחקה (מכל מסלול) - חוזרים ל'הכל'.
+            // רק אחרי שהרשימה סיימה להיטען, כדי לא לאפס בטעות קבוצה חדשה
+            if (_selectedCategoryId != null &&
+                !categoriesAsync.isLoading &&
+                !categories.any((c) => c.id == _selectedCategoryId)) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) _selectCategory(null);
+              });
+            }
             final now = DateTime.now();
             final todayStart = DateTime(now.year, now.month, now.day);
 
