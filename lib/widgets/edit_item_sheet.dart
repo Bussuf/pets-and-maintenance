@@ -140,7 +140,7 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                               );
                               ref.invalidate(dashboardTasksProvider);
 
-                              if (mounted) Navigator.pop(context);
+                              if (context.mounted) Navigator.pop(context);
                             }
                           },
                         ),
@@ -246,7 +246,7 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                 }
                 ref.invalidate(dashboardTasksProvider);
 
-                if (mounted) Navigator.pop(context);
+                if (context.mounted) Navigator.pop(context);
               },
               child: Text(
                 l10n.saveChanges,

@@ -62,9 +62,6 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
 
   void _onReorder(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
       if (widget.parentCategory == null) {
         final item = _categories.removeAt(oldIndex);
         _categories.insert(newIndex, item);
@@ -213,7 +210,7 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
     return ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: itemCount,
-      onReorder: _onReorder,
+      onReorderItem: _onReorder,
       itemBuilder: (context, index) {
         if (widget.parentCategory == null) {
           final cat = _categories[index];

@@ -171,7 +171,7 @@ class TaskCard extends ConsumerWidget {
       lastDate: DateTime.now(),
       helpText: AppLocalizations.of(context)!.pickActualCompletionDate,
     );
-    if (picked != null) {
+    if (picked != null && context.mounted) {
       await _completeTaskAtDate(context, ref, picked);
     }
   }

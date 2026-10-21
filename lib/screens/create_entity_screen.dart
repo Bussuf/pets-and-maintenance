@@ -256,6 +256,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
     if (!_formKey.currentState!.validate()) return;
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
+    final errorColor = Theme.of(context).colorScheme.error;
 
     try {
       final db = ref.read(databaseProvider);
@@ -315,8 +316,9 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
         String? endVal;
         if (_endCondition == 'count') {
           endVal = _endConditionCountController.text.trim();
-        } else if (_endCondition == 'until_date' && _endConditionDate != null)
+        } else if (_endCondition == 'until_date' && _endConditionDate != null) {
           endVal = _endConditionDate!.toIso8601String();
+        }
 
         AppTask task = AppTask(
           id: _uuid.v4(),
@@ -377,7 +379,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
       messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.saveFailed('$e')),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: errorColor,
         ),
       );
     }

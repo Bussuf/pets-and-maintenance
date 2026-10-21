@@ -157,7 +157,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                             onPressed: () async {
                               // מחיקה משותפת עם דף הניתוח (lib/services/task_actions.dart)
                               final deleted = await deleteTaskWithConfirm(context, ref, widget.taskMap);
-                              if (deleted && mounted) Navigator.pop(context);
+                              if (deleted && context.mounted) Navigator.pop(context);
                             },
                           ),
                         ],
@@ -718,7 +718,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                     );
                   }
 
-                  if (mounted) {
+                  if (context.mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -730,7 +730,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                     );
                   }
                 } catch (e) {
-                  if (mounted) {
+                  if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(l10n.saveFailed('$e')),

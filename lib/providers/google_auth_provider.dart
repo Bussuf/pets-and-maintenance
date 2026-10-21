@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/google_calendar_service.dart';
@@ -24,7 +25,7 @@ class GoogleAuthNotifier extends StateNotifier<GoogleSignInAccount?> {
       state = account;
       return true;
     } catch (e) {
-      print('Google sign-in failed: $e');
+      debugPrint('Google sign-in failed: $e');
       return false;
     }
   }

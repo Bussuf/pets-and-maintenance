@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/category.dart';
@@ -111,12 +112,12 @@ class DatabaseHelper {
       try {
         await db.execute('ALTER TABLE categories ADD COLUMN sort_order INTEGER DEFAULT 0;');
       } catch (e) {
-        print('Column sort_order already exists in categories or error: $e');
+        debugPrint('Column sort_order already exists in categories or error: $e');
       }
       try {
         await db.execute('ALTER TABLE items ADD COLUMN sort_order INTEGER DEFAULT 0;');
       } catch (e) {
-        print('Column sort_order already exists in items or error: $e');
+        debugPrint('Column sort_order already exists in items or error: $e');
       }
     }
     if (oldVersion < 5) {

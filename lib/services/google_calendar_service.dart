@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as cal;
 import 'package:http/http.dart' as http;
@@ -77,7 +78,7 @@ class GoogleCalendarService {
       final createdEvent = await api.events.insert(event, 'primary');
       return createdEvent.id;
     } catch (e) {
-      print('Google Calendar create failed: $e');
+      debugPrint('Google Calendar create failed: $e');
       return null;
     }
   }
@@ -104,7 +105,7 @@ class GoogleCalendarService {
       await api.events.update(event, 'primary', task.googleEventId!);
       return true;
     } catch (e) {
-      print('Google Calendar update failed: $e');
+      debugPrint('Google Calendar update failed: $e');
       return false;
     }
   }
@@ -119,7 +120,7 @@ class GoogleCalendarService {
       await api.events.delete('primary', eventId);
       return true;
     } catch (e) {
-      print('Google Calendar delete failed: $e');
+      debugPrint('Google Calendar delete failed: $e');
       return false;
     }
   }

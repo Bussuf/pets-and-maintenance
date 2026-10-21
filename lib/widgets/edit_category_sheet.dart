@@ -162,7 +162,7 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
                               ref.invalidate(categoriesProvider);
                               ref.invalidate(dashboardTasksProvider);
 
-                              if (mounted) {
+                              if (context.mounted) {
                                 Navigator.pop(context); // סוגר את חלונית העריכה
                                 // אם אנחנו לא בדאשבורד אלא בתוך מסך הקבוצה עצמו, סגור גם אותו
                                 if (Navigator.canPop(context)) Navigator.pop(context);
@@ -245,7 +245,7 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
                 ref.invalidate(categoriesProvider);
                 ref.invalidate(dashboardTasksProvider);
 
-                if (mounted) Navigator.pop(context);
+                if (context.mounted) Navigator.pop(context);
               },
               child: Text(l10n.saveChanges, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
