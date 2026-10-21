@@ -433,8 +433,11 @@ class TaskCard extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // Wrap ולא Row: בגופן ענק הכפתורים יורדים שורה במקום להיחתך. בגודל רגיל - נראה בדיוק אותו דבר
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runSpacing: 8,
                   children: [
                     FilledButton.icon(
                       style: FilledButton.styleFrom(
