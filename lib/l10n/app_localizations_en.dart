@@ -19,13 +19,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
-  String get delete => 'Delete';
-
-  @override
   String get deletePermanently => 'Delete permanently';
-
-  @override
-  String get newAction => 'New';
 
   @override
   String get task => 'Task';
@@ -37,25 +31,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get category => 'Group';
 
   @override
-  String get all => 'All';
-
-  @override
-  String get noTasks => 'No urgent tasks right now!';
-
-  @override
-  String get activeTasks => 'Active tasks';
-
-  @override
   String get overdueTasks => 'Overdue';
 
   @override
-  String get doneNow => 'Done now';
-
-  @override
   String get myGroups => 'My groups';
-
-  @override
-  String get name => 'Name';
 
   @override
   String get description => 'Description (optional)';
@@ -118,40 +97,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectDate => 'Select date';
 
   @override
-  String get times => 'times';
-
-  @override
   String savedSuccessfully(String entityName, String repositoryName) {
     return '$entityName saved to $repositoryName';
   }
 
   @override
-  String get lightMode => 'Light mode';
-
-  @override
-  String get darkMode => 'Dark mode';
-
-  @override
-  String get systemMode => 'System settings';
-
-  @override
   String dueDateLabel(String date) {
     return 'Due: $date';
   }
-
-  @override
-  String overdueDays(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count days overdue',
-      one: '1 day overdue',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get backupSection => 'Backup & restore';
 
   @override
   String get backupExport => 'Export backup';
@@ -190,9 +143,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageSection => 'Language';
-
-  @override
-  String get languageSystem => 'System';
 
   @override
   String get allGroups => 'All groups';
@@ -452,9 +402,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statistics => 'Statistics';
 
   @override
-  String get comingSoon => 'Coming soon';
-
-  @override
   String get manualCompletion => 'Log past completion';
 
   @override
@@ -551,9 +498,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get savedOk => 'Saved!';
 
   @override
-  String get appearanceSection => 'Appearance';
-
-  @override
   String get themeLight => 'Light';
 
   @override
@@ -588,11 +532,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsOff => 'Notifications off';
 
   @override
-  String reminderAt(String time) {
-    return 'At $time (tap to change)';
-  }
-
-  @override
   String get pickReminderTime => 'Pick reminder time';
 
   @override
@@ -606,11 +545,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get googleCalendarSync => 'Google Calendar sync';
-
-  @override
-  String connectedAs(String email) {
-    return 'Connected:\n$email';
-  }
 
   @override
   String get notConnectedGoogle => 'Not connected to Google Calendar';
@@ -805,9 +739,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get detailFrequency => 'Frequency';
-
-  @override
   String get detailReminder => 'Task reminder';
 
   @override
@@ -821,9 +752,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailActiveSince => 'Active since';
-
-  @override
-  String get detailGroupItem => 'Group · item';
 
   @override
   String endCountProgress(int done, int total) {
@@ -842,21 +770,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reminderActive => 'On';
 
   @override
-  String get reminderOffInSettings => 'Off in settings';
-
-  @override
-  String reminderOnDetail(String time, String style) {
-    return 'On · $time · $style';
-  }
-
-  @override
   String get calendarSynced => 'In Google Calendar';
 
   @override
   String get calendarNotSynced => 'Not in Google Calendar';
-
-  @override
-  String get chipCalendar => 'Calendar';
 
   @override
   String get healthOnTrack => 'On track';
@@ -984,11 +901,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String paceFastSlow(String fast, String slow) {
-    return 'Fastest: $fast · Slowest: $slow';
-  }
-
-  @override
   String get paceFastest => 'Fastest';
 
   @override
@@ -999,12 +911,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calTitle => 'Task calendar';
-
-  @override
-  String get calMonthly => 'Monthly';
-
-  @override
-  String get calYearly => 'Yearly';
 
   @override
   String calChip(String period, int n) {

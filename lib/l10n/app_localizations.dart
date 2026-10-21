@@ -116,23 +116,11 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
-  /// No description provided for @delete.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get delete;
-
   /// No description provided for @deletePermanently.
   ///
   /// In en, this message translates to:
   /// **'Delete permanently'**
   String get deletePermanently;
-
-  /// No description provided for @newAction.
-  ///
-  /// In en, this message translates to:
-  /// **'New'**
-  String get newAction;
 
   /// No description provided for @task.
   ///
@@ -152,47 +140,17 @@ abstract class AppLocalizations {
   /// **'Group'**
   String get category;
 
-  /// No description provided for @all.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get all;
-
-  /// No description provided for @noTasks.
-  ///
-  /// In en, this message translates to:
-  /// **'No urgent tasks right now!'**
-  String get noTasks;
-
-  /// No description provided for @activeTasks.
-  ///
-  /// In en, this message translates to:
-  /// **'Active tasks'**
-  String get activeTasks;
-
   /// No description provided for @overdueTasks.
   ///
   /// In en, this message translates to:
   /// **'Overdue'**
   String get overdueTasks;
 
-  /// No description provided for @doneNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Done now'**
-  String get doneNow;
-
   /// No description provided for @myGroups.
   ///
   /// In en, this message translates to:
   /// **'My groups'**
   String get myGroups;
-
-  /// No description provided for @name.
-  ///
-  /// In en, this message translates to:
-  /// **'Name'**
-  String get name;
 
   /// No description provided for @description.
   ///
@@ -314,53 +272,17 @@ abstract class AppLocalizations {
   /// **'Select date'**
   String get selectDate;
 
-  /// No description provided for @times.
-  ///
-  /// In en, this message translates to:
-  /// **'times'**
-  String get times;
-
   /// No description provided for @savedSuccessfully.
   ///
   /// In en, this message translates to:
   /// **'{entityName} saved to {repositoryName}'**
   String savedSuccessfully(String entityName, String repositoryName);
 
-  /// No description provided for @lightMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Light mode'**
-  String get lightMode;
-
-  /// No description provided for @darkMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark mode'**
-  String get darkMode;
-
-  /// No description provided for @systemMode.
-  ///
-  /// In en, this message translates to:
-  /// **'System settings'**
-  String get systemMode;
-
   /// No description provided for @dueDateLabel.
   ///
   /// In en, this message translates to:
   /// **'Due: {date}'**
   String dueDateLabel(String date);
-
-  /// No description provided for @overdueDays.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 day overdue} other{{count} days overdue}}'**
-  String overdueDays(int count);
-
-  /// No description provided for @backupSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup & restore'**
-  String get backupSection;
 
   /// No description provided for @backupExport.
   ///
@@ -427,12 +349,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language'**
   String get languageSection;
-
-  /// No description provided for @languageSystem.
-  ///
-  /// In en, this message translates to:
-  /// **'System'**
-  String get languageSystem;
 
   /// No description provided for @allGroups.
   ///
@@ -800,12 +716,6 @@ abstract class AppLocalizations {
   /// **'Statistics'**
   String get statistics;
 
-  /// No description provided for @comingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get comingSoon;
-
   /// No description provided for @manualCompletion.
   ///
   /// In en, this message translates to:
@@ -980,12 +890,6 @@ abstract class AppLocalizations {
   /// **'Saved!'**
   String get savedOk;
 
-  /// No description provided for @appearanceSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Appearance'**
-  String get appearanceSection;
-
   /// No description provided for @themeLight.
   ///
   /// In en, this message translates to:
@@ -1052,12 +956,6 @@ abstract class AppLocalizations {
   /// **'Notifications off'**
   String get notificationsOff;
 
-  /// No description provided for @reminderAt.
-  ///
-  /// In en, this message translates to:
-  /// **'At {time} (tap to change)'**
-  String reminderAt(String time);
-
   /// No description provided for @pickReminderTime.
   ///
   /// In en, this message translates to:
@@ -1087,12 +985,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google Calendar sync'**
   String get googleCalendarSync;
-
-  /// No description provided for @connectedAs.
-  ///
-  /// In en, this message translates to:
-  /// **'Connected:\n{email}'**
-  String connectedAs(String email);
 
   /// No description provided for @notConnectedGoogle.
   ///
@@ -1370,12 +1262,6 @@ abstract class AppLocalizations {
   /// **'{n, plural, =1{every year} other{every {n} years}}'**
   String everyYears(int n);
 
-  /// No description provided for @detailFrequency.
-  ///
-  /// In en, this message translates to:
-  /// **'Frequency'**
-  String get detailFrequency;
-
   /// No description provided for @detailReminder.
   ///
   /// In en, this message translates to:
@@ -1406,12 +1292,6 @@ abstract class AppLocalizations {
   /// **'Active since'**
   String get detailActiveSince;
 
-  /// No description provided for @detailGroupItem.
-  ///
-  /// In en, this message translates to:
-  /// **'Group · item'**
-  String get detailGroupItem;
-
   /// No description provided for @endCountProgress.
   ///
   /// In en, this message translates to:
@@ -1436,18 +1316,6 @@ abstract class AppLocalizations {
   /// **'On'**
   String get reminderActive;
 
-  /// No description provided for @reminderOffInSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Off in settings'**
-  String get reminderOffInSettings;
-
-  /// No description provided for @reminderOnDetail.
-  ///
-  /// In en, this message translates to:
-  /// **'On · {time} · {style}'**
-  String reminderOnDetail(String time, String style);
-
   /// No description provided for @calendarSynced.
   ///
   /// In en, this message translates to:
@@ -1459,12 +1327,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not in Google Calendar'**
   String get calendarNotSynced;
-
-  /// No description provided for @chipCalendar.
-  ///
-  /// In en, this message translates to:
-  /// **'Calendar'**
-  String get chipCalendar;
 
   /// No description provided for @healthOnTrack.
   ///
@@ -1646,12 +1508,6 @@ abstract class AppLocalizations {
   /// **'Early (↓) or late (↑) vs. the {target}-month target'**
   String paceCaptionMonths(String target);
 
-  /// No description provided for @paceFastSlow.
-  ///
-  /// In en, this message translates to:
-  /// **'Fastest: {fast} · Slowest: {slow}'**
-  String paceFastSlow(String fast, String slow);
-
   /// No description provided for @paceFastest.
   ///
   /// In en, this message translates to:
@@ -1675,18 +1531,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Task calendar'**
   String get calTitle;
-
-  /// No description provided for @calMonthly.
-  ///
-  /// In en, this message translates to:
-  /// **'Monthly'**
-  String get calMonthly;
-
-  /// No description provided for @calYearly.
-  ///
-  /// In en, this message translates to:
-  /// **'Yearly'**
-  String get calYearly;
 
   /// No description provided for @calChip.
   ///

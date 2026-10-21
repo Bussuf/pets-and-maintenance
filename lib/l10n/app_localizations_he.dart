@@ -19,13 +19,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get cancel => 'ביטול';
 
   @override
-  String get delete => 'מחק';
-
-  @override
   String get deletePermanently => 'מחק לצמיתות';
-
-  @override
-  String get newAction => 'חדש';
 
   @override
   String get task => 'משימה';
@@ -37,25 +31,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get category => 'קבוצה';
 
   @override
-  String get all => 'הכל';
-
-  @override
-  String get noTasks => 'אין משימות דחופות כרגע!';
-
-  @override
-  String get activeTasks => 'משימות פעילות';
-
-  @override
   String get overdueTasks => 'באיחור';
 
   @override
-  String get doneNow => 'בוצע עכשיו';
-
-  @override
   String get myGroups => 'הקבוצות שלי';
-
-  @override
-  String get name => 'שם';
 
   @override
   String get description => 'תיאור (אופציונלי)';
@@ -118,41 +97,14 @@ class AppLocalizationsHe extends AppLocalizations {
   String get selectDate => 'בחר תאריך';
 
   @override
-  String get times => 'פעמים';
-
-  @override
   String savedSuccessfully(String entityName, String repositoryName) {
     return '$entityName נשמר בהצלחה ב$repositoryName';
   }
 
   @override
-  String get lightMode => 'מצב בהיר';
-
-  @override
-  String get darkMode => 'מצב כהה';
-
-  @override
-  String get systemMode => 'הגדרות';
-
-  @override
   String dueDateLabel(String date) {
     return 'תאריך לביצוע: $date';
   }
-
-  @override
-  String overdueDays(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ימי איחור',
-      two: 'יומיים באיחור',
-      one: 'יום אחד באיחור',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get backupSection => 'גיבוי ושחזור';
 
   @override
   String get backupExport => 'ייצוא גיבוי';
@@ -190,9 +142,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get languageSection => 'שפה';
-
-  @override
-  String get languageSystem => 'מערכת';
 
   @override
   String get allGroups => 'כל הקבוצות';
@@ -456,9 +405,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get statistics => 'סטטיסטיקות';
 
   @override
-  String get comingSoon => 'יוטמע בהמשך';
-
-  @override
   String get manualCompletion => 'ביצוע ידני';
 
   @override
@@ -554,9 +500,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get savedOk => 'נשמר בהצלחה!';
 
   @override
-  String get appearanceSection => 'מראה ותצוגה';
-
-  @override
   String get themeLight => 'בהיר';
 
   @override
@@ -591,11 +534,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get notificationsOff => 'התראות כבויות';
 
   @override
-  String reminderAt(String time) {
-    return 'בשעה $time (לחץ לשינוי)';
-  }
-
-  @override
   String get pickReminderTime => 'בחר שעת תזכורת';
 
   @override
@@ -609,11 +547,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get googleCalendarSync => 'סנכרון יומן גוגל';
-
-  @override
-  String connectedAs(String email) {
-    return 'מחובר:\n$email';
-  }
 
   @override
   String get notConnectedGoogle => 'לא מחובר ליומן גוגל';
@@ -813,9 +746,6 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get detailFrequency => 'תדירות';
-
-  @override
   String get detailReminder => 'תזכורת משימה';
 
   @override
@@ -829,9 +759,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get detailActiveSince => 'פעילה מאז';
-
-  @override
-  String get detailGroupItem => 'קבוצה · פריט';
 
   @override
   String endCountProgress(int done, int total) {
@@ -850,21 +777,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get reminderActive => 'פעילה';
 
   @override
-  String get reminderOffInSettings => 'כבויה בהגדרות';
-
-  @override
-  String reminderOnDetail(String time, String style) {
-    return 'פעילה · $time · $style';
-  }
-
-  @override
   String get calendarSynced => 'ביומן גוגל';
 
   @override
   String get calendarNotSynced => 'לא ביומן גוגל';
-
-  @override
-  String get chipCalendar => 'ביומן';
 
   @override
   String get healthOnTrack => 'בקצב טוב';
@@ -992,11 +908,6 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String paceFastSlow(String fast, String slow) {
-    return 'הכי מהר: $fast · הכי לאט: $slow';
-  }
-
-  @override
   String get paceFastest => 'הכי מהר';
 
   @override
@@ -1007,12 +918,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get calTitle => 'לוח ביצועים';
-
-  @override
-  String get calMonthly => 'חודשי';
-
-  @override
-  String get calYearly => 'שנתי';
 
   @override
   String calChip(String period, int n) {
