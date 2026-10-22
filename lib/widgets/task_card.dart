@@ -125,8 +125,9 @@ class TaskCard extends ConsumerWidget {
       whereArgs: [task['id']],
     );
 
+    final logId = uuid.v4(); // #69: "בטל" מוחק בדיוק את הביצוע הזה
     await rawDb.insert('task_logs', {
-      'id': uuid.v4(),
+      'id': logId,
       'task_id': task['id'],
       'completed_at': completedDate.toIso8601String(),
       // תאריך היעד שהביצוע הזה סגר - לחישוב 'בזמן / באיחור' (#25). ריק אם המשימה כבר הסתיימה
@@ -143,21 +144,106 @@ class TaskCard extends ConsumerWidget {
     ref.invalidate(logsByTaskProvider(task['id'])); // היסטוריה ודף הניתוח
 
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            (isLastTime
-                ? l10n.extraCompletionLogged
-                : l10n.taskCompletedNext(
-              task['name'],
-              _formatDate(nextDate),
-            )) +
-                (calendarOk ? '' : '\n${l10n.calendarNotUpdated}'),
+      // נלקחים עכשיו: הכרטיס יכול להיבנות מחדש (או להיעלם) לפני שלוחצים "בטל"
+      final container = ProviderScope.containerOf(context, listen: false);
+      final messenger = ScaffoldMessenger.of(context);
+      // האירוע ביומן נמחק רק אם המשימה הסתיימה והמחיקה הצליחה
+      final eventDeleted = isLastTime && googleEventId != null && calendarOk;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              (isLastTime
+                  ? l10n.extraCompletionLogged
+                  : l10n.taskCompletedNext(
+                task['name'],
+                _formatDate(nextDate),
+              )) +
+                  (calendarOk ? '' : '\n${l10n.calendarNotUpdated}'),
+            ),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 6),
+            persist: false,
+            action: SnackBarAction(
+              label: l10n.undo,
+              onPressed: () => _undoCompletion(
+                container: container,
+                messenger: messenger,
+                l10n: l10n,
+                logId: logId,
+                eventDeleted: eventDeleted,
+              ),
+            ),
           ),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+        );
     }
+  }
+
+  /// #69: "בטל" - מחזיר הכל למצב שלפני "בוצע": יעד, מונה, בוצע לאחרונה, הביצוע עצמו, יומן ותזכורת.
+  /// `task` הוא עדיין המצב שלפני הביצוע (המפה של הכרטיס ברגע הלחיצה)
+  Future<void> _undoCompletion({
+    required ProviderContainer container,
+    required ScaffoldMessengerState messenger,
+    required AppLocalizations l10n,
+    required String logId,
+    required bool eventDeleted,
+  }) async {
+    final db = container.read(databaseProvider);
+    final rawDb = await db.database;
+    String? eventId = task['google_event_id'];
+    bool calendarOk = true;
+
+    if (eventId != null) {
+      final restored = AppTask(
+        id: task['id'],
+        itemId: task['item_id'],
+        name: task['name'],
+        description: task['description'],
+        intervalAmount: (task['interval_amount'] as num?)?.toInt() ?? 7,
+        intervalUnit: task['interval_unit'] as String? ?? 'days',
+        endCondition: task['end_condition'] ?? 'always',
+        endConditionValue: task['end_condition_value'],
+        nextDueDate: DateTime.tryParse(task['next_due_date']?.toString() ?? ''),
+        googleEventId: eventId,
+      );
+      if (eventDeleted) {
+        // המשימה הסתיימה והאירוע נמחק - יוצרים אירוע חדש בתאריך הקודם
+        eventId = await GoogleCalendarService.instance.createEvent(restored, l10n.calendarAddedFromApp);
+        calendarOk = eventId != null;
+      } else {
+        calendarOk = await GoogleCalendarService.instance.updateEvent(restored, l10n.calendarUpdatedFromApp);
+      }
+    }
+
+    await rawDb.update(
+      'tasks',
+      {
+        'next_due_date': task['next_due_date'],
+        'last_completed_date': task['last_completed_date'],
+        'completed_count': task['completed_count'] ?? 0,
+        'google_event_id': eventId,
+      },
+      where: 'id = ?',
+      whereArgs: [task['id']],
+    );
+    await db.deleteTaskLog(logId);
+
+    final restoredTask = await db.readTask(task['id']);
+    if (restoredTask != null) {
+      await NotificationService.instance.scheduleTaskReminder(restoredTask);
+    }
+
+    container.invalidate(dashboardTasksProvider);
+    container.invalidate(tasksByCategoryProvider(task['category_id']));
+    container.invalidate(logsByTaskProvider(task['id']));
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(calendarOk ? l10n.completionUndone : l10n.completionUndoneCalendarFailed),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _pickManualCompletionDate(

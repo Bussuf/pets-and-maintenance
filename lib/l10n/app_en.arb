@@ -308,5 +308,8 @@
   "crashReportsInfoNotSentTitle": "What is never sent",
   "crashReportsInfoNotSent": "Names of tasks, groups and items, dates, your email, or any other content you entered.",
   "crashReportsInfoFooter": "Reports are stored in Google Firebase. You can turn sending off at any time with the switch.",
-  "gotIt": "Got it"
+  "gotIt": "Got it",
+  "undo": "Undo",
+  "completionUndone": "Completion undone",
+  "completionUndoneCalendarFailed": "Completion undone, but Google Calendar wasn't updated"
 }

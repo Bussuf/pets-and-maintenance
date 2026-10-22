@@ -1007,4 +1007,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gotIt => 'Got it';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get completionUndone => 'Completion undone';
+
+  @override
+  String get completionUndoneCalendarFailed =>
+      'Completion undone, but Google Calendar wasn\'t updated';
 }

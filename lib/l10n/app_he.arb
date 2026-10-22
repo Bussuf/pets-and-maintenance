@@ -260,5 +260,8 @@
   "crashReportsInfoNotSentTitle": "מה לא נשלח, אף פעם",
   "crashReportsInfoNotSent": "שמות משימות, קבוצות ופריטים, תאריכים, המייל שלך, או כל תוכן אחר שהזנת.",
   "crashReportsInfoFooter": "הדוחות נשמרים ב-Firebase של Google. אפשר לכבות את השליחה בכל רגע במתג.",
-  "gotIt": "הבנתי"
+  "gotIt": "הבנתי",
+  "undo": "בטל",
+  "completionUndone": "הביצוע בוטל",
+  "completionUndoneCalendarFailed": "הביצוע בוטל, אבל יומן גוגל לא עודכן"
 }

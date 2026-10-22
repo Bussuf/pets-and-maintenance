@@ -1657,6 +1657,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Got it'**
   String get gotIt;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @completionUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion undone'**
+  String get completionUndone;
+
+  /// No description provided for @completionUndoneCalendarFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion undone, but Google Calendar wasn\'t updated'**
+  String get completionUndoneCalendarFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -1015,4 +1015,14 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get gotIt => 'הבנתי';
+
+  @override
+  String get undo => 'בטל';
+
+  @override
+  String get completionUndone => 'הביצוע בוטל';
+
+  @override
+  String get completionUndoneCalendarFailed =>
+      'הביצוע בוטל, אבל יומן גוגל לא עודכן';
 }
