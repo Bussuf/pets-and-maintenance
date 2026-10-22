@@ -1036,29 +1036,26 @@ class AppLocalizationsHe extends AppLocalizations {
   String get sampleGroupHome => 'בית';
 
   @override
-  String get sampleItemGarden => 'גינון';
+  String get sampleItemGarden => 'גינון 🌱';
 
   @override
-  String get sampleItemCleaning => 'ניקיונות';
+  String get sampleItemCleaning => 'ניקיונות 🧹';
 
   @override
-  String get sampleTaskWatering => 'השקיית עציצים';
+  String get sampleTaskWatering => 'השקיית עציצים (דוגמה)';
 
   @override
   String get sampleGroupPets => 'חיות מחמד';
 
   @override
-  String get sampleTaskWaterBowl => 'ניקוי כלי מים';
+  String get sampleTaskWaterBowl => 'ניקוי כלי מים (דוגמה)';
 
   @override
-  String get obWelcomeTitle => 'שלום! 👋';
+  String get obWelcomeTitle => 'ברוכים הבאים! 👋';
 
   @override
   String get obWelcomeBody =>
-      'PETS היא אפליקציה לניהול משימות חוזרות. בואו נכיר בכמה צעדים קצרים.';
-
-  @override
-  String get obStart => 'בואו נתחיל';
+      'PETS היא אפליקציה פשוטה שעוזרת לנהל משימות חוזרות.\n\nהכל בנוי ב-3 רמות: ברמה הראשית מגדירים קבוצה (כמו בית). בתוכה אפשר להגדיר פריטים או נושאים (ניקיונות, גינון), ולפריטים מגדירים משימות חוזרות (ניקוי רשתות מזגן אחת ל-3 חודשים, השקיית עציצים אחת ל-4 ימים).\n\nאין דרך נכונה להגדיר ולשייך פריטים לקבוצות - תארגנו כמו שנוח לכם.';
 
   @override
   String get obNext => 'הבא';
@@ -1070,32 +1067,137 @@ class AppLocalizationsHe extends AppLocalizations {
   String get obGotIt => 'הבנתי';
 
   @override
-  String get obGroupsTitle => 'קבוצה, פריט, משימה';
+  String get obGroupsTitle => 'כפתורי קבוצות ופריטים';
 
   @override
   String get obGroupsBody =>
-      'קבוצה היא כל נושא: בית, כיתה, רכב. בתוכה פריטים, ובהם משימות. אין דרך נכונה - איך שנוח לכם.';
+      'הכפתורים מסננים את המשימות שמתחת לקבוצה או לפריט שנבחרו. בדף הראשי רואים לרוחב את כל הקבוצות - לחיצה ארוכה על קבוצה: מעבר לקבוצה, עריכה ומחיקה. בדף של קבוצה מוצגים לרוחב כל הפריטים שלה.';
 
   @override
-  String get obFabTitle => 'מוסיפים כאן';
+  String get obFabTitle => 'מכאן מוסיפים הכל';
 
   @override
-  String get obFabBody => 'קבוצה, פריט או משימה חדשה.';
+  String get obFabBody => 'קבוצה ראשית, פריט בתוך קבוצה, וכמובן משימות חוזרות.';
 
   @override
   String get obMenuTitle => 'ארגון והגדרות';
 
   @override
   String get obMenuBody =>
-      'עריכה, מחיקה וסידור של קבוצות ופריטים. כשסיימתם עם הדוגמאות, מוחקים אותן מכאן.';
+      'מעבר להגדרות ולמסך ארגון קבוצות ופריטים: שם עורכים, מוחקים ומסדרים - גם את הדוגמאות כשתסיימו איתן.';
 
   @override
   String get obDoneTitle => 'זהו, אפשר להתחיל! 🐾';
 
   @override
   String get obDoneBody =>
-      'תזכורות ויומן מפעילים לכל משימה בנפרד. את ההדרכה אפשר לראות שוב בהגדרות ← אודות.';
+      'תזכורות בטלפון וחיבור ליומן גוגל מפעילים לכל משימה בנפרד, ביצירה או בעריכה שלה. ביומן נוצר אירוע אחד בלבד, בתאריך היעד הבא של המשימה. את ההדרכה אפשר לראות שוב בהגדרות ← אודות.';
 
   @override
   String get obReplay => 'איך זה עובד';
+
+  @override
+  String get obCardTitle => 'זו המשימה להיום';
+
+  @override
+  String get obCardBody =>
+      'במסך רואים את כל המשימות לפי סדר הביצוע: מה שהיום קודם, אחר כך מחר וכן הלאה. לחצו על כרטיס המשימה כדי לפתוח אותו ולראות פרטים נוספים ופעולות על המשימה.';
+
+  @override
+  String get obCompleteTitle => 'סיימתם? לוחצים \"השלם\"';
+
+  @override
+  String get obCompleteBody => 'נסו עכשיו - לחצו על הכפתור.';
+
+  @override
+  String get obNextDueTitle => 'תאריך היעד התעדכן';
+
+  @override
+  String get obAnalysisButtonTitle => 'רוצים לראות איך אתם מתקדמים?';
+
+  @override
+  String get obAnalysisButtonBody =>
+      'לחצו על הכפתור המודגש כדי לעבור לדף ניתוח מעקב משימה.';
+
+  @override
+  String get obAnalysisTitle => 'ניתוח הביצועים';
+
+  @override
+  String get obAnalysisBody =>
+      'זהו דף מעקב ביצועי משימה וניתוח הביצועים שלכם. הוא מציג גרפים ומדדים ביחס למשימה אחת. כל חלק בו נפתח ומכיל מידע נוסף - לחצו על החלקים השונים. כשתסיימו, חזרו אחורה וההדרכה תמשיך.';
+
+  @override
+  String get obManualTitle => 'הוסף תאריך ביצוע ידנית';
+
+  @override
+  String get obManualBody =>
+      'שכחתם לסמן בזמן? בחרו את התאריך שבו ביצעתם. (אפשר למחוק ביצועים בהיסטוריה, בתחתית דף הניתוח.)';
+
+  @override
+  String get obDuplicateTitle => 'שכפול משימה';
+
+  @override
+  String get obDuplicateBody =>
+      'פותח חלון יצירת משימה חדשה עם הגדרות זהות למשימה הזו, לעריכה ואישור. נוח כשיש משימות דומות לפריטים שונים.';
+
+  @override
+  String get obEditTitle => 'עריכת משימה';
+
+  @override
+  String get obEditBody =>
+      'שם, תדירות, תזכורת ויומן, התאריך לביצוע הבא - וגם מחיקת המשימה.';
+
+  @override
+  String get sampleItemCat => 'חתול 🐱';
+
+  @override
+  String get obDrawerTitle => 'התפריט הצדדי';
+
+  @override
+  String get obDrawerBody =>
+      'מעבר מהיר בין הדפים: דף כל הקבוצות, שהוא הדף המרכזי בלי מסננים, ודף לכל קבוצה שתפתחו.';
+
+  @override
+  String get obBrowse => 'הבנתי, אעיין';
+
+  @override
+  String get obStartCardTitle => 'רוצים להכיר את PETS?';
+
+  @override
+  String get obStartCardBody =>
+      'בלחיצה על \"התחל\" ניצור בשבילכם שתי קבוצות לדוגמה, בית וחיות מחמד, עם פריט \"גינון\" בתוך קבוצת הבית ומשימת השקיית עציצים שכבר יש לה היסטוריה של כמה שבועות. המדריך עובר על כל הפעולות ולוקח בערך 2-3 דקות.\n\nמעדיפים להתחיל לבד? ✕ סוגר את ההצעה. את ההדרכה תמיד אפשר לראות שוב בהגדרות ← אודות.';
+
+  @override
+  String get obStartCardButton => 'התחל';
+
+  @override
+  String get obTapHint => '👆 לחצו על האזור המואר כדי להמשיך';
+
+  @override
+  String get obEmptyTitle => 'אין לכם עדיין משימות.';
+
+  @override
+  String get obEmptyBody =>
+      'אפשר ליצור משימה חדשה בכפתור +, או לצפות שוב במדריך למשתמשים חדשים:';
+
+  @override
+  String get obEmptyLink => 'מדריך למשתמשים חדשים';
+
+  @override
+  String get obSkippedHint => 'ההדרכה נסגרה. אפשר לחזור אליה בהגדרות ← אודות.';
+
+  @override
+  String get obNextDueBody => 'היעד הבא לביצוע הוא בעוד 4 ימים.';
+
+  @override
+  String get sampleTaskWateringDesc =>
+      'להשקות את כל העציצים במרפסת ובסלון. בימים חמים במיוחד - לבדוק אם האדמה יבשה גם בין ההשקיות.';
+
+  @override
+  String get sampleTaskWaterBowlDesc =>
+      'לשטוף את הקערה במים חמים, לייבש ולמלא מים טריים. כדאי לבדוק גם את קערת האוכל.';
+
+  @override
+  String get calendarDeleteManyFailed =>
+      'נמחק, אבל חלק מהאירועים נשארו ביומן גוגל. אפשר למחוק אותם ידנית.';
 }

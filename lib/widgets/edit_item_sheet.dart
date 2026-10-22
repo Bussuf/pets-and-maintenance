@@ -10,6 +10,7 @@ import '../providers/dashboard_tasks_provider.dart';
 import 'confirm_delete_dialog.dart';
 import '../l10n/app_localizations.dart';
 import 'quick_add_dialogs.dart';
+import '../services/task_actions.dart';
 
 class EditItemSheet extends ConsumerStatefulWidget {
   final Item item;
@@ -22,10 +23,10 @@ class EditItemSheet extends ConsumerStatefulWidget {
   });
 
   static Future<void> show(
-    BuildContext context,
-    Item item,
-    String currentCategoryId,
-  ) {
+      BuildContext context,
+      Item item,
+      String currentCategoryId,
+      ) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -113,7 +114,10 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                               content: l10n.deleteItemConfirm(widget.item.name),
                               onConfirm: () {},
                             );
-                            if (confirm == true) {
+                            if (confirm == true && context.mounted) {
+                              final messenger = ScaffoldMessenger.of(context);
+                              // #80: תזכורות ואירועי יומן של המשימות בפריט
+                              final calendarOk = await cleanupTasksBeforeDelete(ref, itemId: widget.item.id);
                               final rawDb = await ref
                                   .read(databaseProvider)
                                   .database;
@@ -128,17 +132,10 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                                 whereArgs: [widget.item.id],
                               );
 
-                              ref.invalidate(
-                                itemsByCategoryProvider(
-                                  widget.currentCategoryId,
-                                ),
-                              );
-                              ref.invalidate(
-                                tasksByCategoryProvider(
-                                  widget.currentCategoryId,
-                                ),
-                              );
-                              ref.invalidate(dashboardTasksProvider);
+                              refreshAfterStructureDelete(ref);
+                              if (!calendarOk) {
+                                messenger.showSnackBar(SnackBar(content: Text(l10n.calendarDeleteManyFailed), behavior: SnackBarBehavior.floating));
+                              }
 
                               if (context.mounted) Navigator.pop(context);
                             }
@@ -177,10 +174,10 @@ class _EditItemSheetState extends ConsumerState<EditItemSheet> {
                             items: categories
                                 .map(
                                   (c) => DropdownMenuItem(
-                                    value: c.id,
-                                    child: Text(c.name),
-                                  ),
-                                )
+                                value: c.id,
+                                child: Text(c.name),
+                              ),
+                            )
                                 .toList(),
                             onChanged: (val) {
                               if (val != null) {

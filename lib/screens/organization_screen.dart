@@ -5,13 +5,13 @@ import '../models/item.dart';
 import '../providers/database_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/items_provider.dart';
-import '../providers/dashboard_tasks_provider.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../theme/app_icons.dart';
 import 'create_entity_screen.dart';
 import '../widgets/edit_category_sheet.dart';
 import '../widgets/edit_item_sheet.dart';
 import '../l10n/app_localizations.dart';
+import '../services/task_actions.dart';
 
 class OrganizationScreen extends ConsumerStatefulWidget {
   final Category? parentCategory;
@@ -85,14 +85,20 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
       content: warningText,
       onConfirm: () async {
         final db = ref.read(databaseProvider);
+        final messenger = ScaffoldMessenger.of(context);
+        final failedText = l10n.calendarDeleteManyFailed;
+        // #80: תזכורות ואירועי יומן של המשימות שבפנים - לפני שהמסד מוחק אותן
+        bool calendarOk;
         if (widget.parentCategory == null) {
+          calendarOk = await cleanupTasksBeforeDelete(ref, categoryId: id);
           await db.deleteCategory(id);
-          ref.invalidate(categoriesProvider);
         } else {
+          calendarOk = await cleanupTasksBeforeDelete(ref, itemId: id);
           await db.deleteItem(id);
-          ref.invalidate(itemsByCategoryProvider(widget.parentCategory!.id));
-          ref.invalidate(tasksByCategoryProvider(widget.parentCategory!.id));
-          ref.invalidate(dashboardTasksProvider);
+        }
+        refreshAfterStructureDelete(ref);
+        if (!calendarOk) {
+          messenger.showSnackBar(SnackBar(content: Text(failedText), behavior: SnackBarBehavior.floating));
         }
         _loadData();
       },

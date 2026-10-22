@@ -14,6 +14,7 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
   final VoidCallback? onAddItem; // אם קיים - מוצג 'הוסף פריט לקבוצה' בתפריט
   final VoidCallback? onEditGroup; // אם קיים - מוצג 'עריכת קבוצה' בתפריט
   final Key? menuKey; // מפתח לתפריט ⋮ - בשביל ההדרכה (#26)
+  final Key? drawerKey; // מפתח לכפתור התפריט הצדדי - בשביל ההדרכה (#26)
 
   const GlobalSearchBar({
     super.key,
@@ -22,6 +23,7 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
     this.onAddItem,
     this.onEditGroup,
     this.menuKey,
+    this.drawerKey,
   });
 
   @override
@@ -110,6 +112,7 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
               elevation: const WidgetStatePropertyAll(1),
               backgroundColor: WidgetStatePropertyAll(theme.colorScheme.surfaceContainerHigh),
               leading: IconButton(
+                key: widget.drawerKey,
                 icon: const Icon(Icons.menu),
                 tooltip: l10n.openMenu,
                 onPressed: () => Scaffold.of(context).openDrawer(),

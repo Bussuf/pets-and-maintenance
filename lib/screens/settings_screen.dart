@@ -346,7 +346,7 @@ class SettingsScreen extends ConsumerWidget {
                   final nav = Navigator.of(context);
                   nav.popUntil((route) => route.isFirst);
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (nav.mounted) Onboarding.start(nav.context, replay: true);
+                    if (nav.mounted) Onboarding.startReplay(nav.context);
                   });
                 },
               ),

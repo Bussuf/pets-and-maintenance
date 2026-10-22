@@ -5,7 +5,7 @@ import '../models/category.dart';
 import '../models/item.dart';
 import '../models/task.dart';
 import '../models/task_log.dart';
-import 'sample_data.dart';
+import '../onboarding/onboarding.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -96,8 +96,8 @@ class DatabaseHelper {
       )
     ''');
 
-    // נתוני דוגמה (#75) - רק כאן: הפונקציה הזו רצה רק כשהמסד נוצר לראשונה (התקנה חדשה)
-    await SampleData.seed(db);
+    // התקנה חדשה (#26): מסך "שלום" בכניסה. נתוני הדוגמה נוצרים רק בלחיצה על "התחל" בכרטיס
+    await Onboarding.markFreshInstall();
   }
 
   // מיגרציה בטוחה ושמירת נתונים קיימים

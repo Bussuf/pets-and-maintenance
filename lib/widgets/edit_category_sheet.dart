@@ -7,6 +7,7 @@ import '../providers/dashboard_tasks_provider.dart';
 import '../theme/app_icons.dart';
 import 'confirm_delete_dialog.dart';
 import '../l10n/app_localizations.dart';
+import '../services/task_actions.dart';
 
 class EditCategorySheet extends ConsumerStatefulWidget {
   final Category category;
@@ -149,7 +150,10 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
                               content: l10n.deleteGroupConfirm(widget.category.name),
                               onConfirm: () {}, // <--- הוספנו את הפרמטר החסר
                             );
-                            if (confirm == true) {
+                            if (confirm == true && context.mounted) {
+                              final messenger = ScaffoldMessenger.of(context);
+                              // #80: תזכורות ואירועי יומן של כל המשימות בקבוצה
+                              final calendarOk = await cleanupTasksBeforeDelete(ref, categoryId: widget.category.id);
                               final db = ref.read(databaseProvider);
                               final rawDb = await db.database;
                               final items = await rawDb.query('items', where: 'category_id = ?', whereArgs: [widget.category.id]);
@@ -159,8 +163,10 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
                               await rawDb.delete('items', where: 'category_id = ?', whereArgs: [widget.category.id]);
                               await rawDb.delete('categories', where: 'id = ?', whereArgs: [widget.category.id]);
 
-                              ref.invalidate(categoriesProvider);
-                              ref.invalidate(dashboardTasksProvider);
+                              refreshAfterStructureDelete(ref);
+                              if (!calendarOk) {
+                                messenger.showSnackBar(SnackBar(content: Text(l10n.calendarDeleteManyFailed), behavior: SnackBarBehavior.floating));
+                              }
 
                               if (context.mounted) {
                                 Navigator.pop(context); // סוגר את חלונית העריכה

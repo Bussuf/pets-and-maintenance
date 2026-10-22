@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/database_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
+import '../providers/categories_provider.dart';
 import '../providers/items_provider.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../models/task_log.dart';
@@ -117,4 +118,40 @@ Future<void> deleteCompletionWithConfirm(BuildContext context, WidgetRef ref, Ta
   messenger.showSnackBar(
     SnackBar(content: Text(l10n.completionDeleted), behavior: SnackBarBehavior.floating),
   );
+}
+
+/// לפני מחיקת קבוצה או פריט (#80): המסד מוחק את המשימות שבתוכם אוטומטית (CASCADE),
+/// אבל לא את התזכורות המתוזמנות בטלפון ולא את האירועים ביומן גוגל - מנקים אותם כאן.
+/// מחזיר false אם אירוע כלשהו לא נמחק מהיומן (למשל בלי אינטרנט)
+Future<bool> cleanupTasksBeforeDelete(WidgetRef ref, {String? categoryId, String? itemId}) async {
+  final rawDb = await ref.read(databaseProvider).database;
+  final tasks = categoryId != null
+      ? await rawDb.rawQuery(
+    'SELECT t.id, t.google_event_id FROM tasks t JOIN items i ON t.item_id = i.id WHERE i.category_id = ?',
+    [categoryId],
+  )
+      : await rawDb.query('tasks', columns: ['id', 'google_event_id'], where: 'item_id = ?', whereArgs: [itemId]);
+
+  var calendarOk = true;
+  for (final task in tasks) {
+    try {
+      await NotificationService.instance.cancelReminder(task['id'] as String);
+    } catch (e, st) {
+      CrashReporting.recordError(e, st, reason: 'Failed to cancel reminder');
+    }
+    final eventId = task['google_event_id'] as String?;
+    if (eventId != null) {
+      final deleted = await GoogleCalendarService.instance.deleteEvent(eventId);
+      calendarOk = calendarOk && deleted;
+    }
+  }
+  return calendarOk;
+}
+
+/// אחרי מחיקת קבוצה או פריט: רענון כל המסכים - כדי שלא יוצגו משימות שכבר נמחקו (#80)
+void refreshAfterStructureDelete(WidgetRef ref) {
+  ref.invalidate(categoriesProvider);
+  ref.invalidate(itemsByCategoryProvider);
+  ref.invalidate(tasksByCategoryProvider);
+  ref.invalidate(dashboardTasksProvider);
 }

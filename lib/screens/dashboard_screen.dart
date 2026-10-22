@@ -16,6 +16,7 @@ import '../l10n/app_localizations.dart';
 import '../widgets/agenda.dart';
 import '../models/task_status.dart';
 import '../onboarding/onboarding.dart';
+import '../onboarding/onboarding_card.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -35,8 +36,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // הדרכה בהתקנה חדשה (#26) - אחרי הציור הראשון
-    WidgetsBinding.instance.addPostFrameCallback((_) => Onboarding.maybeStart(context));
+    // הדרכה התחילה/הסתיימה - בנייה מחדש, כדי שהכרטיס של משימת הדוגמה יקבל (או יאבד) את המפתחות שלו
+    Onboarding.changes.addListener(_onOnboardingChanged);
+    // התקנה חדשה (#26): מסך "שלום" - אחרי שהמשימות נטענו (וגם המסד נוצר)
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(dashboardTasksProvider.future);
+      if (!mounted) return;
+      await Onboarding.maybeWelcome(context);
+    });
+  }
+
+  void _onOnboardingChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    Onboarding.changes.removeListener(_onOnboardingChanged);
+    super.dispose();
   }
 
   void _ensureChipVisible(String? categoryId) {
@@ -149,6 +166,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         appBar: GlobalSearchBar(
           showSettingsMenu: true,
           menuKey: Onboarding.key(OnboardingTarget.menu),
+          drawerKey: Onboarding.key(OnboardingTarget.drawer),
           // ברירת מחדל: הקבוצה של הצ'יפ המסומן (ללא קבוצה כשמסומן 'הכל')
           onAddItem: () => CreateEntityScreen.show(
             context,
@@ -364,6 +382,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
                 const Divider(height: 1),
 
+                // הזמנה להדרכה עם נתוני דוגמה (#26) - רק כשאין עדיין נתונים של המשתמש
+                const OnboardingStartCard(),
+
                 Expanded(
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
@@ -391,12 +412,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       }
                     },
                     child: flatList.isEmpty
-                        ? Center(
+                    // אין במסד כלום (#26) - הסבר + קישור למדריך. אחרת (למשל קבוצה מסוננת בלי משימות) - הטקסט הרגיל
+                        ? (tasks.isEmpty && categories.isEmpty
+                        ? const OnboardingEmptyState()
+                        : Center(
                       child: Text(
                         AppLocalizations.of(context)!.noTasksNow,
                         style: const TextStyle(color: Colors.grey),
                       ),
-                    )
+                    ))
                         : ListView.builder(
                       padding: EdgeInsets.only(
                         bottom: 80 + MediaQuery.paddingOf(context).bottom,
@@ -405,7 +429,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       itemBuilder: (context, index) {
                         final item = flatList[index];
                         if (item is AgendaGroup) {
-                          return AgendaSectionHeader(group: item);
+                          return AgendaSectionHeader(
+                            // הדרכה (#26): הכותרת של הקבוצה שבה משימת הדוגמה ("היום")
+                            key: item.tasks.any((t) => t['id'] == Onboarding.taskId)
+                                ? Onboarding.keyFor(OnboardingTarget.todayHeader, Onboarding.taskId)
+                                : null,
+                            group: item,
+                          );
                         }
 
                         final taskItem = item as Map<String, dynamic>;

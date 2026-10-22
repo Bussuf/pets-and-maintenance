@@ -11,6 +11,7 @@ import '../utils/duration_text.dart';
 import '../widgets/analysis_widgets.dart';
 import '../widgets/analysis_sections.dart';
 import '../widgets/edit_task_sheet.dart';
+import '../onboarding/onboarding.dart';
 
 /// דף 'ניתוח מעקב משימה' (#25). נפתח מכפתור 'סטטיסטיקות' בכרטיס המשימה.
 /// הנתונים נשאבים חיים מהספקים - עריכה, השלמה או מחיקה מתעדכנות מיד
@@ -25,6 +26,19 @@ class TaskAnalysisScreen extends ConsumerStatefulWidget {
 
 class _TaskAnalysisScreenState extends ConsumerState<TaskAnalysisScreen> {
   bool _closing = false;
+
+  // הדרכה (#26): כניסה ויציאה מהדף מקדמות את הצעדים
+  @override
+  void initState() {
+    super.initState();
+    Onboarding.notify(OnboardingEvent.analysisOpened, widget.taskId);
+  }
+
+  @override
+  void dispose() {
+    Onboarding.notify(OnboardingEvent.analysisClosed, widget.taskId);
+    super.dispose();
+  }
 
   /// המשימה נמחקה (מהתפריט או מעריכה) - סוגרים את הדף הזה בלבד
   void _closeBecauseDeleted() {
@@ -80,7 +94,10 @@ class _TaskAnalysisScreenState extends ConsumerState<TaskAnalysisScreen> {
         children: [
           _buildHeader(context, l10n, currentTask, stats),
           const SizedBox(height: 10),
-          _buildStatusCard(context, l10n, currentTask, stats),
+          KeyedSubtree(
+            key: Onboarding.keyFor(OnboardingTarget.analysisSummary, widget.taskId),
+            child: _buildStatusCard(context, l10n, currentTask, stats),
+          ),
           const SizedBox(height: 10),
           _buildTiles(l10n, currentTask, stats),
           WhenSection(stats: stats),

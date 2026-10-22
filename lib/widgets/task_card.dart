@@ -16,6 +16,7 @@ import '../providers/date_format_provider.dart';
 import '../models/task_status.dart';
 import '../utils/duration_text.dart';
 import '../screens/task_analysis_screen.dart';
+import '../onboarding/onboarding.dart';
 
 class TaskCard extends ConsumerWidget {
   final Map<String, dynamic> task;
@@ -142,6 +143,7 @@ class TaskCard extends ConsumerWidget {
     ref.invalidate(dashboardTasksProvider);
     ref.invalidate(tasksByCategoryProvider(task['category_id']));
     ref.invalidate(logsByTaskProvider(task['id'])); // היסטוריה ודף הניתוח
+    Onboarding.notify(OnboardingEvent.completed, task['id']); // הדרכה (#26)
 
     if (context.mounted) {
       // נלקחים עכשיו: הכרטיס יכול להיבנות מחדש (או להיעלם) לפני שלוחצים "בטל"
@@ -316,7 +318,11 @@ class TaskCard extends ConsumerWidget {
     final isRemindOn = (task['is_reminder_enabled'] == 1);
     final bool isGoogleSynced = task['google_event_id'] != null;
 
+    // הדרכה (#26): מפתחות רק לכרטיס של משימת הדוגמה, ורק בזמן הדרכה
+    GlobalKey? obKey(OnboardingTarget target) => Onboarding.keyFor(target, task['id']);
+
     return Card(
+      key: obKey(OnboardingTarget.taskCard),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -324,7 +330,10 @@ class TaskCard extends ConsumerWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: onToggleExpand,
+        onTap: () {
+          onToggleExpand();
+          if (!isExpanded) Onboarding.notify(OnboardingEvent.cardExpanded, task['id']);
+        },
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
@@ -413,6 +422,7 @@ class TaskCard extends ConsumerWidget {
                           ],
                         ),
                         Container(
+                          key: obKey(OnboardingTarget.nextDue),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
                             vertical: 2,
@@ -525,6 +535,7 @@ class TaskCard extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: FilledButton.icon(
+                        key: obKey(OnboardingTarget.completeButton),
                         style: FilledButton.styleFrom(
                           visualDensity: VisualDensity.compact,
                           padding: const EdgeInsets.symmetric(
@@ -544,6 +555,7 @@ class TaskCard extends ConsumerWidget {
                     const SizedBox(width: 8),
                     // כפתור הסטטיסטיקות החדש - ממוקם שני מימין
                     IconButton.outlined(
+                      key: obKey(OnboardingTarget.analysisButton),
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.insights, size: 18),
                       tooltip: l10n.statistics,
@@ -555,6 +567,7 @@ class TaskCard extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     IconButton.outlined(
+                      key: obKey(OnboardingTarget.manualButton),
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.history, size: 18),
                       tooltip: l10n.manualCompletion,
@@ -562,6 +575,7 @@ class TaskCard extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     IconButton.outlined(
+                      key: obKey(OnboardingTarget.duplicateButton),
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.copy_outlined, size: 18),
                       tooltip: l10n.duplicate,
@@ -575,6 +589,7 @@ class TaskCard extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     IconButton.outlined(
+                      key: obKey(OnboardingTarget.editButton),
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.edit_outlined, size: 18),
                       tooltip: l10n.edit,

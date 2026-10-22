@@ -1697,19 +1697,19 @@ abstract class AppLocalizations {
   /// No description provided for @sampleItemGarden.
   ///
   /// In en, this message translates to:
-  /// **'Garden'**
+  /// **'Garden 🌱'**
   String get sampleItemGarden;
 
   /// No description provided for @sampleItemCleaning.
   ///
   /// In en, this message translates to:
-  /// **'Cleaning'**
+  /// **'Cleaning 🧹'**
   String get sampleItemCleaning;
 
   /// No description provided for @sampleTaskWatering.
   ///
   /// In en, this message translates to:
-  /// **'Water the plants'**
+  /// **'Water the plants (example)'**
   String get sampleTaskWatering;
 
   /// No description provided for @sampleGroupPets.
@@ -1721,26 +1721,20 @@ abstract class AppLocalizations {
   /// No description provided for @sampleTaskWaterBowl.
   ///
   /// In en, this message translates to:
-  /// **'Clean the water bowl'**
+  /// **'Clean the water bowl (example)'**
   String get sampleTaskWaterBowl;
 
   /// No description provided for @obWelcomeTitle.
   ///
   /// In en, this message translates to:
-  /// **'Hi there! 👋'**
+  /// **'Welcome! 👋'**
   String get obWelcomeTitle;
 
   /// No description provided for @obWelcomeBody.
   ///
   /// In en, this message translates to:
-  /// **'PETS is an app for managing recurring tasks. Let us show you around in a few short steps.'**
+  /// **'PETS is a simple app that helps you manage recurring tasks.\n\nEverything has 3 levels: at the top you define a group (like Home). Inside it you can define items or topics (Cleaning, Garden), and items get recurring tasks (clean the air conditioner screens every 3 months, water the plants every 4 days).\n\nThere is no right way to define items and assign them to groups - organize it however suits you.'**
   String get obWelcomeBody;
-
-  /// No description provided for @obStart.
-  ///
-  /// In en, this message translates to:
-  /// **'Let us start'**
-  String get obStart;
 
   /// No description provided for @obNext.
   ///
@@ -1763,25 +1757,25 @@ abstract class AppLocalizations {
   /// No description provided for @obGroupsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Group, item, task'**
+  /// **'Group and item buttons'**
   String get obGroupsTitle;
 
   /// No description provided for @obGroupsBody.
   ///
   /// In en, this message translates to:
-  /// **'A group is any topic: home, a class, a car. Groups hold items, and items hold tasks. There is no right way - organize it however suits you.'**
+  /// **'These buttons filter the tasks below to the selected group or item. On the main page you see all your groups - long-press a group to open, edit or delete it. On a group page you see all of its items.'**
   String get obGroupsBody;
 
   /// No description provided for @obFabTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add things here'**
+  /// **'Add everything from here'**
   String get obFabTitle;
 
   /// No description provided for @obFabBody.
   ///
   /// In en, this message translates to:
-  /// **'A new group, item or task.'**
+  /// **'A top-level group, an item inside a group, and of course recurring tasks.'**
   String get obFabBody;
 
   /// No description provided for @obMenuTitle.
@@ -1793,7 +1787,7 @@ abstract class AppLocalizations {
   /// No description provided for @obMenuBody.
   ///
   /// In en, this message translates to:
-  /// **'Edit, delete and reorder groups and items. When you are done with the examples, delete them from here.'**
+  /// **'Go to Settings and to the Organize groups and items screen: edit, delete and reorder there - including the examples when you are done with them.'**
   String get obMenuBody;
 
   /// No description provided for @obDoneTitle.
@@ -1805,7 +1799,7 @@ abstract class AppLocalizations {
   /// No description provided for @obDoneBody.
   ///
   /// In en, this message translates to:
-  /// **'Reminders and calendar sync are turned on per task. You can replay this tour in Settings → About.'**
+  /// **'Phone reminders and Google Calendar sync are turned on per task, when you create or edit it. The calendar gets a single event, on the next due date of the task. You can replay this tour in Settings → About.'**
   String get obDoneBody;
 
   /// No description provided for @obReplay.
@@ -1813,6 +1807,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'How it works'**
   String get obReplay;
+
+  /// No description provided for @obCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This is today’s task'**
+  String get obCardTitle;
+
+  /// No description provided for @obCardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This screen shows all your tasks in the order they are due: today first, then tomorrow, and so on. Tap the task card to open it and see more details and actions.'**
+  String get obCardBody;
+
+  /// No description provided for @obCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Done? Tap \"Complete\"'**
+  String get obCompleteTitle;
+
+  /// No description provided for @obCompleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try it now - tap the button.'**
+  String get obCompleteBody;
+
+  /// No description provided for @obNextDueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The due date was updated'**
+  String get obNextDueTitle;
+
+  /// No description provided for @obAnalysisButtonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Want to see how you are doing?'**
+  String get obAnalysisButtonTitle;
+
+  /// No description provided for @obAnalysisButtonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the highlighted button to open the task analysis page.'**
+  String get obAnalysisButtonBody;
+
+  /// No description provided for @obAnalysisTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance analysis'**
+  String get obAnalysisTitle;
+
+  /// No description provided for @obAnalysisBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. When you are done, go back and the tour will continue.'**
+  String get obAnalysisBody;
+
+  /// No description provided for @obManualTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log a completion date manually'**
+  String get obManualTitle;
+
+  /// No description provided for @obManualBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot to mark it in time? Pick the date you actually did it. (You can delete completions in the history at the bottom of the analysis page.)'**
+  String get obManualBody;
+
+  /// No description provided for @obDuplicateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate task'**
+  String get obDuplicateTitle;
+
+  /// No description provided for @obDuplicateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens a new-task window with the same settings as this task, to edit and confirm. Handy when similar tasks belong to different items.'**
+  String get obDuplicateBody;
+
+  /// No description provided for @obEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit task'**
+  String get obEditTitle;
+
+  /// No description provided for @obEditBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Name, frequency, reminder, calendar and the next due date - and deleting the task.'**
+  String get obEditBody;
+
+  /// No description provided for @sampleItemCat.
+  ///
+  /// In en, this message translates to:
+  /// **'Cat 🐱'**
+  String get sampleItemCat;
+
+  /// No description provided for @obDrawerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The side menu'**
+  String get obDrawerTitle;
+
+  /// No description provided for @obDrawerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick switching between pages: the All groups page, which is the main page with no filters, and a page for every group you create.'**
+  String get obDrawerBody;
+
+  /// No description provided for @obBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it, let me look'**
+  String get obBrowse;
+
+  /// No description provided for @obStartCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Want to get to know PETS?'**
+  String get obStartCardTitle;
+
+  /// No description provided for @obStartCardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"Start\" and we will create two example groups, Home and Pets, with a \"Garden\" item in the Home group and a plant-watering task that already has a few weeks of history. The guide walks through every action and takes about 2-3 minutes.\n\nPrefer to start on your own? ✕ closes this offer. You can always replay the tour in Settings → About.'**
+  String get obStartCardBody;
+
+  /// No description provided for @obStartCardButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get obStartCardButton;
+
+  /// No description provided for @obTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'👆 Tap the highlighted area to continue'**
+  String get obTapHint;
+
+  /// No description provided for @obEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no tasks yet.'**
+  String get obEmptyTitle;
+
+  /// No description provided for @obEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new task with the + button, or watch the new-user guide again:'**
+  String get obEmptyBody;
+
+  /// No description provided for @obEmptyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'New-user guide'**
+  String get obEmptyLink;
+
+  /// No description provided for @obSkippedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The tour is closed. You can return to it in Settings → About.'**
+  String get obSkippedHint;
+
+  /// No description provided for @obNextDueBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The next due date is in 4 days.'**
+  String get obNextDueBody;
+
+  /// No description provided for @sampleTaskWateringDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Water all the plants on the balcony and in the living room. On very hot days, check whether the soil is dry between waterings too.'**
+  String get sampleTaskWateringDesc;
+
+  /// No description provided for @sampleTaskWaterBowlDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Wash the bowl in hot water, dry it and fill it with fresh water. Worth checking the food bowl too.'**
+  String get sampleTaskWaterBowlDesc;
+
+  /// No description provided for @calendarDeleteManyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted, but some events stayed in Google Calendar. You can delete them manually.'**
+  String get calendarDeleteManyFailed;
 }
 
 class _AppLocalizationsDelegate

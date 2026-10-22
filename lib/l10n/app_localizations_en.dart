@@ -1028,29 +1028,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sampleGroupHome => 'Home';
 
   @override
-  String get sampleItemGarden => 'Garden';
+  String get sampleItemGarden => 'Garden 🌱';
 
   @override
-  String get sampleItemCleaning => 'Cleaning';
+  String get sampleItemCleaning => 'Cleaning 🧹';
 
   @override
-  String get sampleTaskWatering => 'Water the plants';
+  String get sampleTaskWatering => 'Water the plants (example)';
 
   @override
   String get sampleGroupPets => 'Pets';
 
   @override
-  String get sampleTaskWaterBowl => 'Clean the water bowl';
+  String get sampleTaskWaterBowl => 'Clean the water bowl (example)';
 
   @override
-  String get obWelcomeTitle => 'Hi there! 👋';
+  String get obWelcomeTitle => 'Welcome! 👋';
 
   @override
   String get obWelcomeBody =>
-      'PETS is an app for managing recurring tasks. Let us show you around in a few short steps.';
-
-  @override
-  String get obStart => 'Let us start';
+      'PETS is a simple app that helps you manage recurring tasks.\n\nEverything has 3 levels: at the top you define a group (like Home). Inside it you can define items or topics (Cleaning, Garden), and items get recurring tasks (clean the air conditioner screens every 3 months, water the plants every 4 days).\n\nThere is no right way to define items and assign them to groups - organize it however suits you.';
 
   @override
   String get obNext => 'Next';
@@ -1062,32 +1059,139 @@ class AppLocalizationsEn extends AppLocalizations {
   String get obGotIt => 'Got it';
 
   @override
-  String get obGroupsTitle => 'Group, item, task';
+  String get obGroupsTitle => 'Group and item buttons';
 
   @override
   String get obGroupsBody =>
-      'A group is any topic: home, a class, a car. Groups hold items, and items hold tasks. There is no right way - organize it however suits you.';
+      'These buttons filter the tasks below to the selected group or item. On the main page you see all your groups - long-press a group to open, edit or delete it. On a group page you see all of its items.';
 
   @override
-  String get obFabTitle => 'Add things here';
+  String get obFabTitle => 'Add everything from here';
 
   @override
-  String get obFabBody => 'A new group, item or task.';
+  String get obFabBody =>
+      'A top-level group, an item inside a group, and of course recurring tasks.';
 
   @override
   String get obMenuTitle => 'Organize and settings';
 
   @override
   String get obMenuBody =>
-      'Edit, delete and reorder groups and items. When you are done with the examples, delete them from here.';
+      'Go to Settings and to the Organize groups and items screen: edit, delete and reorder there - including the examples when you are done with them.';
 
   @override
   String get obDoneTitle => 'All set! 🐾';
 
   @override
   String get obDoneBody =>
-      'Reminders and calendar sync are turned on per task. You can replay this tour in Settings → About.';
+      'Phone reminders and Google Calendar sync are turned on per task, when you create or edit it. The calendar gets a single event, on the next due date of the task. You can replay this tour in Settings → About.';
 
   @override
   String get obReplay => 'How it works';
+
+  @override
+  String get obCardTitle => 'This is today’s task';
+
+  @override
+  String get obCardBody =>
+      'This screen shows all your tasks in the order they are due: today first, then tomorrow, and so on. Tap the task card to open it and see more details and actions.';
+
+  @override
+  String get obCompleteTitle => 'Done? Tap \"Complete\"';
+
+  @override
+  String get obCompleteBody => 'Try it now - tap the button.';
+
+  @override
+  String get obNextDueTitle => 'The due date was updated';
+
+  @override
+  String get obAnalysisButtonTitle => 'Want to see how you are doing?';
+
+  @override
+  String get obAnalysisButtonBody =>
+      'Tap the highlighted button to open the task analysis page.';
+
+  @override
+  String get obAnalysisTitle => 'Performance analysis';
+
+  @override
+  String get obAnalysisBody =>
+      'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. When you are done, go back and the tour will continue.';
+
+  @override
+  String get obManualTitle => 'Log a completion date manually';
+
+  @override
+  String get obManualBody =>
+      'Forgot to mark it in time? Pick the date you actually did it. (You can delete completions in the history at the bottom of the analysis page.)';
+
+  @override
+  String get obDuplicateTitle => 'Duplicate task';
+
+  @override
+  String get obDuplicateBody =>
+      'Opens a new-task window with the same settings as this task, to edit and confirm. Handy when similar tasks belong to different items.';
+
+  @override
+  String get obEditTitle => 'Edit task';
+
+  @override
+  String get obEditBody =>
+      'Name, frequency, reminder, calendar and the next due date - and deleting the task.';
+
+  @override
+  String get sampleItemCat => 'Cat 🐱';
+
+  @override
+  String get obDrawerTitle => 'The side menu';
+
+  @override
+  String get obDrawerBody =>
+      'Quick switching between pages: the All groups page, which is the main page with no filters, and a page for every group you create.';
+
+  @override
+  String get obBrowse => 'Got it, let me look';
+
+  @override
+  String get obStartCardTitle => 'Want to get to know PETS?';
+
+  @override
+  String get obStartCardBody =>
+      'Tap \"Start\" and we will create two example groups, Home and Pets, with a \"Garden\" item in the Home group and a plant-watering task that already has a few weeks of history. The guide walks through every action and takes about 2-3 minutes.\n\nPrefer to start on your own? ✕ closes this offer. You can always replay the tour in Settings → About.';
+
+  @override
+  String get obStartCardButton => 'Start';
+
+  @override
+  String get obTapHint => '👆 Tap the highlighted area to continue';
+
+  @override
+  String get obEmptyTitle => 'You have no tasks yet.';
+
+  @override
+  String get obEmptyBody =>
+      'Create a new task with the + button, or watch the new-user guide again:';
+
+  @override
+  String get obEmptyLink => 'New-user guide';
+
+  @override
+  String get obSkippedHint =>
+      'The tour is closed. You can return to it in Settings → About.';
+
+  @override
+  String get obNextDueBody => 'The next due date is in 4 days.';
+
+  @override
+  String get sampleTaskWateringDesc =>
+      'Water all the plants on the balcony and in the living room. On very hot days, check whether the soil is dry between waterings too.';
+
+  @override
+  String get sampleTaskWaterBowlDesc =>
+      'Wash the bowl in hot water, dry it and fill it with fresh water. Worth checking the food bowl too.';
+
+  @override
+  String get calendarDeleteManyFailed =>
+      'Deleted, but some events stayed in Google Calendar. You can delete them manually.';
 }
