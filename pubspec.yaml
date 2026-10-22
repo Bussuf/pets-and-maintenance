@@ -115,10 +115,13 @@ flutter_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/icon.png"
+  # אייקון אדפטיבי (#68): רקע כחול + שכבת כפות - הטלפון גוזר את הצורה בעצמו
+  adaptive_icon_background: "#1F3A5F"
+  adaptive_icon_foreground: "assets/icon_foreground.png"
 
 flutter_native_splash:
-  color: "#2E2F33" # צבע הרקע של המסך
+  color: "#1F3A5F" # צבע הרקע של המסך
   image: "assets/splash_logo.png" # הנתיב ללוגו
   android_12:
-    color: "#2E2F33"
+    color: "#1F3A5F"
     image: "assets/splash_logo.png"
