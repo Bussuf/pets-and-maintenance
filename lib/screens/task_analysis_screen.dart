@@ -100,13 +100,14 @@ class _TaskAnalysisScreenState extends ConsumerState<TaskAnalysisScreen> {
           ),
           const SizedBox(height: 10),
           _buildTiles(l10n, currentTask, stats),
-          WhenSection(stats: stats),
-          PaceSection(stats: stats, unit: currentTask['interval_unit']),
+          // סדר (#78): לוח ביצועים (הכי ויזואלי) ← הקצב ← הרגלים ← היסטוריה בסוף
           CalendarSection(
             stats: stats,
             unit: currentTask['interval_unit'],
             nextDue: DateTime.tryParse(currentTask['next_due_date']?.toString() ?? ''),
           ),
+          PaceSection(stats: stats, unit: currentTask['interval_unit']),
+          WhenSection(stats: stats),
           HistorySection(stats: stats, task: currentTask),
         ],
       ),

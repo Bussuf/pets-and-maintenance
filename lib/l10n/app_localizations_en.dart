@@ -1047,7 +1047,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obWelcomeBody =>
-      'PETS is a simple app that helps you manage recurring tasks.\n\nEverything has 3 levels: at the top you define a group (like Home). Inside it you can define items or topics (Cleaning, Garden), and items get recurring tasks (clean the air conditioner screens every 3 months, water the plants every 4 days).\n\nThere is no right way to define items and assign them to groups - organize it however suits you.';
+      'PETS 🐾 is a simple app that helps you manage recurring tasks.\n\nEverything has 3 levels: at the top you define a group (like Home). Inside it you can define items or topics (Cleaning, Garden), and items get recurring tasks (clean the air conditioner screens every 3 months, water the plants every 4 days).\n\nThere is no right way to define items and assign them to groups - organize it however suits you.';
 
   @override
   String get obNext => 'Next';
@@ -1154,7 +1154,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get obBrowse => 'Got it, let me look';
 
   @override
-  String get obStartCardTitle => 'Want to get to know PETS?';
+  String get obStartCardTitle => 'Want to get to know PETS 🐾?';
 
   @override
   String get obStartCardBody =>

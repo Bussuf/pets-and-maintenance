@@ -1733,7 +1733,7 @@ abstract class AppLocalizations {
   /// No description provided for @obWelcomeBody.
   ///
   /// In en, this message translates to:
-  /// **'PETS is a simple app that helps you manage recurring tasks.\n\nEverything has 3 levels: at the top you define a group (like Home). Inside it you can define items or topics (Cleaning, Garden), and items get recurring tasks (clean the air conditioner screens every 3 months, water the plants every 4 days).\n\nThere is no right way to define items and assign them to groups - organize it however suits you.'**
+  /// **'PETS 🐾 is a simple app that helps you manage recurring tasks.\n\nEverything has 3 levels: at the top you define a group (like Home). Inside it you can define items or topics (Cleaning, Garden), and items get recurring tasks (clean the air conditioner screens every 3 months, water the plants every 4 days).\n\nThere is no right way to define items and assign them to groups - organize it however suits you.'**
   String get obWelcomeBody;
 
   /// No description provided for @obNext.
@@ -1925,7 +1925,7 @@ abstract class AppLocalizations {
   /// No description provided for @obStartCardTitle.
   ///
   /// In en, this message translates to:
-  /// **'Want to get to know PETS?'**
+  /// **'Want to get to know PETS 🐾?'**
   String get obStartCardTitle;
 
   /// No description provided for @obStartCardBody.
