@@ -479,7 +479,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fillNameAndItem => 'Please enter a task name and choose an item';
 
   @override
-  String get calendarAddedFromApp => 'Added from Pets & Maintenance';
+  String get calendarAddedFromApp => 'Added from PETS';
 
   @override
   String get calendarUpdatedFromApp => 'Updated from the app';
@@ -569,7 +569,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notifTaskDefaultBody => 'Time to do this task';
 
   @override
-  String get notifGroupedTitle => '🏠 Today\'s tasks';
+  String get notifGroupedTitle => '🐾 Today\'s tasks';
 
   @override
   String get notifGroupedBody =>
@@ -577,7 +577,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String calendarEventTitle(String name) {
-    return '🏠 Maintenance: $name';
+    return '🐾 Maintenance: $name';
   }
 
   @override
@@ -1017,4 +1017,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get completionUndoneCalendarFailed =>
       'Completion undone, but Google Calendar wasn\'t updated';
+
+  @override
+  String get nextDueDateLabel => 'Next due date';
 }

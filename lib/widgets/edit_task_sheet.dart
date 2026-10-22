@@ -50,6 +50,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
   late String _selectedEndCondition;
   DateTime? _selectedEndConditionDate;
   DateTime? _nextDueDate;
+  bool _manualDue = false; // #72: היעד נבחר ידנית - גובר על החישוב לפי התדירות
   late bool _isReminderEnabled;
   late bool _isGoogleSyncEnabled;
   String? _existingGoogleEventId;
@@ -98,6 +99,48 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
     _intervalAmountController.dispose();
     _endConditionCountController.dispose();
     super.dispose();
+  }
+
+  /// #72: היעד לפי התדירות - אותה נוסחה שהייתה בשמירה:
+  /// מהביצוע האחרון; טרם בוצעה - מהיעד הישן פחות התדירות הישנה
+  DateTime _autoDueDate(int amount, String unit) {
+    final t = widget.taskMap;
+    final oldAmount = (t['interval_amount'] as num?)?.toInt() ?? 7;
+    final oldUnit = t['interval_unit'] as String? ?? 'days';
+    final lastDone = DateTime.tryParse(t['last_completed_date'] ?? '');
+    final oldDue = DateTime.tryParse(t['next_due_date'] ?? '');
+    final base = lastDone ??
+        (oldDue != null ? AppTask.addInterval(oldDue, -oldAmount, oldUnit) : DateTime.now());
+    return AppTask.addInterval(base, amount, unit);
+  }
+
+  /// #72: שינוי תדירות מעדכן את השדה מול העיניים. הפעולה האחרונה קובעת - מבטל בחירה ידנית קודמת
+  void _onIntervalChanged() {
+    if (isTaskFinished(widget.taskMap)) return;
+    final amount = int.tryParse(_intervalAmountController.text);
+    if (amount == null || amount <= 0) return;
+    setState(() {
+      _nextDueDate = _autoDueDate(amount, _selectedUnit);
+      _manualDue = false;
+    });
+  }
+
+  /// #72: בחירה ידנית של תאריך לביצוע הבא (מותר גם תאריך שעבר)
+  Future<void> _pickNextDueDate() async {
+    final now = DateTime.now();
+    final current = _nextDueDate ?? now;
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: current,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(now.year + 10),
+    );
+    if (picked == null) return;
+    setState(() {
+      // שומרים את השעה של היעד הקיים - משנים רק את היום
+      _nextDueDate = DateTime(picked.year, picked.month, picked.day, current.hour, current.minute);
+      _manualDue = true;
+    });
   }
 
   Future<void> _showQuickAddCategory() async {
@@ -345,6 +388,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                                 extentOffset: _intervalAmountController.text.length,
                               ),
                               keyboardType: TextInputType.number,
+                              onChanged: (_) => _onIntervalChanged(),
                               decoration: InputDecoration(
                                 labelText: l10n.repeatEvery,
                                 border: const OutlineInputBorder(),
@@ -375,7 +419,10 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                                   child: Text(l10n.years),
                                 ),
                               ],
-                              onChanged: (v) => setState(() => _selectedUnit = v!),
+                              onChanged: (v) {
+                                setState(() => _selectedUnit = v!);
+                                _onIntervalChanged();
+                              },
                             ),
                           ),
                         ],
@@ -473,6 +520,25 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                         ],
                       ),
                       const SizedBox(height: 16),
+
+                      // --- #72: תאריך לביצוע הבא - ידני (לא מוצג במשימה שהסתיימה) ---
+                      if (!isTaskFinished(widget.taskMap)) ...[
+                        InkWell(
+                          onTap: _pickNextDueDate,
+                          borderRadius: BorderRadius.circular(4),
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: l10n.nextDueDateLabel,
+                              border: const OutlineInputBorder(),
+                              suffixIcon: const Icon(Icons.calendar_month),
+                            ),
+                            child: Text(
+                              _nextDueDate != null ? DateFormatNotifier.format(_nextDueDate!) : '—',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       // --- אזור התראות וסנכרון ---
                       Container(
@@ -578,24 +644,10 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       widget.taskMap['interval_unit'] as String? ?? 'days';
                   final newAmount =
                       int.tryParse(_intervalAmountController.text) ?? 7;
-                  if (newAmount != oldAmount || _selectedUnit != oldUnit) {
-                    final lastDone = DateTime.tryParse(
-                      widget.taskMap['last_completed_date'] ?? '',
-                    );
-                    final oldDue = DateTime.tryParse(
-                      widget.taskMap['next_due_date'] ?? '',
-                    );
-                    // טרם בוצעה: משחזרים את נקודת ההתחלה מהיעד הישן פחות התדירות הישנה
-                    final base =
-                        lastDone ??
-                            (oldDue != null
-                                ? AppTask.addInterval(oldDue, -oldAmount, oldUnit)
-                                : DateTime.now());
-                    _nextDueDate = AppTask.addInterval(
-                      base,
-                      newAmount,
-                      _selectedUnit,
-                    );
+                  // #72: תאריך שנבחר ידנית גובר על החישוב לפי התדירות
+                  if (!_manualDue &&
+                      (newAmount != oldAmount || _selectedUnit != oldUnit)) {
+                    _nextDueDate = _autoDueDate(newAmount, _selectedUnit);
                   }
 
                   // #51 תנאי סיום: משימה שהסתיימה ונערכה לשימוש חוזר חוזרת לפעילות,

@@ -127,7 +127,7 @@
   "errorLoadingItems": "שגיאה בטעינת פריטים",
   "chooseGroupFirst": "בחר קבוצה קודם",
   "fillNameAndItem": "נא למלא שם משימה ולשייך לפריט",
-  "calendarAddedFromApp": "נוסף מאפליקציית Pets & Maintenance",
+  "calendarAddedFromApp": "נוסף מאפליקציית PETS",
   "calendarUpdatedFromApp": "עודכן מהאפליקציה",
   "savedOk": "נשמר בהצלחה!",
   "themeLight": "בהיר",
@@ -156,9 +156,9 @@
   "notifChannelDesc": "התראות עבור משימות הבית",
   "notifTaskTitle": "תזכורת: {name}",
   "notifTaskDefaultBody": "הגיע הזמן לבצע את המשימה",
-  "notifGroupedTitle": "🏠 משימות להיום",
+  "notifGroupedTitle": "🐾 משימות להיום",
   "notifGroupedBody": "יש לך משימות תחזוקה שנקבעו להיום. היכנס לאפליקציה לצפייה בפירוט.",
-  "calendarEventTitle": "🏠 תחזוקה: {name}",
+  "calendarEventTitle": "🐾 תחזוקה: {name}",
   "calendarAutoCreated": "נוצר אוטומטית מאפליקציית Pets & Maintenance",
   "generalSection": "כללי",
   "themeTitle": "ערכת נושא",
@@ -263,5 +263,6 @@
   "gotIt": "הבנתי",
   "undo": "בטל",
   "completionUndone": "הביצוע בוטל",
-  "completionUndoneCalendarFailed": "הביצוע בוטל, אבל יומן גוגל לא עודכן"
+  "completionUndoneCalendarFailed": "הביצוע בוטל, אבל יומן גוגל לא עודכן",
+  "nextDueDateLabel": "תאריך לביצוע הבא"
 }

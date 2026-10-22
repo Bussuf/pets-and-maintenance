@@ -482,7 +482,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get fillNameAndItem => 'נא למלא שם משימה ולשייך לפריט';
 
   @override
-  String get calendarAddedFromApp => 'נוסף מאפליקציית Pets & Maintenance';
+  String get calendarAddedFromApp => 'נוסף מאפליקציית PETS';
 
   @override
   String get calendarUpdatedFromApp => 'עודכן מהאפליקציה';
@@ -572,7 +572,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get notifTaskDefaultBody => 'הגיע הזמן לבצע את המשימה';
 
   @override
-  String get notifGroupedTitle => '🏠 משימות להיום';
+  String get notifGroupedTitle => '🐾 משימות להיום';
 
   @override
   String get notifGroupedBody =>
@@ -580,7 +580,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String calendarEventTitle(String name) {
-    return '🏠 תחזוקה: $name';
+    return '🐾 תחזוקה: $name';
   }
 
   @override
@@ -1025,4 +1025,7 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get completionUndoneCalendarFailed =>
       'הביצוע בוטל, אבל יומן גוגל לא עודכן';
+
+  @override
+  String get nextDueDateLabel => 'תאריך לביצוע הבא';
 }

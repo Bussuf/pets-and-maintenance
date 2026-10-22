@@ -151,7 +151,7 @@
   "errorLoadingItems": "Failed to load items",
   "chooseGroupFirst": "Choose a group first",
   "fillNameAndItem": "Please enter a task name and choose an item",
-  "calendarAddedFromApp": "Added from Pets & Maintenance",
+  "calendarAddedFromApp": "Added from PETS",
   "calendarUpdatedFromApp": "Updated from the app",
   "savedOk": "Saved!",
   "themeLight": "Light",
@@ -181,9 +181,9 @@
   "notifTaskTitle": "Reminder: {name}",
   "@notifTaskTitle": {"placeholders":{"name":{"type":"String"}}},
   "notifTaskDefaultBody": "Time to do this task",
-  "notifGroupedTitle": "🏠 Today's tasks",
+  "notifGroupedTitle": "🐾 Today's tasks",
   "notifGroupedBody": "You have maintenance tasks due today. Open the app for details.",
-  "calendarEventTitle": "🏠 Maintenance: {name}",
+  "calendarEventTitle": "🐾 Maintenance: {name}",
   "@calendarEventTitle": {"placeholders":{"name":{"type":"String"}}},
   "calendarAutoCreated": "Created automatically by Pets & Maintenance",
   "generalSection": "General",
@@ -311,5 +311,6 @@
   "gotIt": "Got it",
   "undo": "Undo",
   "completionUndone": "Completion undone",
-  "completionUndoneCalendarFailed": "Completion undone, but Google Calendar wasn't updated"
+  "completionUndoneCalendarFailed": "Completion undone, but Google Calendar wasn't updated",
+  "nextDueDateLabel": "Next due date"
 }

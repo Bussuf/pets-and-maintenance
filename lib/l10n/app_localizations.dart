@@ -857,7 +857,7 @@ abstract class AppLocalizations {
   /// No description provided for @calendarAddedFromApp.
   ///
   /// In en, this message translates to:
-  /// **'Added from Pets & Maintenance'**
+  /// **'Added from PETS'**
   String get calendarAddedFromApp;
 
   /// No description provided for @calendarUpdatedFromApp.
@@ -1031,7 +1031,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifGroupedTitle.
   ///
   /// In en, this message translates to:
-  /// **'🏠 Today\'s tasks'**
+  /// **'🐾 Today\'s tasks'**
   String get notifGroupedTitle;
 
   /// No description provided for @notifGroupedBody.
@@ -1043,7 +1043,7 @@ abstract class AppLocalizations {
   /// No description provided for @calendarEventTitle.
   ///
   /// In en, this message translates to:
-  /// **'🏠 Maintenance: {name}'**
+  /// **'🐾 Maintenance: {name}'**
   String calendarEventTitle(String name);
 
   /// No description provided for @calendarAutoCreated.
@@ -1675,6 +1675,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completion undone, but Google Calendar wasn\'t updated'**
   String get completionUndoneCalendarFailed;
+
+  /// No description provided for @nextDueDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due date'**
+  String get nextDueDateLabel;
 }
 
 class _AppLocalizationsDelegate
