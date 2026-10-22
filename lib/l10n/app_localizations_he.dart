@@ -1028,4 +1028,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get nextDueDateLabel => 'תאריך לביצוע הבא';
+
+  @override
+  String get openSourceLicenses => 'רישיונות קוד פתוח';
 }

@@ -1020,4 +1020,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nextDueDateLabel => 'Next due date';
+
+  @override
+  String get openSourceLicenses => 'Open source licenses';
 }

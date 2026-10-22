@@ -1681,6 +1681,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next due date'**
   String get nextDueDateLabel;
+
+  /// No description provided for @openSourceLicenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Open source licenses'**
+  String get openSourceLicenses;
 }
 
 class _AppLocalizationsDelegate

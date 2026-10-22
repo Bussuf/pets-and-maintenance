@@ -363,6 +363,20 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle: snapshot.hasData ? '${snapshot.data!.version} (${snapshot.data!.buildNumber})' : '…',
                 ),
               ),
+              // רישיונות החבילות שהאפליקציה בנויה עליהן - מסך מוכן של Flutter שאוסף אותם לבד (#53)
+              SettingsTile(
+                icon: Icons.description_outlined,
+                title: l10n.openSourceLicenses,
+                onTap: () async {
+                  final info = await PackageInfo.fromPlatform();
+                  if (!context.mounted) return;
+                  showLicensePage(
+                    context: context,
+                    applicationName: 'PETS',
+                    applicationVersion: info.version,
+                  );
+                },
+              ),
             ],
           ),
         ],

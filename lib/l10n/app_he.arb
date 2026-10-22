@@ -264,5 +264,6 @@
   "undo": "בטל",
   "completionUndone": "הביצוע בוטל",
   "completionUndoneCalendarFailed": "הביצוע בוטל, אבל יומן גוגל לא עודכן",
-  "nextDueDateLabel": "תאריך לביצוע הבא"
+  "nextDueDateLabel": "תאריך לביצוע הבא",
+  "openSourceLicenses": "רישיונות קוד פתוח"
 }

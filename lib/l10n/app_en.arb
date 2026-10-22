@@ -312,5 +312,6 @@
   "undo": "Undo",
   "completionUndone": "Completion undone",
   "completionUndoneCalendarFailed": "Completion undone, but Google Calendar wasn't updated",
-  "nextDueDateLabel": "Next due date"
+  "nextDueDateLabel": "Next due date",
+  "openSourceLicenses": "Open source licenses"
 }
