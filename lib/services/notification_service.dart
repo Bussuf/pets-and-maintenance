@@ -39,7 +39,7 @@ class NotificationService {
 
     // 2. קריאת ההגדרות הגלובליות שנשמרו (שעה וסגנון)
     final prefs = await SharedPreferences.getInstance();
-    final style = prefs.getString('notificationStyle') ?? 'grouped';
+    final style = prefs.getString('notificationStyle') ?? 'separated';
 
     if (style == 'none') {
       await cancelReminder(task.id);

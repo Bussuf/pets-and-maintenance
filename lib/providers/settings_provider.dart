@@ -25,7 +25,7 @@ class SettingsState {
 
 class SettingsNotifier extends StateNotifier<SettingsState> {
   SettingsNotifier() : super(SettingsState(
-    notificationStyle: 'grouped', 
+    notificationStyle: 'separated',
     reminderTime: const TimeOfDay(hour: 9, minute: 0),
   )) {
     _loadSettings();
