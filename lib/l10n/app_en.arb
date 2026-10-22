@@ -319,5 +319,20 @@
   "sampleItemCleaning": "Cleaning",
   "sampleTaskWatering": "Water the plants",
   "sampleGroupPets": "Pets",
-  "sampleTaskWaterBowl": "Clean the water bowl"
+  "sampleTaskWaterBowl": "Clean the water bowl",
+  "obWelcomeTitle": "Hi there! 👋",
+  "obWelcomeBody": "PETS is an app for managing recurring tasks. Let us show you around in a few short steps.",
+  "obStart": "Let us start",
+  "obNext": "Next",
+  "obSkip": "Skip",
+  "obGotIt": "Got it",
+  "obGroupsTitle": "Group, item, task",
+  "obGroupsBody": "A group is any topic: home, a class, a car. Groups hold items, and items hold tasks. There is no right way - organize it however suits you.",
+  "obFabTitle": "Add things here",
+  "obFabBody": "A new group, item or task.",
+  "obMenuTitle": "Organize and settings",
+  "obMenuBody": "Edit, delete and reorder groups and items. When you are done with the examples, delete them from here.",
+  "obDoneTitle": "All set! 🐾",
+  "obDoneBody": "Reminders and calendar sync are turned on per task. You can replay this tour in Settings → About.",
+  "obReplay": "How it works"
 }

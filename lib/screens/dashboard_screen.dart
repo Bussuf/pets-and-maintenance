@@ -15,6 +15,7 @@ import '../widgets/edit_category_sheet.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/agenda.dart';
 import '../models/task_status.dart';
+import '../onboarding/onboarding.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -30,6 +31,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final Set<String> _expandedTaskIds = {};
 
   final Map<String?, GlobalKey> _chipKeys = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // הדרכה בהתקנה חדשה (#26) - אחרי הציור הראשון
+    WidgetsBinding.instance.addPostFrameCallback((_) => Onboarding.maybeStart(context));
+  }
 
   void _ensureChipVisible(String? categoryId) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -140,6 +148,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         key: _scaffoldKey,
         appBar: GlobalSearchBar(
           showSettingsMenu: true,
+          menuKey: Onboarding.key(OnboardingTarget.menu),
           // ברירת מחדל: הקבוצה של הצ'יפ המסומן (ללא קבוצה כשמסומן 'הכל')
           onAddItem: () => CreateEntityScreen.show(
             context,
@@ -285,6 +294,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     _chipKeys.putIfAbsent(null, () => GlobalKey());
 
                     return SingleChildScrollView(
+                      key: Onboarding.key(OnboardingTarget.groupChips),
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16.0,
@@ -431,6 +441,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
         floatingActionButton: AnimatedFabMenu(
+          key: Onboarding.key(OnboardingTarget.fab),
           currentCategoryId: _selectedCategoryId,
         ),
       ),

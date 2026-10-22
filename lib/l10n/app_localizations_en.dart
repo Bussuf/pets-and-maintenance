@@ -1041,4 +1041,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sampleTaskWaterBowl => 'Clean the water bowl';
+
+  @override
+  String get obWelcomeTitle => 'Hi there! 👋';
+
+  @override
+  String get obWelcomeBody =>
+      'PETS is an app for managing recurring tasks. Let us show you around in a few short steps.';
+
+  @override
+  String get obStart => 'Let us start';
+
+  @override
+  String get obNext => 'Next';
+
+  @override
+  String get obSkip => 'Skip';
+
+  @override
+  String get obGotIt => 'Got it';
+
+  @override
+  String get obGroupsTitle => 'Group, item, task';
+
+  @override
+  String get obGroupsBody =>
+      'A group is any topic: home, a class, a car. Groups hold items, and items hold tasks. There is no right way - organize it however suits you.';
+
+  @override
+  String get obFabTitle => 'Add things here';
+
+  @override
+  String get obFabBody => 'A new group, item or task.';
+
+  @override
+  String get obMenuTitle => 'Organize and settings';
+
+  @override
+  String get obMenuBody =>
+      'Edit, delete and reorder groups and items. When you are done with the examples, delete them from here.';
+
+  @override
+  String get obDoneTitle => 'All set! 🐾';
+
+  @override
+  String get obDoneBody =>
+      'Reminders and calendar sync are turned on per task. You can replay this tour in Settings → About.';
+
+  @override
+  String get obReplay => 'How it works';
 }

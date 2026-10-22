@@ -10,6 +10,7 @@ import '../providers/dashboard_tasks_provider.dart';
 import '../providers/items_provider.dart';
 import '../services/backup_service.dart';
 import '../services/crash_reporting.dart';
+import '../onboarding/onboarding.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 import '../widgets/settings_tiles.dart';
@@ -337,6 +338,18 @@ class SettingsScreen extends ConsumerWidget {
           SettingsSection(
             title: l10n.aboutSection,
             children: [
+              // הצגה חוזרת של ההדרכה (#26) - חוזרים לדשבורד, ושם היא מתחילה
+              SettingsTile(
+                icon: Icons.school_outlined,
+                title: l10n.obReplay,
+                onTap: () {
+                  final nav = Navigator.of(context);
+                  nav.popUntil((route) => route.isFirst);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (nav.mounted) Onboarding.start(nav.context, replay: true);
+                  });
+                },
+              ),
               // דוחות שגיאה אנונימיים (#64) - StatefulBuilder כי המסך עצמו לא מחזיק state
               StatefulBuilder(
                 builder: (context, setTileState) => SettingsTile(

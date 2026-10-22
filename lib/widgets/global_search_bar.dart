@@ -13,6 +13,7 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
   final bool showSettingsMenu;
   final VoidCallback? onAddItem; // אם קיים - מוצג 'הוסף פריט לקבוצה' בתפריט
   final VoidCallback? onEditGroup; // אם קיים - מוצג 'עריכת קבוצה' בתפריט
+  final Key? menuKey; // מפתח לתפריט ⋮ - בשביל ההדרכה (#26)
 
   const GlobalSearchBar({
     super.key,
@@ -20,6 +21,7 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
     this.showSettingsMenu = false,
     this.onAddItem,
     this.onEditGroup,
+    this.menuKey,
   });
 
   @override
@@ -117,6 +119,7 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
                 if (widget.actions != null) ...widget.actions!,
                 if (widget.showSettingsMenu)
                   PopupMenuButton<String>(
+                    key: widget.menuKey,
                     icon: const Icon(Icons.more_vert),
                     // נפתח מתחת לשורת החיפוש - הכפתור נשאר גלוי ולחיצה נוספת עליו סוגרת
                     position: PopupMenuPosition.under,

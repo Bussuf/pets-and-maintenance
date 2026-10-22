@@ -1723,6 +1723,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clean the water bowl'**
   String get sampleTaskWaterBowl;
+
+  /// No description provided for @obWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi there! 👋'**
+  String get obWelcomeTitle;
+
+  /// No description provided for @obWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'PETS is an app for managing recurring tasks. Let us show you around in a few short steps.'**
+  String get obWelcomeBody;
+
+  /// No description provided for @obStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Let us start'**
+  String get obStart;
+
+  /// No description provided for @obNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get obNext;
+
+  /// No description provided for @obSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get obSkip;
+
+  /// No description provided for @obGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get obGotIt;
+
+  /// No description provided for @obGroupsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Group, item, task'**
+  String get obGroupsTitle;
+
+  /// No description provided for @obGroupsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A group is any topic: home, a class, a car. Groups hold items, and items hold tasks. There is no right way - organize it however suits you.'**
+  String get obGroupsBody;
+
+  /// No description provided for @obFabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add things here'**
+  String get obFabTitle;
+
+  /// No description provided for @obFabBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A new group, item or task.'**
+  String get obFabBody;
+
+  /// No description provided for @obMenuTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize and settings'**
+  String get obMenuTitle;
+
+  /// No description provided for @obMenuBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit, delete and reorder groups and items. When you are done with the examples, delete them from here.'**
+  String get obMenuBody;
+
+  /// No description provided for @obDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All set! 🐾'**
+  String get obDoneTitle;
+
+  /// No description provided for @obDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders and calendar sync are turned on per task. You can replay this tour in Settings → About.'**
+  String get obDoneBody;
+
+  /// No description provided for @obReplay.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get obReplay;
 }
 
 class _AppLocalizationsDelegate

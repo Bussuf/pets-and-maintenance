@@ -1049,4 +1049,53 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get sampleTaskWaterBowl => 'ניקוי כלי מים';
+
+  @override
+  String get obWelcomeTitle => 'שלום! 👋';
+
+  @override
+  String get obWelcomeBody =>
+      'PETS היא אפליקציה לניהול משימות חוזרות. בואו נכיר בכמה צעדים קצרים.';
+
+  @override
+  String get obStart => 'בואו נתחיל';
+
+  @override
+  String get obNext => 'הבא';
+
+  @override
+  String get obSkip => 'דלג';
+
+  @override
+  String get obGotIt => 'הבנתי';
+
+  @override
+  String get obGroupsTitle => 'קבוצה, פריט, משימה';
+
+  @override
+  String get obGroupsBody =>
+      'קבוצה היא כל נושא: בית, כיתה, רכב. בתוכה פריטים, ובהם משימות. אין דרך נכונה - איך שנוח לכם.';
+
+  @override
+  String get obFabTitle => 'מוסיפים כאן';
+
+  @override
+  String get obFabBody => 'קבוצה, פריט או משימה חדשה.';
+
+  @override
+  String get obMenuTitle => 'ארגון והגדרות';
+
+  @override
+  String get obMenuBody =>
+      'עריכה, מחיקה וסידור של קבוצות ופריטים. כשסיימתם עם הדוגמאות, מוחקים אותן מכאן.';
+
+  @override
+  String get obDoneTitle => 'זהו, אפשר להתחיל! 🐾';
+
+  @override
+  String get obDoneBody =>
+      'תזכורות ויומן מפעילים לכל משימה בנפרד. את ההדרכה אפשר לראות שוב בהגדרות ← אודות.';
+
+  @override
+  String get obReplay => 'איך זה עובד';
 }

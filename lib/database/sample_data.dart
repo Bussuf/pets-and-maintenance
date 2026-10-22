@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import '../models/task.dart';
 import '../providers/locale_provider.dart';
+import '../onboarding/onboarding.dart';
 
 /// נתוני דוגמה (#75) - נוצרים פעם אחת, רק כשהמסד נוצר לראשונה (התקנה חדשה).
 /// לא בעדכון גרסה ולא אחרי שחזור גיבוי. בלי תזכורות ובלי יומן.
@@ -87,5 +88,8 @@ class SampleData {
       'is_reminder_enabled': 0,
       'created_at': now.toIso8601String(),
     });
+
+    // התקנה חדשה - ההדרכה תוצג בכניסה לדשבורד (#26)
+    await Onboarding.markPending();
   }
 }
