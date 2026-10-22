@@ -265,5 +265,11 @@
   "completionUndone": "הביצוע בוטל",
   "completionUndoneCalendarFailed": "הביצוע בוטל, אבל יומן גוגל לא עודכן",
   "nextDueDateLabel": "תאריך לביצוע הבא",
-  "openSourceLicenses": "רישיונות קוד פתוח"
+  "openSourceLicenses": "רישיונות קוד פתוח",
+  "sampleGroupHome": "בית",
+  "sampleItemGarden": "גינון",
+  "sampleItemCleaning": "ניקיונות",
+  "sampleTaskWatering": "השקיית עציצים",
+  "sampleGroupPets": "חיות מחמד",
+  "sampleTaskWaterBowl": "ניקוי כלי מים"
 }

@@ -1687,6 +1687,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open source licenses'**
   String get openSourceLicenses;
+
+  /// No description provided for @sampleGroupHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get sampleGroupHome;
+
+  /// No description provided for @sampleItemGarden.
+  ///
+  /// In en, this message translates to:
+  /// **'Garden'**
+  String get sampleItemGarden;
+
+  /// No description provided for @sampleItemCleaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning'**
+  String get sampleItemCleaning;
+
+  /// No description provided for @sampleTaskWatering.
+  ///
+  /// In en, this message translates to:
+  /// **'Water the plants'**
+  String get sampleTaskWatering;
+
+  /// No description provided for @sampleGroupPets.
+  ///
+  /// In en, this message translates to:
+  /// **'Pets'**
+  String get sampleGroupPets;
+
+  /// No description provided for @sampleTaskWaterBowl.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean the water bowl'**
+  String get sampleTaskWaterBowl;
 }
 
 class _AppLocalizationsDelegate

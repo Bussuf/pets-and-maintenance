@@ -1023,4 +1023,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openSourceLicenses => 'Open source licenses';
+
+  @override
+  String get sampleGroupHome => 'Home';
+
+  @override
+  String get sampleItemGarden => 'Garden';
+
+  @override
+  String get sampleItemCleaning => 'Cleaning';
+
+  @override
+  String get sampleTaskWatering => 'Water the plants';
+
+  @override
+  String get sampleGroupPets => 'Pets';
+
+  @override
+  String get sampleTaskWaterBowl => 'Clean the water bowl';
 }

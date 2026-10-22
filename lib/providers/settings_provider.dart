@@ -33,7 +33,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    final style = prefs.getString('notificationStyle') ?? 'grouped';
+    final style = prefs.getString('notificationStyle') ?? 'separated';
     final timeStr = prefs.getString('reminderTime') ?? '09:00';
     
     final parts = timeStr.split(':');

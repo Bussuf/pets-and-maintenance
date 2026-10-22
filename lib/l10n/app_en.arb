@@ -313,5 +313,11 @@
   "completionUndone": "Completion undone",
   "completionUndoneCalendarFailed": "Completion undone, but Google Calendar wasn't updated",
   "nextDueDateLabel": "Next due date",
-  "openSourceLicenses": "Open source licenses"
+  "openSourceLicenses": "Open source licenses",
+  "sampleGroupHome": "Home",
+  "sampleItemGarden": "Garden",
+  "sampleItemCleaning": "Cleaning",
+  "sampleTaskWatering": "Water the plants",
+  "sampleGroupPets": "Pets",
+  "sampleTaskWaterBowl": "Clean the water bowl"
 }

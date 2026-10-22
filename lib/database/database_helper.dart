@@ -5,6 +5,7 @@ import '../models/category.dart';
 import '../models/item.dart';
 import '../models/task.dart';
 import '../models/task_log.dart';
+import 'sample_data.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -94,6 +95,9 @@ class DatabaseHelper {
         FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE
       )
     ''');
+
+    // נתוני דוגמה (#75) - רק כאן: הפונקציה הזו רצה רק כשהמסד נוצר לראשונה (התקנה חדשה)
+    await SampleData.seed(db);
   }
 
   // מיגרציה בטוחה ושמירת נתונים קיימים

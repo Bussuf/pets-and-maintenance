@@ -1031,4 +1031,22 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get openSourceLicenses => 'רישיונות קוד פתוח';
+
+  @override
+  String get sampleGroupHome => 'בית';
+
+  @override
+  String get sampleItemGarden => 'גינון';
+
+  @override
+  String get sampleItemCleaning => 'ניקיונות';
+
+  @override
+  String get sampleTaskWatering => 'השקיית עציצים';
+
+  @override
+  String get sampleGroupPets => 'חיות מחמד';
+
+  @override
+  String get sampleTaskWaterBowl => 'ניקוי כלי מים';
 }
