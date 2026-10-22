@@ -49,6 +49,10 @@ android {
     }
 
     buildTypes {
+        // גם גרסת הפיתוח נחתמת במפתח השחרור (#53) - מעבר חופשי בין הסטודיו ל-APK בלי הסרה ואיבוד נתונים
+        debug {
+            signingConfig = signingConfigs.getByName("release")
+        }
         release {
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
