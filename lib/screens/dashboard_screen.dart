@@ -38,6 +38,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     super.initState();
     // הדרכה התחילה/הסתיימה - בנייה מחדש, כדי שהכרטיס של משימת הדוגמה יקבל (או יאבד) את המפתחות שלו
     Onboarding.changes.addListener(_onOnboardingChanged);
+    Onboarding.beforeStart = _resetForOnboarding;
     // התקנה חדשה (#26): מסך "שלום" - אחרי שהמשימות נטענו (וגם המסד נוצר)
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(dashboardTasksProvider.future);
@@ -50,9 +51,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (mounted) setState(() {});
   }
 
+  /// לפני הדרכה: חוזרים ל"הכל" וסוגרים כרטיסים פתוחים
+  void _resetForOnboarding() {
+    if (!mounted) return;
+    setState(() => _expandedTaskIds.clear());
+    _selectCategory(null);
+  }
+
   @override
   void dispose() {
     Onboarding.changes.removeListener(_onOnboardingChanged);
+    if (Onboarding.beforeStart == _resetForOnboarding) Onboarding.beforeStart = null;
     super.dispose();
   }
 

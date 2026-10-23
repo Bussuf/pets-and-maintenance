@@ -1805,7 +1805,7 @@ abstract class AppLocalizations {
   /// No description provided for @obReplay.
   ///
   /// In en, this message translates to:
-  /// **'How it works'**
+  /// **'New user guide'**
   String get obReplay;
 
   /// No description provided for @obCardTitle.

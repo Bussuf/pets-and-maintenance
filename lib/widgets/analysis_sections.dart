@@ -341,12 +341,12 @@ class PaceSection extends StatelessWidget {
               label: l10n.paceSlowest,
               value: DurationText.days(l10n, stats.slowestDays!, unit),
             ),
-            if (stats.avgIntervalDays != null) ...[
+            if (stats.paceAvgDays != null) ...[
               Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
               DetailRow(
                 icon: Icons.speed,
                 label: l10n.paceAverage,
-                value: DurationText.days(l10n, stats.avgIntervalDays!.round(), unit),
+                value: DurationText.days(l10n, stats.paceAvgDays!.round(), unit),
               ),
             ],
           ],

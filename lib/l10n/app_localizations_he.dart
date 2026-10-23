@@ -1094,7 +1094,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'תזכורות בטלפון וחיבור ליומן גוגל מפעילים לכל משימה בנפרד, ביצירה או בעריכה שלה. ביומן נוצר אירוע אחד בלבד, בתאריך היעד הבא של המשימה. את ההדרכה אפשר לראות שוב בהגדרות ← אודות.';
 
   @override
-  String get obReplay => 'איך זה עובד';
+  String get obReplay => 'מדריך למשתמש חדש';
 
   @override
   String get obCardTitle => 'זו המשימה להיום';

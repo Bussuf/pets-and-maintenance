@@ -75,6 +75,10 @@ class Onboarding {
 
   static NavigatorState? _nav;
 
+  /// הדשבורד רושם כאן איפוס ("הכל" + סגירת כרטיסים פתוחים) - נקרא לפני כל הדרכה,
+  /// כדי שהיא תתחיל ממסך מסודר ומוכר
+  static VoidCallback? beforeStart;
+
   // --- מסך "שלום": לבד, פעם אחת בהתקנה חדשה. לא מתחיל את התהליך ---
   static final List<_Step> _welcomeSteps = [
     _Step(title: (l) => l.obWelcomeTitle, body: (l) => l.obWelcomeBody, nextLabel: (l) => l.obGotIt),
@@ -219,7 +223,7 @@ class Onboarding {
     if (context.mounted) _start(context, _tourSteps, countsAsCompleted: true);
   }
 
-  /// "איך זה עובד" בהגדרות: מלאה אם משימת הדוגמה קיימת, אחרת מצעד הקבוצות
+  /// "מדריך למשתמש חדש" בהגדרות: מלאה אם משימת הדוגמה קיימת, אחרת מצעד הקבוצות
   static Future<void> startReplay(BuildContext context) async {
     _taskId = await _existingSampleTask();
     final from = _taskId != null ? 0 : _tourSteps.indexWhere((s) => s.targets.contains(_partialStart));
@@ -233,6 +237,7 @@ class Onboarding {
     _index.value = 0;
     _hidden.value = false;
     _nav = Navigator.of(context, rootNavigator: true);
+    beforeStart?.call();
     _entry = OverlayEntry(builder: (_) => const _CoachMarkLayer());
     _nav!.overlay!.insert(_entry!);
     changes.value++;

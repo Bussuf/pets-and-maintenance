@@ -1087,7 +1087,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Phone reminders and Google Calendar sync are turned on per task, when you create or edit it. The calendar gets a single event, on the next due date of the task. You can replay this tour in Settings → About.';
 
   @override
-  String get obReplay => 'How it works';
+  String get obReplay => 'New user guide';
 
   @override
   String get obCardTitle => 'This is today’s task';

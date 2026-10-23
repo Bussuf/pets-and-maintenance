@@ -80,6 +80,21 @@ void main() {
     expect(s.targetDays, 7);
   });
 
+  test('הכי מהר / הכי לאט / קצב ממוצע - רק על החלון של הגרף (12 אחרונים)', () {
+    // מרווח ראשון של 30 יום, ואחריו 12 מרווחים של 7 - הישן יוצא מהחלון
+    final dates = [DateTime(2026, 1, 1), DateTime(2026, 1, 31)];
+    for (int i = 0; i < 12; i++) {
+      dates.add(dates.last.add(const Duration(days: 7)));
+    }
+    final s = TaskStats.compute(task(next: DateTime(2026, 6, 1)), [for (final d in dates) log(d)], now: now);
+    expect(s.intervals.length, 12);
+    expect(s.slowestDays, 7);
+    expect(s.fastestDays, 7);
+    expect(s.paceAvgDays, 7);
+    // הממוצע הכללי (אריח בראש הדף) - על כל ההיסטוריה, כולל ה-30
+    expect(s.avgIntervalDays, closeTo((30 + 12 * 7) / 13, 0.001));
+  });
+
   test('מרווח שחוצה מעבר לשעון חורף נשאר 7 ימים', () {
     final s = TaskStats.compute(task(next: DateTime(2026, 11, 3)), [
       log(DateTime(2026, 10, 20, 9)),

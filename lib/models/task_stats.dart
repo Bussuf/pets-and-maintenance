@@ -40,8 +40,10 @@ class TaskStats {
   final int? onTimePercent; // null אם אין ביצועים
   final double? avgIntervalDays; // null אם פחות מ-2 ביצועים
   final List<IntervalPoint> intervals; // עד chartIntervals אחרונים
+  // הכי מהר / הכי לאט / קצב ממוצע - על אותו חלון של הגרף (chartIntervals אחרונים), כדי שיתאימו למה שרואים
   final int? fastestDays;
   final int? slowestDays;
+  final double? paceAvgDays;
   final int onTimeStreak; // ביצועים רצופים בזמן, מהאחרון אחורה
   final int longestOnTimeStreak; // הרצף הכי ארוך של ביצועים בזמן, בכל ההיסטוריה
   final LogStat? biggestLate; // הביצוע עם האיחור הכי גדול (null אם לא היה איחור)
@@ -59,6 +61,7 @@ class TaskStats {
     required this.intervals,
     required this.fastestDays,
     required this.slowestDays,
+    required this.paceAvgDays,
     required this.onTimeStreak,
     required this.longestOnTimeStreak,
     required this.biggestLate,
@@ -155,15 +158,20 @@ class TaskStats {
       health = TaskHealth.onTrack;
     }
 
+    // החלון של הגרף - ממנו מחושבים הכי מהר / הכי לאט / קצב ממוצע
+    final chart = allIntervals.length > chartIntervals ? allIntervals.sublist(allIntervals.length - chartIntervals) : allIntervals;
+    final chartDays = chart.map((p) => p.days).toList();
+
     return TaskStats._(
       health: health,
       logs: stats,
       completions: stats.length,
       onTimePercent: stats.isEmpty ? null : (stats.where((s) => s.onTime).length * 100 / stats.length).round(),
       avgIntervalDays: intervalDays.isEmpty ? null : intervalDays.reduce((a, b) => a + b) / intervalDays.length,
-      intervals: allIntervals.length > chartIntervals ? allIntervals.sublist(allIntervals.length - chartIntervals) : allIntervals,
-      fastestDays: intervalDays.isEmpty ? null : intervalDays.reduce((a, b) => a < b ? a : b),
-      slowestDays: intervalDays.isEmpty ? null : intervalDays.reduce((a, b) => a > b ? a : b),
+      intervals: chart,
+      fastestDays: chartDays.isEmpty ? null : chartDays.reduce((a, b) => a < b ? a : b),
+      slowestDays: chartDays.isEmpty ? null : chartDays.reduce((a, b) => a > b ? a : b),
+      paceAvgDays: chartDays.isEmpty ? null : chartDays.reduce((a, b) => a + b) / chartDays.length,
       onTimeStreak: streak,
       longestOnTimeStreak: longest,
       biggestLate: biggestLate,

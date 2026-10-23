@@ -333,7 +333,7 @@
   "obMenuBody": "Go to Settings and to the Organize groups and items screen: edit, delete and reorder there - including the examples when you are done with them.",
   "obDoneTitle": "All set! 🐾",
   "obDoneBody": "Phone reminders and Google Calendar sync are turned on per task, when you create or edit it. The calendar gets a single event, on the next due date of the task. You can replay this tour in Settings → About.",
-  "obReplay": "How it works",
+  "obReplay": "New user guide",
   "obCardTitle": "This is today’s task",
   "obCardBody": "This screen shows all your tasks in the order they are due: today first, then tomorrow, and so on. Tap the task card to open it and see more details and actions.",
   "obCompleteTitle": "Done? Tap \"Complete\"",
