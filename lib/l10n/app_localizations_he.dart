@@ -1131,7 +1131,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get obManualBody =>
-      'שכחתם לסמן בזמן? בחרו את התאריך שבו ביצעתם. (אפשר למחוק ביצועים בהיסטוריה, בתחתית דף הניתוח.)';
+      'שכחתם לסמן בזמן? רוצים להוסיף היסטוריית ביצועים? בחרו את התאריך שבו ביצעתם. (אפשר למחוק ביצועים בהיסטוריה, בתחתית דף הניתוח.)';
 
   @override
   String get obDuplicateTitle => 'שכפול משימה';
@@ -1200,4 +1200,23 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get calendarDeleteManyFailed =>
       'נמחק, אבל חלק מהאירועים נשארו ביומן גוגל. אפשר למחוק אותם ידנית.';
+
+  @override
+  String get completionSameDayExists => 'כבר יש רישום ביצוע בתאריך זה.';
+
+  @override
+  String historyCompletionAdded(String date) {
+    return 'הביצוע מ-$date נוסף להיסטוריה. התאריך הבא לא השתנה.';
+  }
+
+  @override
+  String historyCompletionFinished(String date) {
+    return 'הביצוע מ-$date נוסף להיסטוריה, והמשימה הגיעה למספר הפעמים שהוגדר.';
+  }
+
+  @override
+  String get historyManualChip => 'ידני';
+
+  @override
+  String get paceAverage => 'קצב ממוצע';
 }

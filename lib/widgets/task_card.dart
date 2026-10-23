@@ -51,11 +51,15 @@ class TaskCard extends ConsumerWidget {
     }
   }
 
+  // #79: ביצוע שהוזן ידנית - מסומן בהערות הביצוע (שדה JSON קיים), לחיווי "ידני" בהיסטוריה
+  static const _manualNote = '{"manual":true}';
+
   Future<void> _completeTaskAtDate(
       BuildContext context,
       WidgetRef ref,
-      DateTime completedDate,
-      ) async {
+      DateTime completedDate, {
+        bool manual = false,
+      }) async {
     final l10n = AppLocalizations.of(context)!;
     final db = ref.read(databaseProvider);
     final rawDb = await db.database;
@@ -133,6 +137,7 @@ class TaskCard extends ConsumerWidget {
       'completed_at': completedDate.toIso8601String(),
       // תאריך היעד שהביצוע הזה סגר - לחישוב 'בזמן / באיחור' (#25). ריק אם המשימה כבר הסתיימה
       'due_at': task['next_due_date'],
+      if (manual) 'notes': _manualNote,
     });
 
     final updatedTask = await db.readTask(task['id']);
@@ -259,9 +264,112 @@ class TaskCard extends ConsumerWidget {
       lastDate: DateTime.now(),
       helpText: AppLocalizations.of(context)!.pickActualCompletionDate,
     );
-    if (picked != null && context.mounted) {
-      await _completeTaskAtDate(context, ref, picked);
+    if (picked == null || !context.mounted) return;
+
+    // #79: כבר יש ביצוע באותו יום - לא מוסיפים כפילות
+    final logs = await ref.read(databaseProvider).getLogsByTask(task['id']);
+    if (logs.any((l) => DateUtils.isSameDay(l.completedAt, picked))) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.completionSameDayExists),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+      return;
     }
+    if (!context.mounted) return;
+
+    // #79: מוקדם מהביצוע האחרון - או, כשאין ביצועים, מוקדם מיצירת המשימה - רק להיסטוריה.
+    // כל השאר: ביצוע רגיל שמזיז את התאריך הבא
+    final lastDone = DateTime.tryParse(task['last_completed_date']?.toString() ?? '');
+    final created = DateTime.tryParse(task['created_at']?.toString() ?? '');
+    final pickedDay = DateUtils.dateOnly(picked);
+    final historyOnly = lastDone != null
+        ? pickedDay.isBefore(DateUtils.dateOnly(lastDone))
+        : (created != null && pickedDay.isBefore(DateUtils.dateOnly(created)));
+
+    if (historyOnly) {
+      await _addHistoryCompletion(context, ref, picked);
+    } else {
+      await _completeTaskAtDate(context, ref, picked, manual: true);
+    }
+  }
+
+  /// #79: ביצוע עבר - נכנס רק להיסטוריה (ולמונה). התאריך הבא, "בוצע לאחרונה", היומן והתזכורת לא משתנים.
+  /// חריג: תנאי סיום "מספר פעמים" שהושג בזכותו - המשימה מסתיימת, כמו בביצוע רגיל
+  Future<void> _addHistoryCompletion(BuildContext context, WidgetRef ref, DateTime date) async {
+    final l10n = AppLocalizations.of(context)!;
+    final container = ProviderScope.containerOf(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
+    final db = ref.read(databaseProvider);
+    final rawDb = await db.database;
+
+    final count = (task['completed_count'] as num?)?.toInt() ?? 0;
+    final reachesEnd = task['next_due_date'] != null &&
+        isEndReached(
+          task['end_condition'],
+          task['end_condition_value'],
+          count + 1,
+          DateTime.tryParse(task['next_due_date'].toString()),
+        );
+    final String? eventId = task['google_event_id'];
+    bool calendarOk = true;
+    if (reachesEnd && eventId != null) {
+      calendarOk = await GoogleCalendarService.instance.deleteEvent(eventId);
+    }
+
+    await rawDb.update(
+      'tasks',
+      {
+        'completed_count': count + 1,
+        if (reachesEnd) 'next_due_date': null,
+        if (reachesEnd) 'google_event_id': null,
+      },
+      where: 'id = ?',
+      whereArgs: [task['id']],
+    );
+    final logId = const Uuid().v4();
+    await rawDb.insert('task_logs', {
+      'id': logId,
+      'task_id': task['id'],
+      'completed_at': date.toIso8601String(),
+      // אין יעד ידוע - מנוע החישובים משחזר אותו (ביצוע קודם + תדירות)
+      'due_at': null,
+      'notes': _manualNote,
+    });
+
+    if (reachesEnd) {
+      final updatedTask = await db.readTask(task['id']);
+      if (updatedTask != null) await NotificationService.instance.scheduleTaskReminder(updatedTask);
+    }
+
+    container.invalidate(dashboardTasksProvider);
+    container.invalidate(tasksByCategoryProvider(task['category_id']));
+    container.invalidate(logsByTaskProvider(task['id']));
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            (reachesEnd ? l10n.historyCompletionFinished(_formatDate(date)) : l10n.historyCompletionAdded(_formatDate(date))) +
+                (calendarOk ? '' : '\n${l10n.calendarNotUpdated}'),
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 6),
+          persist: false,
+          action: SnackBarAction(
+            label: l10n.undo,
+            onPressed: () => _undoCompletion(
+              container: container,
+              messenger: messenger,
+              l10n: l10n,
+              logId: logId,
+              eventDeleted: reachesEnd && eventId != null && calendarOk,
+            ),
+          ),
+        ),
+      );
   }
 
   @override

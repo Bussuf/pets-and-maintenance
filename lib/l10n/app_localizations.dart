@@ -1871,7 +1871,7 @@ abstract class AppLocalizations {
   /// No description provided for @obManualBody.
   ///
   /// In en, this message translates to:
-  /// **'Forgot to mark it in time? Pick the date you actually did it. (You can delete completions in the history at the bottom of the analysis page.)'**
+  /// **'Forgot to mark it in time? Want to add past completions to the history? Pick the date you actually did it. (You can delete completions in the history at the bottom of the analysis page.)'**
   String get obManualBody;
 
   /// No description provided for @obDuplicateTitle.
@@ -1993,6 +1993,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deleted, but some events stayed in Google Calendar. You can delete them manually.'**
   String get calendarDeleteManyFailed;
+
+  /// No description provided for @completionSameDayExists.
+  ///
+  /// In en, this message translates to:
+  /// **'There is already a completion on this date.'**
+  String get completionSameDayExists;
+
+  /// No description provided for @historyCompletionAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'The completion from {date} was added to the history. The next due date did not change.'**
+  String historyCompletionAdded(String date);
+
+  /// No description provided for @historyCompletionFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'The completion from {date} was added to the history, and the task reached its set number of times.'**
+  String historyCompletionFinished(String date);
+
+  /// No description provided for @historyManualChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get historyManualChip;
+
+  /// No description provided for @paceAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average pace'**
+  String get paceAverage;
 }
 
 class _AppLocalizationsDelegate

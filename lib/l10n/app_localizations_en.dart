@@ -1124,7 +1124,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obManualBody =>
-      'Forgot to mark it in time? Pick the date you actually did it. (You can delete completions in the history at the bottom of the analysis page.)';
+      'Forgot to mark it in time? Want to add past completions to the history? Pick the date you actually did it. (You can delete completions in the history at the bottom of the analysis page.)';
 
   @override
   String get obDuplicateTitle => 'Duplicate task';
@@ -1194,4 +1194,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get calendarDeleteManyFailed =>
       'Deleted, but some events stayed in Google Calendar. You can delete them manually.';
+
+  @override
+  String get completionSameDayExists =>
+      'There is already a completion on this date.';
+
+  @override
+  String historyCompletionAdded(String date) {
+    return 'The completion from $date was added to the history. The next due date did not change.';
+  }
+
+  @override
+  String historyCompletionFinished(String date) {
+    return 'The completion from $date was added to the history, and the task reached its set number of times.';
+  }
+
+  @override
+  String get historyManualChip => 'Manual';
+
+  @override
+  String get paceAverage => 'Average pace';
 }

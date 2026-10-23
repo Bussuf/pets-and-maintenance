@@ -344,7 +344,7 @@
   "obAnalysisTitle": "Performance analysis",
   "obAnalysisBody": "This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. When you are done, go back and the tour will continue.",
   "obManualTitle": "Log a completion date manually",
-  "obManualBody": "Forgot to mark it in time? Pick the date you actually did it. (You can delete completions in the history at the bottom of the analysis page.)",
+  "obManualBody": "Forgot to mark it in time? Want to add past completions to the history? Pick the date you actually did it. (You can delete completions in the history at the bottom of the analysis page.)",
   "obDuplicateTitle": "Duplicate task",
   "obDuplicateBody": "Opens a new-task window with the same settings as this task, to edit and confirm. Handy when similar tasks belong to different items.",
   "obEditTitle": "Edit task",
@@ -364,5 +364,12 @@
   "obNextDueBody": "The next due date is in 4 days.",
   "sampleTaskWateringDesc": "Water all the plants on the balcony and in the living room. On very hot days, check whether the soil is dry between waterings too.",
   "sampleTaskWaterBowlDesc": "Wash the bowl in hot water, dry it and fill it with fresh water. Worth checking the food bowl too.",
-  "calendarDeleteManyFailed": "Deleted, but some events stayed in Google Calendar. You can delete them manually."
+  "calendarDeleteManyFailed": "Deleted, but some events stayed in Google Calendar. You can delete them manually.",
+  "completionSameDayExists": "There is already a completion on this date.",
+  "historyCompletionAdded": "The completion from {date} was added to the history. The next due date did not change.",
+  "@historyCompletionAdded": {"placeholders":{"date":{"type":"String"}}},
+  "historyCompletionFinished": "The completion from {date} was added to the history, and the task reached its set number of times.",
+  "@historyCompletionFinished": {"placeholders":{"date":{"type":"String"}}},
+  "historyManualChip": "Manual",
+  "paceAverage": "Average pace"
 }

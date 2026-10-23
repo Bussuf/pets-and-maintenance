@@ -341,6 +341,14 @@ class PaceSection extends StatelessWidget {
               label: l10n.paceSlowest,
               value: DurationText.days(l10n, stats.slowestDays!, unit),
             ),
+            if (stats.avgIntervalDays != null) ...[
+              Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
+              DetailRow(
+                icon: Icons.speed,
+                label: l10n.paceAverage,
+                value: DurationText.days(l10n, stats.avgIntervalDays!.round(), unit),
+              ),
+            ],
           ],
         ],
       ),
@@ -975,6 +983,21 @@ class _HistoryRow extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          // #79: ביצוע שהוזן ידנית - חיווי בלבד, בלי השפעה על החישובים
+          if (entry.log.parsedNotes?['manual'] == true) ...[
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                border: Border.all(color: theme.colorScheme.outline),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                l10n.historyManualChip,
+                style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ),
+          ],
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
