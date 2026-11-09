@@ -7,18 +7,9 @@ import '../models/task_stats.dart';
 import 'analysis_widgets.dart';
 import '../utils/duration_text.dart';
 import '../providers/date_format_provider.dart';
+import 'month_calendar.dart';
 
 /// הסקשנים המתקפלים של דף ניתוח מעקב משימה (#25), כל אחד בווידג'ט משלו
-
-/// שם יום בשבוע לפי מספר (DateTime.monday..sunday), בשפה הנוכחית
-String _weekdayName(BuildContext context, int weekday, {bool short = false}) {
-  final localeTag = Localizations.localeOf(context).toLanguageTag();
-  final date = DateTime(2026, 1, 4 + (weekday % 7)); // 4/1/2026 הוא יום ראשון
-  if (!short) return DateFormat.EEEE(localeTag).format(date);
-  // בעברית האות הבודדת ברורה ('א׳'), באנגלית צריך 3 אותיות ('Sun') כי S/T חוזרות
-  final narrow = Localizations.localeOf(context).languageCode == 'he';
-  return narrow ? DateFormat('EEEEE', localeTag).format(date) : DateFormat.E(localeTag).format(date);
-}
 
 /// הודעה כשאין עדיין ביצועים
 class _NoData extends StatelessWidget {
@@ -77,7 +68,7 @@ class WhenSection extends StatelessWidget {
     final partShort = [l10n.monthPartStartShort, l10n.monthPartMiddleShort, l10n.monthPartEndShort];
 
     final hasData = stats.completions > 0 && topDay != null;
-    final dayName = hasData ? _weekdayName(context, topDay!) : '';
+    final dayName = hasData ? weekdayName(context, topDay!) : '';
 
     return AnalysisSection(
       id: 'when',
@@ -160,7 +151,7 @@ class _WeekdayBars extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(_weekdayName(context, day, short: true), maxLines: 1, style: labelStyle),
+                    Text(weekdayName(context, day, short: true), maxLines: 1, style: labelStyle),
                   ],
                 ),
               ),
@@ -640,10 +631,6 @@ class _CalendarSectionState extends State<CalendarSection> {
 
   // --- חודשי ---
   Widget _buildMonth(BuildContext context, String localeTag) {
-    final scheme = Theme.of(context).colorScheme;
-    final first = MaterialLocalizations.of(context).firstDayOfWeekIndex; // 0 = ראשון
-    final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
-    final leading = (_month.weekday % 7 - first + 7) % 7; // תאים ריקים לפני היום הראשון
     final today = DateTime.now();
 
     // ביצועים לפי יום בחודש
@@ -651,9 +638,6 @@ class _CalendarSectionState extends State<CalendarSection> {
     for (final s in _logsBetween(_month, DateTime(_month.year, _month.month + 1))) {
       byDay.putIfAbsent(s.log.completedAt.day, () => []).add(s);
     }
-
-    final headerStyle = TextStyle(fontSize: 11, color: scheme.onSurfaceVariant);
-    final weekdayOrder = [for (int i = 0; i < 7; i++) ((first + i) % 7 == 0 ? DateTime.sunday : (first + i) % 7)];
 
     return Column(
       children: [
@@ -664,35 +648,17 @@ class _CalendarSectionState extends State<CalendarSection> {
           onBack: () => setState(() => _month = DateTime(_month.year, _month.month - 1)),
           onForward: () => setState(() => _month = DateTime(_month.year, _month.month + 1)),
         ),
-        Row(
-          children: [
-            for (final d in weekdayOrder)
-              Expanded(
-                child: Text(_weekdayName(context, d, short: true), textAlign: TextAlign.center, style: headerStyle),
-              ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        GridView.count(
-          padding: EdgeInsets.zero, // בלי ריפוד אוטומטי של שטח המערכת (שורה ריקה בסוף)
-          crossAxisCount: 7,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 4,
-          crossAxisSpacing: 4,
-          children: [
-            for (int i = 0; i < leading; i++) const SizedBox.shrink(),
-            for (int day = 1; day <= daysInMonth; day++)
-              _CalendarCell(
-                label: '$day',
-                logs: byDay[day] ?? const [],
-                isToday: today.year == _month.year && today.month == _month.month && today.day == day,
-                isNextDue: widget.nextDue != null &&
-                    widget.nextDue!.year == _month.year &&
-                    widget.nextDue!.month == _month.month &&
-                    widget.nextDue!.day == day,
-              ),
-          ],
+        MonthGrid(
+          month: _month,
+          dayBuilder: (day) => _CalendarCell(
+            label: '$day',
+            logs: byDay[day] ?? const [],
+            isToday: today.year == _month.year && today.month == _month.month && today.day == day,
+            isNextDue: widget.nextDue != null &&
+                widget.nextDue!.year == _month.year &&
+                widget.nextDue!.month == _month.month &&
+                widget.nextDue!.day == day,
+          ),
         ),
       ],
     );
@@ -978,7 +944,7 @@ class _HistoryRow extends ConsumerWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '${DateFormatNotifier.format(date)} · ${_weekdayName(context, date.weekday)}',
+              '${DateFormatNotifier.format(date)} · ${weekdayName(context, date.weekday)}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

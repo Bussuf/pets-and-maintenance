@@ -317,6 +317,18 @@ class DatabaseHelper {
     return maps.map((map) => TaskLog.fromMap(map)).toList();
   }
 
+  /// כל הביצועים בטווח [from, to) - ללוח החודשי (#83)
+  Future<List<TaskLog>> getLogsBetween(DateTime from, DateTime to) async {
+    final db = await database;
+    final maps = await db.query(
+      'task_logs',
+      where: 'completed_at >= ? AND completed_at < ?',
+      whereArgs: [from.toIso8601String(), to.toIso8601String()],
+      orderBy: 'completed_at ASC',
+    );
+    return maps.map((map) => TaskLog.fromMap(map)).toList();
+  }
+
   /// תיקון תאריך של ביצוע (#25.9) - רק completed_at; תאריך היעד שסגר (due_at) נשאר
   Future<void> updateTaskLogDate(String logId, DateTime completedAt) async {
     final db = await database;

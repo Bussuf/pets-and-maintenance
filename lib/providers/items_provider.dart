@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/item.dart';
 import '../models/task.dart';
 import '../models/task_log.dart';
+import 'dashboard_tasks_provider.dart';
 import 'database_provider.dart';
 
 // מאפשר שליפת רשימת פריטים לפי מזהה קבוצה
@@ -30,4 +31,12 @@ final logsByTaskProvider = FutureProvider.family<List<TaskLog>, String>((ref, ta
   if (taskId.isEmpty) return [];
   final db = ref.watch(databaseProvider);
   return await db.getLogsByTask(taskId);
+});
+
+// הביצועים של חודש אחד ללוח החודשי (#83; המפתח: היום הראשון בחודש).
+// תלוי במשימות כדי להתרענן אחרי כל שינוי - כל מסלולי ההשלמה, הביטול והמחיקה כבר מרעננים אותן
+final monthLogsProvider = FutureProvider.autoDispose.family<List<TaskLog>, DateTime>((ref, month) async {
+  await ref.watch(dashboardTasksProvider.future);
+  final db = ref.watch(databaseProvider);
+  return await db.getLogsBetween(month, DateTime(month.year, month.month + 1));
 });
