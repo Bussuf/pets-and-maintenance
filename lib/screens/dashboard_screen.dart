@@ -51,11 +51,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (mounted) setState(() {});
   }
 
-  /// לפני הדרכה: חוזרים ל"הכל" וסוגרים כרטיסים פתוחים
+  /// לפני הדרכה: חוזרים ל"הכל", סוגרים כרטיסים פתוחים ופותחים את כל הסעיפים (הכותרת והכרטיס צריכים להיראות)
   void _resetForOnboarding() {
     if (!mounted) return;
     setState(() => _expandedTaskIds.clear());
     _selectCategory(null);
+    ref.read(agendaCollapseProvider.notifier).setAll(collapsed: false);
   }
 
   @override
@@ -83,6 +84,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   void _selectCategory(String? categoryId) {
     setState(() => _selectedCategoryId = categoryId);
     _ensureChipVisible(categoryId);
+  }
+
+  /// לחיצה על צ'יפ: בחירה, ואם הוא כבר מסומן - קיפול/פתיחה של הסעיפים המוצגים (#87)
+  void _onChipTap(String? categoryId, List<AgendaGroup> shown) {
+    if (categoryId != _selectedCategoryId) {
+      _selectCategory(categoryId);
+      return;
+    }
+    ref.read(agendaCollapseProvider.notifier).toggleAll(shown.map((g) => g.kind));
   }
 
   void _showCategoryChipMenu(Category cat) {
@@ -130,6 +140,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final categoriesAsync = ref.watch(categoriesProvider);
     final tasksAsync = ref.watch(dashboardTasksProvider);
+    final collapsedKinds = ref.watch(agendaCollapseProvider);
 
     return PopScope(
       canPop: false,
@@ -235,11 +246,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 .toList();
 
             final agendaGroups = buildAgendaGroups(context, filteredTasks);
-            final List<dynamic> flatList = [];
-            for (final group in agendaGroups) {
-              flatList.add(group);
-              flatList.addAll(group.tasks);
-            }
+            final flatList = flattenAgenda(agendaGroups, collapsedKinds);
 
             return Column(
               children: [
@@ -337,7 +344,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   .allWithCount(cats.length),
                             ),
                             selected: _selectedCategoryId == null,
-                            onSelected: (_) => _selectCategory(null),
+                            onSelected: (_) => _onChipTap(null, agendaGroups),
                           ),
                           const SizedBox(width: 8),
                           ...cats.map((cat) {
@@ -362,7 +369,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   showCheckmark: false,
                                   label: Text(cat.name),
                                   selected: isSelected,
-                                  onSelected: (_) => _selectCategory(cat.id),
+                                  onSelected: (_) => _onChipTap(cat.id, agendaGroups),
                                   deleteIcon: isSelected
                                       ? const Icon(Icons.more_vert, size: 16)
                                       : null,

@@ -86,6 +86,18 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
     _ensureChipVisible(itemId);
   }
 
+  /// לחיצה על צ'יפ: בחירה, ואם הוא כבר מסומן - קיפול/פתיחה של הסעיפים המוצגים (#87)
+  void _onChipTap(String? itemId, String categoryId, List<Map<String, dynamic>> allTasks) {
+    if (itemId != _selectedFilterItemId) {
+      _selectFilterItem(itemId);
+      return;
+    }
+    final shown = allTasks
+        .where((t) => t['category_id'] == categoryId && (itemId == null || t['item_id'] == itemId))
+        .toList();
+    ref.read(agendaCollapseProvider.notifier).toggleAll(buildAgendaGroups(context, shown).map((g) => g.kind));
+  }
+
   Future<void> _editItemSheet(Item item, String catId) async {
     // טופס עריכת פריט משותף - אותו טופס כמו במסך הארגון
     await EditItemSheet.show(context, item, catId);
@@ -112,6 +124,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
 
     // --- השינוי הגדול: שימוש ב-dashboardTasksProvider במקום ב-tasksByCategoryProvider ---
     final allTasksAsync = ref.watch(dashboardTasksProvider);
+    final collapsedKinds = ref.watch(agendaCollapseProvider);
 
     final catColor = currentCategory.color != null
         ? Color(currentCategory.color!)
@@ -199,7 +212,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       showCheckmark: false,
                       label: Text(AppLocalizations.of(context)!.allWithCount(items.length)),
                       selected: _selectedFilterItemId == null,
-                      onSelected: (_) => _selectFilterItem(null),
+                      onSelected: (_) => _onChipTap(null, currentCategory.id, allTasksAsync.value ?? const []),
                     ),
                     const SizedBox(width: 8),
                     ...items.map((item) {
@@ -216,7 +229,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                             showCheckmark: false,
                             label: Text(item.name),
                             selected: isSelected,
-                            onSelected: (_) => _selectFilterItem(item.id),
+                            onSelected: (_) => _onChipTap(item.id, currentCategory.id, allTasksAsync.value ?? const []),
                             deleteIcon: isSelected
                                 ? const Icon(Icons.more_vert, size: 16)
                                 : null,
@@ -311,11 +324,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       }
 
                       final agendaGroups = buildAgendaGroups(context, filteredTasks);
-                      final List<dynamic> flatList = [];
-                      for (final group in agendaGroups) {
-                        flatList.add(group);
-                        flatList.addAll(group.tasks);
-                      }
+                      final flatList = flattenAgenda(agendaGroups, collapsedKinds);
 
                       return ListView.builder(
                         padding: EdgeInsets.only(
