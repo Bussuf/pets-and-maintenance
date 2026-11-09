@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/category.dart';
 import '../providers/database_provider.dart';
-import '../screens/category_screen.dart';
 import '../theme/app_icons.dart';
 import '../screens/settings_screen.dart';
 import '../screens/organization_screen.dart';
@@ -13,6 +11,7 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
   final bool showSettingsMenu;
   final VoidCallback? onAddItem; // אם קיים - מוצג 'הוסף פריט לקבוצה' בתפריט
   final VoidCallback? onEditGroup; // אם קיים - מוצג 'עריכת קבוצה' בתפריט
+  final void Function({required String categoryId, String? itemId, String? taskId})? onOpenTarget; // בחירת תוצאת חיפוש
   final Key? menuKey; // מפתח לתפריט ⋮ - בשביל ההדרכה (#26)
   final Key? drawerKey; // מפתח לכפתור התפריט הצדדי - בשביל ההדרכה (#26)
 
@@ -22,6 +21,7 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
     this.showSettingsMenu = false,
     this.onAddItem,
     this.onEditGroup,
+    this.onOpenTarget,
     this.menuKey,
     this.drawerKey,
   });
@@ -46,50 +46,12 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
     controller.closeView('');
 
     final type = itemData['type'];
-    Widget destination;
-
-    if (type == 'category') {
-      destination = CategoryScreen(
-        category: Category(
-          id: itemData['id'],
-          name: itemData['name'],
-          description: itemData['description'],
-          color: itemData['color'],
-          icon: itemData['icon'],
-          createdAt: DateTime.now(),
-        ),
-      );
-    } else if (type == 'item') {
-      destination = CategoryScreen(
-        category: Category(
-          id: itemData['category_id'],
-          name: itemData['category_name'],
-          color: itemData['category_color'],
-          icon: itemData['category_icon'],
-          createdAt: DateTime.now(),
-        ),
-        initialItemId: itemData['id'],
-      );
-    } else {
-      destination = CategoryScreen(
-        category: Category(
-          id: itemData['category_id'],
-          name: itemData['category_name'],
-          color: itemData['category_color'],
-          icon: itemData['category_icon'],
-          createdAt: DateTime.now(),
-        ),
-        initialItemId: itemData['item_id'],
-        initialTaskId: itemData['id'],
-      );
-    }
+    final String categoryId = type == 'category' ? itemData['id'] : itemData['category_id'];
+    final String? itemId = type == 'category' ? null : (type == 'item' ? itemData['id'] : itemData['item_id']);
+    final String? taskId = type == 'category' || type == 'item' ? null : itemData['id'];
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => destination),
-        );
-      }
+      if (mounted) widget.onOpenTarget?.call(categoryId: categoryId, itemId: itemId, taskId: taskId);
     });
   }
 

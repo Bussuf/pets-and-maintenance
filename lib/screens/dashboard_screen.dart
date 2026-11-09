@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/category.dart';
+import '../models/item.dart';
 import '../providers/categories_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
+import '../providers/items_provider.dart';
 import '../theme/app_icons.dart';
 import '../widgets/animated_fab_menu.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/global_search_bar.dart';
 import 'create_entity_screen.dart';
-import 'category_screen.dart';
 import '../widgets/task_card.dart';
 import '../widgets/edit_category_sheet.dart';
+import '../widgets/edit_item_sheet.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/agenda.dart';
 import '../widgets/month_calendar.dart';
@@ -30,10 +32,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   DateTime? _lastBackPressTime;
   String? _selectedCategoryId;
+  String? _selectedItemId; // צ'יפ פריט, כשמסומנת קבוצה (#88)
   bool _weekOpen = false; // מיקוד יום (#83) - תמיד מתחילים ביומן
   final Set<String> _expandedTaskIds = {};
 
   final Map<String?, GlobalKey> _chipKeys = {};
+  final Map<String?, GlobalKey> _itemChipKeys = {};
 
   @override
   void initState() {
@@ -71,9 +75,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     super.dispose();
   }
 
-  void _ensureChipVisible(String? categoryId) {
+  void _ensureChipVisible(String? id, [Map<String?, GlobalKey>? keys]) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final key = _chipKeys[categoryId];
+      final key = (keys ?? _chipKeys)[id];
       if (key?.currentContext != null) {
         Scrollable.ensureVisible(
           key!.currentContext!,
@@ -87,8 +91,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   void _selectCategory(String? categoryId) {
-    setState(() => _selectedCategoryId = categoryId);
+    setState(() {
+      _selectedCategoryId = categoryId;
+      _selectedItemId = null;
+    });
     _ensureChipVisible(categoryId);
+  }
+
+  void _selectItem(String? itemId) {
+    setState(() => _selectedItemId = itemId);
+    _ensureChipVisible(itemId, _itemChipKeys);
   }
 
   /// לחיצה על צ'יפ: בחירה, ואם הוא כבר מסומן - קיפול/פתיחה של הסעיפים המוצגים (#87)
@@ -101,41 +113,71 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     ref.read(agendaCollapseProvider.notifier).toggleAll(shown.map((g) => g.kind));
   }
 
-  void _showCategoryChipMenu(Category cat) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.arrow_forward),
-              title: Text(
-                AppLocalizations.of(context)!.goToGroupNamed(cat.name),
+  void _onItemChipTap(String? itemId, List<AgendaGroup> shown) {
+    if (itemId != _selectedItemId) {
+      _selectItem(itemId);
+      return;
+    }
+    if (_weekOpen) return;
+    ref.read(agendaCollapseProvider.notifier).toggleAll(shown.map((g) => g.kind));
+  }
+
+  /// תוצאת חיפוש: מסמנים את הקבוצה והפריט, ופותחים את המשימה ואת הסעיף שלה ביומן
+  void _openSearchTarget({required String categoryId, String? itemId, String? taskId}) {
+    setState(() {
+      _weekOpen = false;
+      if (taskId != null) _expandedTaskIds.add(taskId);
+    });
+    _selectCategory(categoryId);
+    if (itemId != null) _selectItem(itemId);
+    if (taskId == null) return;
+    final tasks = ref.read(dashboardTasksProvider).valueOrNull ?? const <Map<String, dynamic>>[];
+    final task = tasks.where((t) => t['id'] == taskId).firstOrNull;
+    if (task == null) return;
+    ref.read(agendaCollapseProvider.notifier).expand(buildAgendaGroups(context, [task]).first.kind);
+  }
+
+  /// שורת צ'יפי הפריטים של הקבוצה המסומנת
+  Widget _buildItemChips(List<Item> items, String categoryId, List<AgendaGroup> shown) {
+    _itemChipKeys.putIfAbsent(null, () => GlobalKey());
+    final l10n = AppLocalizations.of(context)!;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+      child: Row(
+        children: [
+          FilterChip(
+            key: _itemChipKeys[null],
+            showCheckmark: false,
+            label: Text(l10n.allWithCount(items.length)),
+            selected: _selectedItemId == null,
+            onSelected: (_) => _onItemChipTap(null, shown),
+          ),
+          const SizedBox(width: 8),
+          ...items.map((item) {
+            final isSelected = _selectedItemId == item.id;
+            _itemChipKeys.putIfAbsent(item.id, () => GlobalKey());
+
+            return Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8.0),
+              child: GestureDetector(
+                onLongPress: () => EditItemSheet.show(context, item, categoryId),
+                child: InputChip(
+                  key: _itemChipKeys[item.id],
+                  showCheckmark: false,
+                  label: Text(item.name),
+                  selected: isSelected,
+                  onSelected: (_) => _onItemChipTap(item.id, shown),
+                  deleteIcon: isSelected ? const Icon(Icons.more_vert, size: 16) : null,
+                  onDeleted: isSelected ? () => EditItemSheet.show(context, item, categoryId) : null,
+                  deleteButtonTooltipMessage: l10n.editItem,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                ),
               ),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CategoryScreen(category: cat),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: Text(AppLocalizations.of(context)!.editGroup),
-              onTap: () {
-                Navigator.pop(ctx);
-                EditCategorySheet.show(context, cat);
-              },
-            ),
-          ],
-        ),
+            );
+          }),
+        ],
       ),
     );
   }
@@ -147,6 +189,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final categoriesAsync = ref.watch(categoriesProvider);
     final tasksAsync = ref.watch(dashboardTasksProvider);
     final collapsedKinds = ref.watch(agendaCollapseProvider);
+    final selectedCategory = (categoriesAsync.valueOrNull ?? const <Category>[])
+        .where((c) => c.id == _selectedCategoryId)
+        .firstOrNull;
+    final itemsAsync = selectedCategory != null ? ref.watch(itemsByCategoryProvider(selectedCategory.id)) : null;
 
     return PopScope(
       canPop: false,
@@ -155,6 +201,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
         if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
           _scaffoldKey.currentState?.closeDrawer();
+          return;
+        }
+
+        // מקבוצה חוזרים קודם ל"הכל" (#88)
+        if (_selectedCategoryId != null) {
+          _selectCategory(null);
           return;
         }
 
@@ -199,8 +251,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             type: EntityType.item,
             categoryId: _selectedCategoryId,
           ),
+          onEditGroup: selectedCategory == null ? null : () => EditCategorySheet.show(context, selectedCategory),
+          onOpenTarget: _openSearchTarget,
         ),
-        drawer: const AppDrawer(),
+        drawer: AppDrawer(currentCategoryId: _selectedCategoryId, onSelectCategory: _selectCategory),
         body: tasksAsync.when(
           data: (tasks) {
             final categories = categoriesAsync.value ?? [];
@@ -212,6 +266,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 !categories.any((c) => c.id == _selectedCategoryId)) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) _selectCategory(null);
+              });
+            }
+
+            // אותו דבר לפריט המסומן: נמחק או הועבר לקבוצה אחרת - חוזרים ל'הכל' של הקבוצה
+            if (_selectedItemId != null &&
+                itemsAsync != null &&
+                itemsAsync.hasValue &&
+                !itemsAsync.isLoading &&
+                !itemsAsync.value!.any((i) => i.id == _selectedItemId)) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) _selectItem(null);
               });
             }
             final now = DateTime.now();
@@ -248,7 +313,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             final filteredTasks = _selectedCategoryId == null
                 ? sortedTasks
                 : sortedTasks
-                .where((t) => t['category_id'] == _selectedCategoryId)
+                .where((t) =>
+                    t['category_id'] == _selectedCategoryId &&
+                    (_selectedItemId == null || t['item_id'] == _selectedItemId))
                 .toList();
 
             final agendaGroups = buildAgendaGroups(context, filteredTasks);
@@ -256,7 +323,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
             // במסד ריק נשארים ביומן - שם ההסבר והקישור למדריך (#26)
             final showWeek = _weekOpen && tasks.isNotEmpty;
-            final selectedCategory = categories.where((c) => c.id == _selectedCategoryId).firstOrNull;
             final calendarAccent = selectedCategory?.color != null
                 ? Color(selectedCategory!.color!)
                 : theme.colorScheme.primary;
@@ -273,7 +339,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   }
                 });
               },
-              showCategoryLabel: true,
+              showCategoryLabel: _selectedCategoryId == null,
               todayStart: todayStart,
             );
 
@@ -286,12 +352,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     vertical: 8.0,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(
+                    color: calendarAccent.withValues(
                       alpha: isDark ? 0.2 : 0.08,
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.25),
+                      color: calendarAccent.withValues(alpha: 0.25),
                     ),
                   ),
                   // לחיצה על הכותרת מחליפה בין היומן למיקוד יום (#83)
@@ -311,12 +377,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           children: [
                             CircleAvatar(
                               radius: 28,
-                              backgroundColor: theme.colorScheme.primary.withValues(
+                              backgroundColor: calendarAccent.withValues(
                                 alpha: 0.2,
                               ),
                               child: Icon(
-                                showWeek ? Icons.view_week_outlined : Icons.view_agenda_outlined,
-                                color: theme.colorScheme.primary,
+                                // בקבוצה האייקון שלה נשאר, והתג הקטן מראה את התצוגה
+                                selectedCategory != null
+                                    ? AppIcons.getIcon(selectedCategory.icon)
+                                    : (showWeek ? Icons.view_week_outlined : Icons.view_agenda_outlined),
+                                color: calendarAccent,
                                 size: 30,
                               ),
                             ),
@@ -331,7 +400,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   color: theme.colorScheme.surface,
                                   border: Border.all(color: theme.colorScheme.outlineVariant),
                                 ),
-                                child: Icon(Icons.swap_horiz, size: 14, color: theme.colorScheme.primary),
+                                child: Icon(
+                                  selectedCategory == null
+                                      ? Icons.swap_horiz
+                                      : (showWeek ? Icons.view_week_outlined : Icons.view_agenda_outlined),
+                                  size: 14,
+                                  color: calendarAccent,
+                                ),
                               ),
                             ),
                           ],
@@ -343,15 +418,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              AppLocalizations.of(context)!.allGroupsAndTasks,
+                              selectedCategory?.name ?? AppLocalizations.of(context)!.allGroupsAndTasks,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: isDark
                                     ? Colors.white
-                                    : theme.colorScheme.primary,
+                                    : calendarAccent,
                               ),
                             ),
+                            if (selectedCategory != null) ...[
+                              if (selectedCategory.description?.isNotEmpty ?? false) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  selectedCategory.description!,
+                                  style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurfaceVariant),
+                                ),
+                              ],
+                            ] else ...[
                             const SizedBox(height: 4),
                             Text(
                               overdueCount > 0
@@ -374,6 +458,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     : theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
+                            ],
                           ],
                         ),
                       ),
@@ -418,7 +503,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             return Padding(
                               padding: const EdgeInsetsDirectional.only(end: 8.0),
                               child: GestureDetector(
-                                onLongPress: () => _showCategoryChipMenu(cat),
+                                onLongPress: () => EditCategorySheet.show(context, cat),
                                 child: InputChip(
                                   key: _chipKeys[cat.id],
                                   avatar: Icon(
@@ -434,7 +519,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       ? const Icon(Icons.more_vert, size: 16)
                                       : null,
                                   onDeleted: isSelected
-                                      ? () => _showCategoryChipMenu(cat)
+                                      ? () => EditCategorySheet.show(context, cat)
                                       : null,
                                   deleteButtonTooltipMessage:
                                   AppLocalizations.of(context)!
@@ -456,6 +541,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   error: (_, _) => const SizedBox.shrink(),
                 ),
+                if (selectedCategory != null && (itemsAsync?.valueOrNull?.isNotEmpty ?? false))
+                  _buildItemChips(itemsAsync!.value!, selectedCategory.id, agendaGroups),
                 const Divider(height: 1),
 
                 // הזמנה להדרכה עם נתוני דוגמה (#26) - רק כשאין עדיין נתונים של המשתמש
@@ -499,7 +586,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         ? const OnboardingEmptyState()
                         : Center(
                       child: Text(
-                        AppLocalizations.of(context)!.noTasksNow,
+                        _selectedCategoryId != null
+                            ? AppLocalizations.of(context)!.noTasksInGroup
+                            : AppLocalizations.of(context)!.noTasksNow,
                         style: const TextStyle(color: Colors.grey),
                       ),
                     ))
@@ -536,6 +625,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         floatingActionButton: AnimatedFabMenu(
           key: Onboarding.key(OnboardingTarget.fab),
           currentCategoryId: _selectedCategoryId,
+          currentItemId: _selectedItemId,
         ),
       ),
     );

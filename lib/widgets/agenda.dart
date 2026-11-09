@@ -45,6 +45,11 @@ class AgendaCollapseNotifier extends StateNotifier<Set<AgendaKind>> {
     _save();
   }
 
+  void expand(AgendaKind kind) {
+    state = {...state}..remove(kind);
+    _save();
+  }
+
   /// סעיפי היומן בלבד - מצב המיקוד נשאר כמו שהוא
   void setAll({required bool collapsed}) {
     state = {

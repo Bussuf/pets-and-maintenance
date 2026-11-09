@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/categories_provider.dart';
-import '../screens/category_screen.dart';
 import '../theme/app_icons.dart';
 
 class AppDrawer extends ConsumerWidget {
   final String? currentCategoryId;
+  final void Function(String? categoryId) onSelectCategory;
 
-  const AppDrawer({super.key, this.currentCategoryId});
+  const AppDrawer({super.key, this.currentCategoryId, required this.onSelectCategory});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,7 +68,8 @@ class AppDrawer extends ConsumerWidget {
                   selectedTileColor: theme.colorScheme.primaryContainer,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                   onTap: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.pop(context);
+                    onSelectCategory(null);
                   },
                   ),
                 ),
@@ -120,19 +121,7 @@ class AppDrawer extends ConsumerWidget {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                         onTap: () {
                           Navigator.pop(context);
-                          if (isSelected) return;
-
-                          if (currentCategoryId == null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => CategoryScreen(category: cat)),
-                            );
-                          } else {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (_) => CategoryScreen(category: cat)),
-                            );
-                          }
+                          if (!isSelected) onSelectCategory(cat.id);
                         },
                       ));
                     }).toList();
