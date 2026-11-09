@@ -634,6 +634,15 @@ class AppLocalizationsHe extends AppLocalizations {
   String get finishedTasks => 'הסתיימו';
 
   @override
+  String get calDone => 'בוצע';
+
+  @override
+  String get calEmptyDay => 'אין משימות ביום הזה';
+
+  @override
+  String get switchView => 'החלפת תצוגה';
+
+  @override
   String get taskFinishedLabel => 'הסתיימה';
 
   @override

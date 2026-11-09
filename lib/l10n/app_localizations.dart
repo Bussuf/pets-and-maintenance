@@ -1142,6 +1142,24 @@ abstract class AppLocalizations {
   /// **'Finished'**
   String get finishedTasks;
 
+  /// No description provided for @calDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get calDone;
+
+  /// No description provided for @calEmptyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing on this day'**
+  String get calEmptyDay;
+
+  /// No description provided for @switchView.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch view'**
+  String get switchView;
+
   /// No description provided for @taskFinishedLabel.
   ///
   /// In en, this message translates to:

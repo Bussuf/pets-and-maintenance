@@ -1,8 +1,9 @@
+import 'dart:ui' show Color;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pets_and_maintenance/models/task_log.dart';
 import 'package:pets_and_maintenance/widgets/month_calendar.dart';
 
-/// בדיקות לסימונים של הלוח החודשי (#83)
+/// בדיקות לסימונים של רצועת השבוע (#83)
 /// הרצה: flutter test test/month_calendar_test.dart
 
 Map<String, dynamic> task(String id, {DateTime? next, String endCondition = 'always'}) => {
@@ -16,89 +17,98 @@ TaskLog log(String taskId, DateTime completed) =>
 
 void main() {
   final now = DateTime(2026, 11, 9, 12);
-  final november = DateTime(2026, 11);
+  final today = DateTime(2026, 11, 9);
 
-  Map<int, List<CalendarMark>> marks({
-    DateTime? month,
+  Map<DateTime, List<CalendarMark>> marks({
+    DateTime? from,
     List<Map<String, dynamic>> tasks = const [],
     List<TaskLog> logs = const [],
-  }) => buildMonthMarks(month: month ?? november, tasks: tasks, logs: logs, now: now);
+  }) => buildWeekMarks(from: from ?? today, tasks: tasks, logs: logs, now: now);
 
   List<CalendarMarkKind> kinds(List<CalendarMark>? day) => day!.map((m) => m.kind).toList();
 
-  test('יעד עתידי מסומן כמתוכנן ביום שלו', () {
-    final result = marks(tasks: [task('a', next: DateTime(2026, 11, 20))]);
-    expect(result.keys, [20]);
-    expect(kinds(result[20]), [CalendarMarkKind.planned]);
+  test('יעד בשבוע מסומן כמתוכנן ביום שלו', () {
+    final result = marks(tasks: [task('a', next: DateTime(2026, 11, 12))]);
+    expect(result.keys, [DateTime(2026, 11, 12)]);
+    expect(kinds(result[DateTime(2026, 11, 12)]), [CalendarMarkKind.planned]);
   });
 
   test('יעד היום הוא מתוכנן גם אם השעה כבר עברה', () {
     final result = marks(tasks: [task('a', next: DateTime(2026, 11, 9, 6))]);
-    expect(kinds(result[9]), [CalendarMarkKind.planned]);
+    expect(kinds(result[today]), [CalendarMarkKind.planned]);
   });
 
-  test('יעד שעבר מסומן כבאיחור בתאריך המקורי', () {
+  test('באיחור מופיע על היום, לא על התאריך המקורי', () {
     final result = marks(tasks: [task('a', next: DateTime(2026, 11, 2))]);
-    expect(kinds(result[2]), [CalendarMarkKind.overdue]);
+    expect(result.keys, [today]);
+    expect(kinds(result[today]), [CalendarMarkKind.overdue]);
   });
 
-  test('איחור מחודש קודם מופיע רק בחודש שלו', () {
-    final tasks = [task('a', next: DateTime(2026, 10, 30))];
-    expect(marks(tasks: tasks), isEmpty);
-    expect(kinds(marks(month: DateTime(2026, 10), tasks: tasks)[30]), [CalendarMarkKind.overdue]);
+  test('בשבוע שעבר אין סימון של באיחור', () {
+    final result = marks(from: DateTime(2026, 11, 2), tasks: [task('a', next: DateTime(2026, 11, 3))]);
+    expect(result, isEmpty);
   });
 
-  test('אותו יום בחודש אחר או בשנה אחרת לא נספר', () {
+  test('ביום הנוכחי: באיחור קודם, אחר כך מתוכנן, ובסוף בוצע', () {
     final tasks = [
-      task('a', next: DateTime(2026, 12, 20)),
-      task('b', next: DateTime(2027, 11, 20)),
+      task('planned', next: today),
+      task('late', next: DateTime(2026, 11, 2)),
+      task('done'),
     ];
-    expect(marks(tasks: tasks), isEmpty);
+    final result = marks(tasks: tasks, logs: [log('done', DateTime(2026, 11, 9, 8))]);
+    expect(kinds(result[today]), [CalendarMarkKind.overdue, CalendarMarkKind.planned, CalendarMarkKind.done]);
   });
 
-  test('משימה בלי תאריך לא בלוח', () {
+  test('מחוץ ל-7 הימים לא נספר', () {
+    final tasks = [task('a', next: DateTime(2026, 11, 16))];
+    expect(marks(tasks: tasks), isEmpty);
+    expect(marks(from: DateTime(2026, 11, 16), tasks: tasks).keys, [DateTime(2026, 11, 16)]);
+  });
+
+  test('קצה הטווח: היום השביעי עד סופו, והיום השמיני בחוץ', () {
+    final result = marks(tasks: [task('a')], logs: [
+      log('a', DateTime(2026, 11, 15, 23, 59)),
+      log('a', DateTime(2026, 11, 16)),
+    ]);
+    expect(result.keys, [DateTime(2026, 11, 15)]);
+  });
+
+  test('טווח שחוצה חודש', () {
+    final result = marks(
+      from: DateTime(2026, 11, 28),
+      tasks: [task('a', next: DateTime(2026, 12, 2))],
+    );
+    expect(result.keys, [DateTime(2026, 12, 2)]);
+  });
+
+  test('משימה בלי תאריך לא ברצועה', () {
     expect(marks(tasks: [task('a')]), isEmpty);
   });
 
   test('משימה שהסתיימה: בלי יעד, אבל הביצועים שלה נשארים', () {
     final tasks = [task('a', endCondition: 'count')];
     expect(marks(tasks: tasks), isEmpty);
-    final result = marks(tasks: tasks, logs: [log('a', DateTime(2026, 11, 3))]);
-    expect(kinds(result[3]), [CalendarMarkKind.done]);
+    final result = marks(tasks: tasks, logs: [log('a', DateTime(2026, 11, 10))]);
+    expect(kinds(result[DateTime(2026, 11, 10)]), [CalendarMarkKind.done]);
   });
 
   test('כמה ביצועים באותו יום - כולם מסומנים', () {
     final tasks = [task('a'), task('b')];
     final result = marks(tasks: tasks, logs: [
-      log('a', DateTime(2026, 11, 3, 8)),
-      log('b', DateTime(2026, 11, 3, 20)),
+      log('a', DateTime(2026, 11, 10, 8)),
+      log('b', DateTime(2026, 11, 10, 20)),
     ]);
-    expect(kinds(result[3]), [CalendarMarkKind.done, CalendarMarkKind.done]);
-  });
-
-  test('ביום עם יעד וביצוע - מה שפתוח קודם', () {
-    final tasks = [task('a'), task('b', next: DateTime(2026, 11, 12))];
-    final result = marks(tasks: tasks, logs: [log('a', DateTime(2026, 11, 12))]);
-    expect(kinds(result[12]), [CalendarMarkKind.planned, CalendarMarkKind.done]);
+    expect(kinds(result[DateTime(2026, 11, 10)]), [CalendarMarkKind.done, CalendarMarkKind.done]);
   });
 
   test('סינון: ביצוע של משימה שלא ברשימה לא מוצג', () {
-    final result = marks(tasks: [task('a')], logs: [log('other', DateTime(2026, 11, 3))]);
+    final result = marks(tasks: [task('a')], logs: [log('other', DateTime(2026, 11, 10))]);
     expect(result, isEmpty);
   });
 
-  test('קצוות חודש: ה-31 בסוף היום וה-29 בפברואר', () {
-    final january = marks(
-      month: DateTime(2026, 1),
-      tasks: [task('a')],
-      logs: [log('a', DateTime(2026, 1, 31, 23, 59)), log('a', DateTime(2026, 2, 1))],
-    );
-    expect(january.keys, [31]);
-
-    final leapFebruary = marks(
-      month: DateTime(2028, 2),
-      tasks: [task('b', next: DateTime(2028, 2, 29))],
-    );
-    expect(leapFebruary.keys, [29]);
+  test('צבע בהיר מוכהה למילוי, צבע כהה נשאר', () {
+    expect(calendarFillColor(const Color(0xFFFFEB3B)).computeLuminance(), lessThanOrEqualTo(0.3));
+    const dark = Color(0xFF1F3A5F);
+    expect(calendarFillColor(dark), dark);
   });
 }

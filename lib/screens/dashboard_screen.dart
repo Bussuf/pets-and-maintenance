@@ -14,6 +14,7 @@ import '../widgets/task_card.dart';
 import '../widgets/edit_category_sheet.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/agenda.dart';
+import '../widgets/month_calendar.dart';
 import '../models/task_status.dart';
 import '../onboarding/onboarding.dart';
 import '../onboarding/onboarding_card.dart';
@@ -29,6 +30,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   DateTime? _lastBackPressTime;
   String? _selectedCategoryId;
+  bool _weekOpen = false; // מיקוד יום (#83) - תמיד מתחילים ביומן
   final Set<String> _expandedTaskIds = {};
 
   final Map<String?, GlobalKey> _chipKeys = {};
@@ -51,10 +53,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (mounted) setState(() {});
   }
 
-  /// לפני הדרכה: חוזרים ל"הכל", סוגרים כרטיסים פתוחים ופותחים את כל הסעיפים (הכותרת והכרטיס צריכים להיראות)
+  /// לפני הדרכה: חוזרים ליומן ול"הכל", סוגרים כרטיסים פתוחים ופותחים את כל הסעיפים (הכותרת והכרטיס צריכים להיראות)
   void _resetForOnboarding() {
     if (!mounted) return;
-    setState(() => _expandedTaskIds.clear());
+    setState(() {
+      _expandedTaskIds.clear();
+      _weekOpen = false;
+    });
     _selectCategory(null);
     ref.read(agendaCollapseProvider.notifier).setAll(collapsed: false);
   }
@@ -92,6 +97,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       _selectCategory(categoryId);
       return;
     }
+    if (_weekOpen) return; // במיקוד יום אין סעיפים לקפל
     ref.read(agendaCollapseProvider.notifier).toggleAll(shown.map((g) => g.kind));
   }
 
@@ -248,6 +254,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             final agendaGroups = buildAgendaGroups(context, filteredTasks);
             final flatList = flattenAgenda(agendaGroups, collapsedKinds);
 
+            // במסד ריק נשארים ביומן - שם ההסבר והקישור למדריך (#26)
+            final showWeek = _weekOpen && tasks.isNotEmpty;
+            final selectedCategory = categories.where((c) => c.id == _selectedCategoryId).firstOrNull;
+            final calendarAccent = selectedCategory?.color != null
+                ? Color(selectedCategory!.color!)
+                : theme.colorScheme.primary;
+
+            Widget buildTaskCard(Map<String, dynamic> taskItem) => TaskCard(
+              task: taskItem,
+              isExpanded: _expandedTaskIds.contains(taskItem['id']),
+              onToggleExpand: () {
+                setState(() {
+                  if (_expandedTaskIds.contains(taskItem['id'])) {
+                    _expandedTaskIds.remove(taskItem['id']);
+                  } else {
+                    _expandedTaskIds.add(taskItem['id']);
+                  }
+                });
+              },
+              showCategoryLabel: true,
+              todayStart: todayStart,
+            );
+
             return Column(
               children: [
                 Container(
@@ -256,7 +285,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     horizontal: 16.0,
                     vertical: 8.0,
                   ),
-                  padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary.withValues(
                       alpha: isDark ? 0.2 : 0.08,
@@ -266,17 +294,47 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       color: theme.colorScheme.primary.withValues(alpha: 0.25),
                     ),
                   ),
+                  // לחיצה על הכותרת מחליפה בין היומן למיקוד יום (#83)
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: tasks.isEmpty
+                        ? null
+                        : () => setState(() => _weekOpen = !_weekOpen),
+                    child: Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: theme.colorScheme.primary.withValues(
-                          alpha: 0.2,
-                        ),
-                        child: Icon(
-                          Icons.grid_view,
-                          color: theme.colorScheme.primary,
-                          size: 30,
+                      Tooltip(
+                        message: AppLocalizations.of(context)!.switchView,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            CircleAvatar(
+                              radius: 28,
+                              backgroundColor: theme.colorScheme.primary.withValues(
+                                alpha: 0.2,
+                              ),
+                              child: Icon(
+                                showWeek ? Icons.view_week_outlined : Icons.view_agenda_outlined,
+                                color: theme.colorScheme.primary,
+                                size: 30,
+                              ),
+                            ),
+                            PositionedDirectional(
+                              bottom: -2,
+                              end: -2,
+                              child: Container(
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: theme.colorScheme.surface,
+                                  border: Border.all(color: theme.colorScheme.outlineVariant),
+                                ),
+                                child: Icon(Icons.swap_horiz, size: 14, color: theme.colorScheme.primary),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -320,6 +378,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         ),
                       ),
                     ],
+                  ),
+                    ),
                   ),
                 ),
 
@@ -402,7 +462,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 const OnboardingStartCard(),
 
                 Expanded(
-                  child: GestureDetector(
+                  child: showWeek
+                      ? WeekFocusView(
+                    tasks: filteredTasks,
+                    accent: calendarAccent,
+                    taskCardBuilder: buildTaskCard,
+                  )
+                      : GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onHorizontalDragEnd: (details) {
                       if (categories.isEmpty) return;
@@ -454,26 +520,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           );
                         }
 
-                        final taskItem = item as Map<String, dynamic>;
-                        return TaskCard(
-                          task: taskItem,
-                          isExpanded: _expandedTaskIds.contains(
-                            taskItem['id'],
-                          ),
-                          onToggleExpand: () {
-                            setState(() {
-                              if (_expandedTaskIds.contains(
-                                taskItem['id'],
-                              )) {
-                                _expandedTaskIds.remove(taskItem['id']);
-                              } else {
-                                _expandedTaskIds.add(taskItem['id']);
-                              }
-                            });
-                          },
-                          showCategoryLabel: true,
-                          todayStart: todayStart,
-                        );
+                        return buildTaskCard(item as Map<String, dynamic>);
                       },
                     ),
                   ),

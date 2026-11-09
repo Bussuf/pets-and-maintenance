@@ -317,7 +317,7 @@ class DatabaseHelper {
     return maps.map((map) => TaskLog.fromMap(map)).toList();
   }
 
-  /// כל הביצועים בטווח [from, to) - ללוח החודשי (#83)
+  /// כל הביצועים בטווח [from, to) - לרצועת השבוע (#83)
   Future<List<TaskLog>> getLogsBetween(DateTime from, DateTime to) async {
     final db = await database;
     final maps = await db.query(

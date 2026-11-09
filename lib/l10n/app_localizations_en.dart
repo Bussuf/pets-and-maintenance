@@ -631,6 +631,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get finishedTasks => 'Finished';
 
   @override
+  String get calDone => 'Done';
+
+  @override
+  String get calEmptyDay => 'Nothing on this day';
+
+  @override
+  String get switchView => 'Switch view';
+
+  @override
   String get taskFinishedLabel => 'Finished';
 
   @override

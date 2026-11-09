@@ -33,10 +33,10 @@ final logsByTaskProvider = FutureProvider.family<List<TaskLog>, String>((ref, ta
   return await db.getLogsByTask(taskId);
 });
 
-// הביצועים של חודש אחד ללוח החודשי (#83; המפתח: היום הראשון בחודש).
+// הביצועים של 7 ימים לרצועת השבוע (#83; המפתח: היום הראשון ברצועה).
 // תלוי במשימות כדי להתרענן אחרי כל שינוי - כל מסלולי ההשלמה, הביטול והמחיקה כבר מרעננים אותן
-final monthLogsProvider = FutureProvider.autoDispose.family<List<TaskLog>, DateTime>((ref, month) async {
+final weekLogsProvider = FutureProvider.autoDispose.family<List<TaskLog>, DateTime>((ref, from) async {
   await ref.watch(dashboardTasksProvider.future);
   final db = ref.watch(databaseProvider);
-  return await db.getLogsBetween(month, DateTime(month.year, month.month + 1));
+  return await db.getLogsBetween(from, DateTime(from.year, from.month, from.day + 7));
 });
