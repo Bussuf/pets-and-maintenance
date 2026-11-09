@@ -7,12 +7,14 @@ import '../models/task_status.dart';
 import '../onboarding/onboarding.dart';
 
 /// סוג סעיף ביומן - המפתח לזכירת קיפול (#84).
-/// כל ימי השבוע הם סוג אחד, כי "שלישי" של היום הוא "שני" של מחר
-enum AgendaKind { overdue, today, tomorrow, week, later, finished }
+/// כל ימי השבוע הם סוג אחד, כי "שלישי" של היום הוא "שני" של מחר.
+/// focus* - הסעיפים של מיקוד יום (#88), במצב משלהם, כדי ש"מאוחר יותר" מקופל לא יסתיר יום
+enum AgendaKind { overdue, today, tomorrow, week, later, finished, focusOverdue, focusDay }
 
 /// אילו סוגי סעיפים מקופלים - משותף לדשבורד ולדף קבוצה, נשמר בין הפעלות
 class AgendaCollapseNotifier extends StateNotifier<Set<AgendaKind>> {
   static const _prefKey = 'agenda_collapsed';
+  static const _focusKinds = {AgendaKind.focusOverdue, AgendaKind.focusDay};
 
   AgendaCollapseNotifier() : super(const {AgendaKind.later, AgendaKind.finished}) {
     _load();
@@ -43,8 +45,12 @@ class AgendaCollapseNotifier extends StateNotifier<Set<AgendaKind>> {
     _save();
   }
 
+  /// סעיפי היומן בלבד - מצב המיקוד נשאר כמו שהוא
   void setAll({required bool collapsed}) {
-    state = collapsed ? AgendaKind.values.toSet() : <AgendaKind>{};
+    state = {
+      if (collapsed) ...AgendaKind.values.where((k) => !_focusKinds.contains(k)),
+      ...state.where(_focusKinds.contains),
+    };
     _save();
   }
 

@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/task_log.dart';
 import '../models/task_status.dart';
 import '../providers/items_provider.dart';
+import 'agenda.dart';
 
 /// שם יום בשבוע לפי מספר (DateTime.monday..sunday), בשפה הנוכחית
 String weekdayName(BuildContext context, int weekday, {bool short = false}) {
@@ -270,47 +271,6 @@ class _DayCell extends StatelessWidget {
   }
 }
 
-/// כותרת ברשימת היום: שם ומונה
-class _DayListHeader extends StatelessWidget {
-  final String title;
-  final int count;
-  final Color color;
-  final bool isOverdue;
-
-  const _DayListHeader({required this.title, required this.count, required this.color, this.isOverdue = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 6),
-      child: Row(
-        children: [
-          if (isOverdue) ...[
-            const Icon(Icons.warning_amber_rounded, size: 18, color: Colors.redAccent),
-            const SizedBox(width: 6),
-          ],
-          Flexible(
-            child: Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color)),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1.5),
-            decoration: BoxDecoration(
-              color: isOverdue ? Colors.red.withValues(alpha: 0.15) : scheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              '$count',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isOverdue ? color : scheme.onSurfaceVariant),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// שורת "בוצע" ברשימת היום - לתצוגה בלבד
 class _DoneRow extends StatelessWidget {
   final Map<String, dynamic> task;
@@ -399,6 +359,7 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
     final overdue = dayMarks.where((m) => m.kind == CalendarMarkKind.overdue).toList();
     final rest = dayMarks.where((m) => m.kind != CalendarMarkKind.overdue).toList();
     final dayLabel = DateFormat.MMMMd(localeTag).format(_selected);
+    final collapsed = ref.watch(agendaCollapseProvider);
     final iconStyle = IconButton.styleFrom(
       visualDensity: VisualDensity.compact,
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -438,7 +399,7 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
                         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    if (_page != 0)
+                    if (_page != 0 || _selected != today)
                       IconButton(
                         style: iconStyle,
                         tooltip: l10n.today,
@@ -482,26 +443,33 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
               padding: EdgeInsets.only(bottom: 80 + MediaQuery.paddingOf(context).bottom),
               children: [
                 if (overdue.isNotEmpty) ...[
-                  _DayListHeader(
-                    title: l10n.overdueTasks,
-                    count: overdue.length,
-                    color: _overdueColor(context),
-                    isOverdue: true,
+                  AgendaSectionHeader(
+                    group: AgendaGroup(
+                      title: l10n.overdueTasks,
+                      kind: AgendaKind.focusOverdue,
+                      tasks: [for (final mark in overdue) mark.task],
+                      isOverdue: true,
+                    ),
                   ),
-                  for (final mark in overdue) widget.taskCardBuilder(mark.task),
+                  if (!collapsed.contains(AgendaKind.focusOverdue))
+                    for (final mark in overdue) widget.taskCardBuilder(mark.task),
                 ],
-                _DayListHeader(
-                  title: _selected == today ? '${l10n.today} · $dayLabel' : dayLabel,
-                  count: rest.length,
-                  color: accent,
-                ),
-                if (dayMarks.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text(l10n.calEmptyDay, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+                AgendaSectionHeader(
+                  group: AgendaGroup(
+                    title: _selected == today ? '${l10n.today} · $dayLabel' : dayLabel,
+                    kind: AgendaKind.focusDay,
+                    tasks: [for (final mark in rest) mark.task],
                   ),
-                for (final mark in rest)
-                  if (mark.kind == CalendarMarkKind.done) _DoneRow(task: mark.task) else widget.taskCardBuilder(mark.task),
+                ),
+                if (!collapsed.contains(AgendaKind.focusDay)) ...[
+                  if (dayMarks.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(l10n.calEmptyDay, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+                    ),
+                  for (final mark in rest)
+                    if (mark.kind == CalendarMarkKind.done) _DoneRow(task: mark.task) else widget.taskCardBuilder(mark.task),
+                ],
               ],
             ),
           ),
