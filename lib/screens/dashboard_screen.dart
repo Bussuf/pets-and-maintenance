@@ -34,6 +34,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   String? _selectedCategoryId;
   String? _selectedItemId; // צ'יפ פריט, כשמסומנת קבוצה (#88)
   bool _weekOpen = false; // מיקוד יום (#83) - תמיד מתחילים ביומן
+  DateTime _focusDay = DateTime.now(); // היום הנבחר ברצועה; מתאפס להיום בכל פתיחה
   final Set<String> _expandedTaskIds = {};
 
   final Map<String?, GlobalKey> _chipKeys = {};
@@ -65,7 +66,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       _weekOpen = false;
     });
     _selectCategory(null);
-    ref.read(agendaCollapseProvider.notifier).setAll(collapsed: false);
+    ref.read(agendaCollapseProvider(agendaAllScope).notifier).expandAll();
   }
 
   @override
@@ -104,22 +105,40 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   /// לחיצה על צ'יפ: בחירה, ואם הוא כבר מסומן - קיפול/פתיחה של הסעיפים המוצגים (#87)
-  void _onChipTap(String? categoryId, List<AgendaGroup> shown) {
+  void _onChipTap(String? categoryId, List<AgendaKind> shown) {
     if (categoryId != _selectedCategoryId) {
       _selectCategory(categoryId);
       return;
     }
-    if (_weekOpen) return; // במיקוד יום אין סעיפים לקפל
-    ref.read(agendaCollapseProvider.notifier).toggleAll(shown.map((g) => g.kind));
+    ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown);
   }
 
-  void _onItemChipTap(String? itemId, List<AgendaGroup> shown) {
+  void _onItemChipTap(String? itemId, List<AgendaKind> shown) {
     if (itemId != _selectedItemId) {
       _selectItem(itemId);
       return;
     }
-    if (_weekOpen) return;
-    ref.read(agendaCollapseProvider.notifier).toggleAll(shown.map((g) => g.kind));
+    ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown);
+  }
+
+  /// הצ'יפ שזיכרון הקיפול שלו חל עכשיו (#88): הפריט, הקבוצה, או "הכל"
+  String get _collapseScope => _selectedItemId ?? _selectedCategoryId ?? agendaAllScope;
+
+  /// תווית צ'יפ, עם חץ דינמי על הצ'יפ הפעיל: ^ יש מה לקפל, v הכל מקופל
+  Widget _chipLabel(String text, {required bool showArrow, required bool allCollapsed}) {
+    if (!showArrow) return Text(text);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedRotation(
+          turns: allCollapsed ? 0.5 : 0,
+          duration: const Duration(milliseconds: 200),
+          child: const Icon(Icons.expand_less, size: 18),
+        ),
+        const SizedBox(width: 2),
+        Flexible(child: Text(text)),
+      ],
+    );
   }
 
   /// תוצאת חיפוש: מסמנים את הקבוצה והפריט, ופותחים את המשימה ואת הסעיף שלה ביומן
@@ -134,11 +153,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final tasks = ref.read(dashboardTasksProvider).valueOrNull ?? const <Map<String, dynamic>>[];
     final task = tasks.where((t) => t['id'] == taskId).firstOrNull;
     if (task == null) return;
-    ref.read(agendaCollapseProvider.notifier).expand(buildAgendaGroups(context, [task]).first.kind);
+    ref.read(agendaCollapseProvider(itemId ?? categoryId).notifier).expand(buildAgendaGroups(context, [task]).first.kind);
   }
 
   /// שורת צ'יפי הפריטים של הקבוצה המסומנת
-  Widget _buildItemChips(List<Item> items, String categoryId, List<AgendaGroup> shown) {
+  Widget _buildItemChips(List<Item> items, String categoryId, List<AgendaKind> shown, bool allCollapsed) {
     _itemChipKeys.putIfAbsent(null, () => GlobalKey());
     final l10n = AppLocalizations.of(context)!;
 
@@ -150,7 +169,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           FilterChip(
             key: _itemChipKeys[null],
             showCheckmark: false,
-            label: Text(l10n.allWithCount(items.length)),
+            label: _chipLabel(
+              l10n.allWithCount(items.length),
+              showArrow: _selectedItemId == null && shown.isNotEmpty,
+              allCollapsed: allCollapsed,
+            ),
             selected: _selectedItemId == null,
             onSelected: (_) => _onItemChipTap(null, shown),
           ),
@@ -166,7 +189,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 child: InputChip(
                   key: _itemChipKeys[item.id],
                   showCheckmark: false,
-                  label: Text(item.name),
+                  label: _chipLabel(item.name, showArrow: isSelected && shown.isNotEmpty, allCollapsed: allCollapsed),
                   selected: isSelected,
                   onSelected: (_) => _onItemChipTap(item.id, shown),
                   deleteIcon: isSelected ? const Icon(Icons.more_vert, size: 16) : null,
@@ -188,7 +211,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final categoriesAsync = ref.watch(categoriesProvider);
     final tasksAsync = ref.watch(dashboardTasksProvider);
-    final collapsedKinds = ref.watch(agendaCollapseProvider);
+    final collapsedKinds = ref.watch(agendaCollapseProvider(_collapseScope));
     final selectedCategory = (categoriesAsync.valueOrNull ?? const <Category>[])
         .where((c) => c.id == _selectedCategoryId)
         .firstOrNull;
@@ -323,6 +346,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
             // במסד ריק נשארים ביומן - שם ההסבר והקישור למדריך (#26)
             final showWeek = _weekOpen && tasks.isNotEmpty;
+
+            // הסעיפים שמוצגים עכשיו - על אלה פועלת לחיצה חוזרת על הצ'יפ, ומהם נקבע החץ שלו
+            final shownKinds = showWeek
+                ? [
+                    if (_focusDay == todayStart && agendaGroups.any((g) => g.kind == AgendaKind.overdue))
+                      AgendaKind.focusOverdue,
+                    AgendaKind.focusDay,
+                  ]
+                : agendaGroups.map((g) => g.kind).toList();
+            final allCollapsed = allSectionsCollapsed(collapsedKinds, shownKinds);
+            // כשיש שורת פריטים החץ נמצא עליה: צ'יפ אחד פעיל
+            final hasItemRow = selectedCategory != null && (itemsAsync?.valueOrNull?.isNotEmpty ?? false);
+
             final calendarAccent = selectedCategory?.color != null
                 ? Color(selectedCategory!.color!)
                 : theme.colorScheme.primary;
@@ -365,7 +401,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     borderRadius: BorderRadius.circular(16),
                     onTap: tasks.isEmpty
                         ? null
-                        : () => setState(() => _weekOpen = !_weekOpen),
+                        : () => setState(() {
+                              _weekOpen = !_weekOpen;
+                              _focusDay = todayStart;
+                            }),
                     child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
@@ -484,12 +523,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           FilterChip(
                             key: _chipKeys[null],
                             showCheckmark: false,
-                            label: Text(
+                            label: _chipLabel(
                               AppLocalizations.of(context)!
                                   .allWithCount(cats.length),
+                              showArrow: _selectedCategoryId == null && shownKinds.isNotEmpty,
+                              allCollapsed: allCollapsed,
                             ),
                             selected: _selectedCategoryId == null,
-                            onSelected: (_) => _onChipTap(null, agendaGroups),
+                            onSelected: (_) => _onChipTap(null, shownKinds),
                           ),
                           const SizedBox(width: 8),
                           ...cats.map((cat) {
@@ -512,9 +553,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     color: catColor,
                                   ),
                                   showCheckmark: false,
-                                  label: Text(cat.name),
+                                  label: _chipLabel(
+                                    cat.name,
+                                    showArrow: isSelected && !hasItemRow && shownKinds.isNotEmpty,
+                                    allCollapsed: allCollapsed,
+                                  ),
                                   selected: isSelected,
-                                  onSelected: (_) => _onChipTap(cat.id, agendaGroups),
+                                  onSelected: (_) => _onChipTap(cat.id, shownKinds),
                                   deleteIcon: isSelected
                                       ? const Icon(Icons.more_vert, size: 16)
                                       : null,
@@ -541,8 +586,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   error: (_, _) => const SizedBox.shrink(),
                 ),
-                if (selectedCategory != null && (itemsAsync?.valueOrNull?.isNotEmpty ?? false))
-                  _buildItemChips(itemsAsync!.value!, selectedCategory.id, agendaGroups),
+                if (hasItemRow)
+                  _buildItemChips(itemsAsync!.value!, selectedCategory.id, shownKinds, allCollapsed),
                 const Divider(height: 1),
 
                 // הזמנה להדרכה עם נתוני דוגמה (#26) - רק כשאין עדיין נתונים של המשתמש
@@ -554,6 +599,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     tasks: filteredTasks,
                     accent: calendarAccent,
                     taskCardBuilder: buildTaskCard,
+                    scope: _collapseScope,
+                    selected: _focusDay,
+                    onSelectDay: (day) => setState(() => _focusDay = day),
                   )
                       : GestureDetector(
                     behavior: HitTestBehavior.opaque,
@@ -605,6 +653,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             key: item.tasks.any((t) => t['id'] == Onboarding.taskId)
                                 ? Onboarding.keyFor(OnboardingTarget.todayHeader, Onboarding.taskId)
                                 : null,
+                            scope: _collapseScope,
                             group: item,
                           );
                         }

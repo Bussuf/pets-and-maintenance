@@ -11,12 +11,37 @@ import '../onboarding/onboarding.dart';
 /// focus* - הסעיפים של מיקוד יום (#88), במצב משלהם, כדי ש"מאוחר יותר" מקופל לא יסתיר יום
 enum AgendaKind { overdue, today, tomorrow, week, later, finished, focusOverdue, focusDay }
 
-/// אילו סוגי סעיפים מקופלים - משותף לדשבורד ולדף קבוצה, נשמר בין הפעלות
-class AgendaCollapseNotifier extends StateNotifier<Set<AgendaKind>> {
-  static const _prefKey = 'agenda_collapsed';
-  static const _focusKinds = {AgendaKind.focusOverdue, AgendaKind.focusDay};
+/// המפתח של צ'יפ "הכל". לקבוצה ולפריט המפתח הוא המזהה שלהם
+const String agendaAllScope = 'all';
+const String _agendaPrefPrefix = 'agenda_collapsed_';
 
-  AgendaCollapseNotifier() : super(const {AgendaKind.later, AgendaKind.finished}) {
+/// האם כל הסעיפים המוצגים מקופלים (חץ הצ'יפ, וכיוון הלחיצה עליו)
+bool allSectionsCollapsed(Set<AgendaKind> collapsed, Iterable<AgendaKind> shown) =>
+    shown.isNotEmpty && shown.every(collapsed.contains);
+
+/// לחיצה חוזרת על צ'יפ מסומן (#87): יש סעיף מוצג פתוח - מקפלים; כולם מקופלים - פותחים
+Set<AgendaKind> toggledSections(Set<AgendaKind> collapsed, Iterable<AgendaKind> shown) =>
+    allSectionsCollapsed(collapsed, shown) ? collapsed.difference(shown.toSet()) : {...collapsed, ...shown};
+
+/// מחיקת הזיכרון של קבוצות/פריטים שנמחקו
+Future<void> clearAgendaCollapse(Iterable<String> scopes) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    for (final scope in scopes) {
+      await prefs.remove('$_agendaPrefPrefix$scope');
+    }
+  } catch (e) {
+    debugPrint('Failed to clear agenda state: $e');
+  }
+}
+
+/// אילו סוגי סעיפים מקופלים - לכל צ'יפ זיכרון משלו (#88), נשמר בין הפעלות
+class AgendaCollapseNotifier extends StateNotifier<Set<AgendaKind>> {
+  final String _scope;
+
+  String get _prefKey => '$_agendaPrefPrefix$_scope';
+
+  AgendaCollapseNotifier(this._scope) : super(const {AgendaKind.later, AgendaKind.finished}) {
     _load();
   }
 
@@ -50,25 +75,23 @@ class AgendaCollapseNotifier extends StateNotifier<Set<AgendaKind>> {
     _save();
   }
 
-  /// סעיפי היומן בלבד - מצב המיקוד נשאר כמו שהוא
-  void setAll({required bool collapsed}) {
-    state = {
-      if (collapsed) ...AgendaKind.values.where((k) => !_focusKinds.contains(k)),
-      ...state.where(_focusKinds.contains),
-    };
+  void expandAll() {
+    state = <AgendaKind>{};
     _save();
   }
 
-  /// לחיצה חוזרת על צ'יפ מסומן (#87): יש סעיף מוצג פתוח - מקפלים הכל; כולם מקופלים - פותחים הכל.
   /// בזמן הדרכה בלי השפעה - קיפול היה מעלים את מה שההדרכה מצביעה עליו
   void toggleAll(Iterable<AgendaKind> shown) {
     if (Onboarding.isActive) return;
-    setAll(collapsed: shown.any((k) => !state.contains(k)));
+    state = toggledSections(state, shown);
+    _save();
   }
 }
 
-final agendaCollapseProvider = StateNotifierProvider<AgendaCollapseNotifier, Set<AgendaKind>>((ref) {
-  return AgendaCollapseNotifier();
+/// המפתח: agendaAllScope, או מזהה הקבוצה/הפריט של הצ'יפ המסומן
+final agendaCollapseProvider =
+    StateNotifierProvider.family<AgendaCollapseNotifier, Set<AgendaKind>, String>((ref, scope) {
+  return AgendaCollapseNotifier(scope);
 });
 
 /// קבוצה ביומן: כותרת (באיחור / היום / מחר / יום בשבוע / מאוחר יותר) והמשימות שבה
@@ -155,17 +178,18 @@ List<AgendaGroup> buildAgendaGroups(BuildContext context, List<Map<String, dynam
 /// סעיף מקופל מציג נקודות בצבעי הקבוצות של המשימות שבו
 class AgendaSectionHeader extends ConsumerWidget {
   final AgendaGroup group;
+  final String scope; // הצ'יפ שהזיכרון שלו חל כאן
 
   static const _maxDots = 5;
 
-  const AgendaSectionHeader({super.key, required this.group});
+  const AgendaSectionHeader({super.key, required this.group, required this.scope});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final overdueColor = isDark ? Colors.redAccent.shade100 : Colors.red.shade800;
-    final isCollapsed = ref.watch(agendaCollapseProvider).contains(group.kind);
+    final isCollapsed = ref.watch(agendaCollapseProvider(scope)).contains(group.kind);
 
     return Semantics(
       expanded: !isCollapsed,
@@ -173,7 +197,7 @@ class AgendaSectionHeader extends ConsumerWidget {
         // בזמן הדרכה הכותרת נמצאת בתוך האזור המואר - קיפול היה מעלים את הכרטיס שההדרכה מצביעה עליו
         onTap: () {
           if (Onboarding.isActive) return;
-          ref.read(agendaCollapseProvider.notifier).toggle(group.kind);
+          ref.read(agendaCollapseProvider(scope).notifier).toggle(group.kind);
         },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 16, 18, 6),

@@ -31,6 +31,15 @@ Color calendarFillColor(Color color) {
 /// מספר הימים ברצועה
 const int weekLength = 7;
 
+/// באיזה עמוד של הרצועה נמצא יום: 0 = היום + 6 הבאים, 1- = 7 הימים שלפני
+int weekPageOf(DateTime day, DateTime today) {
+  // חישוב ב-UTC: ביום של מעבר לשעון קיץ/חורף הפרש השעות המקומי לא שווה לימים שלמים
+  final diff = DateTime.utc(day.year, day.month, day.day)
+      .difference(DateTime.utc(today.year, today.month, today.day))
+      .inDays;
+  return (diff / weekLength).floor();
+}
+
 /// סוג סימון ביום ברצועת השבוע (#83)
 enum CalendarMarkKind { overdue, planned, done }
 
@@ -306,60 +315,44 @@ class _DoneRow extends StatelessWidget {
 /// מיקוד יום (#83): רצועת 7 ימים נעוצה למעלה, והמשימות של היום הנבחר נגללות מתחתיה.
 /// הרצועה מתחילה מהיום (ולא מתחילת שבוע), כדי שתמיד יראו את מה שלפנינו.
 /// כרטיס המשימה מגיע מבחוץ, כדי שמצב ההרחבה יישאר משותף עם היומן
-class WeekFocusView extends ConsumerStatefulWidget {
+class WeekFocusView extends ConsumerWidget {
   final List<Map<String, dynamic>> tasks; // כבר מסוננות לפי הצ'יפ
   final Color accent;
   final Widget Function(Map<String, dynamic> task) taskCardBuilder;
+  final String scope; // הצ'יפ שזיכרון הקיפול שלו חל כאן
+  final DateTime selected; // היום הנבחר (חצות) - נשמר בחוץ, כי הצ'יפים צריכים לדעת מה מוצג
+  final ValueChanged<DateTime> onSelectDay;
 
   const WeekFocusView({
     super.key,
     required this.tasks,
     required this.accent,
     required this.taskCardBuilder,
+    required this.scope,
+    required this.selected,
+    required this.onSelectDay,
   });
 
   @override
-  ConsumerState<WeekFocusView> createState() => _WeekFocusViewState();
-}
-
-class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
-  int _page = 0; // כמה שבועות מהיום
-  late DateTime _selected = _today;
-
-  DateTime get _today {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day);
-  }
-
-  DateTime _pageStart(int page) {
-    final today = _today;
-    return DateTime(today.year, today.month, today.day + page * weekLength);
-  }
-
-  void _goToPage(int page) {
-    setState(() {
-      _page = page;
-      _selected = _pageStart(page); // בעמוד הנוכחי זה היום עצמו
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final localeTag = Localizations.localeOf(context).toLanguageTag();
-    final accent = widget.accent;
-    final today = _today;
-    final from = _pageStart(_page);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final page = weekPageOf(selected, today);
+    DateTime pageStart(int p) => DateTime(today.year, today.month, today.day + p * weekLength);
+    void goToPage(int p) => onSelectDay(pageStart(p)); // בעמוד הנוכחי זה היום עצמו
+    final from = pageStart(page);
     final lastDay = DateTime(from.year, from.month, from.day + weekLength - 1);
 
     final logs = ref.watch(weekLogsProvider(from)).valueOrNull ?? const <TaskLog>[];
-    final marks = buildWeekMarks(from: from, tasks: widget.tasks, logs: logs, now: DateTime.now());
+    final marks = buildWeekMarks(from: from, tasks: tasks, logs: logs, now: DateTime.now());
 
-    final dayMarks = marks[_selected] ?? const <CalendarMark>[];
+    final dayMarks = marks[selected] ?? const <CalendarMark>[];
     final overdue = dayMarks.where((m) => m.kind == CalendarMarkKind.overdue).toList();
     final rest = dayMarks.where((m) => m.kind != CalendarMarkKind.overdue).toList();
-    final dayLabel = DateFormat.MMMMd(localeTag).format(_selected);
-    final collapsed = ref.watch(agendaCollapseProvider);
+    final dayLabel = DateFormat.MMMMd(localeTag).format(selected);
+    final collapsed = ref.watch(agendaCollapseProvider(scope));
     final iconStyle = IconButton.styleFrom(
       visualDensity: VisualDensity.compact,
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -372,9 +365,9 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
         // כמו בצ'יפים: ב-RTL החלקה ימינה = הבא; ב-LTR הכיוון מתהפך
         final velocity = details.primaryVelocity! * (Directionality.of(context) == TextDirection.rtl ? 1 : -1);
         if (velocity > 200) {
-          _goToPage(_page + 1);
+          goToPage(page + 1);
         } else if (velocity < -200) {
-          _goToPage(_page - 1);
+          goToPage(page - 1);
         }
       },
       child: Column(
@@ -387,7 +380,7 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
                   children: [
                     IconButton(
                       style: iconStyle,
-                      onPressed: () => _goToPage(_page - 1),
+                      onPressed: () => goToPage(page - 1),
                       icon: Icon(Icons.chevron_left, size: 22, color: accent),
                     ),
                     Expanded(
@@ -399,16 +392,16 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
                         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    if (_page != 0 || _selected != today)
+                    if (page != 0 || selected != today)
                       IconButton(
                         style: iconStyle,
                         tooltip: l10n.today,
-                        onPressed: () => _goToPage(0),
+                        onPressed: () => goToPage(0),
                         icon: Icon(Icons.today, size: 20, color: accent),
                       ),
                     IconButton(
                       style: iconStyle,
-                      onPressed: () => _goToPage(_page + 1),
+                      onPressed: () => goToPage(page + 1),
                       icon: Icon(Icons.chevron_right, size: 22, color: accent),
                     ),
                   ],
@@ -424,10 +417,10 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
                               date: date,
                               marks: marks[date] ?? const [],
                               isToday: date == today,
-                              isSelected: date == _selected,
+                              isSelected: date == selected,
                               isPast: date.isBefore(today),
                               accent: accent,
-                              onTap: () => setState(() => _selected = date),
+                              onTap: () => onSelectDay(date),
                             );
                           },
                         ),
@@ -444,6 +437,7 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
               children: [
                 if (overdue.isNotEmpty) ...[
                   AgendaSectionHeader(
+                    scope: scope,
                     group: AgendaGroup(
                       title: l10n.overdueTasks,
                       kind: AgendaKind.focusOverdue,
@@ -452,11 +446,12 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
                     ),
                   ),
                   if (!collapsed.contains(AgendaKind.focusOverdue))
-                    for (final mark in overdue) widget.taskCardBuilder(mark.task),
+                    for (final mark in overdue) taskCardBuilder(mark.task),
                 ],
                 AgendaSectionHeader(
+                  scope: scope,
                   group: AgendaGroup(
-                    title: _selected == today ? '${l10n.today} · $dayLabel' : dayLabel,
+                    title: selected == today ? '${l10n.today} · $dayLabel' : dayLabel,
                     kind: AgendaKind.focusDay,
                     tasks: [for (final mark in rest) mark.task],
                   ),
@@ -468,7 +463,7 @@ class _WeekFocusViewState extends ConsumerState<WeekFocusView> {
                       child: Text(l10n.calEmptyDay, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
                     ),
                   for (final mark in rest)
-                    if (mark.kind == CalendarMarkKind.done) _DoneRow(task: mark.task) else widget.taskCardBuilder(mark.task),
+                    if (mark.kind == CalendarMarkKind.done) _DoneRow(task: mark.task) else taskCardBuilder(mark.task),
                 ],
               ],
             ),
