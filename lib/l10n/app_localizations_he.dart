@@ -147,7 +147,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get allGroups => 'כל הקבוצות';
 
   @override
-  String get navAll => 'הכל';
+  String get sectionsExpandAll => 'פתח הכל';
+
+  @override
+  String get sectionsCollapseAll => 'קפל הכל';
 
   @override
   String get noGroupsYet => 'אין קבוצות עדיין';
@@ -1079,11 +1082,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get obGotIt => 'הבנתי';
 
   @override
-  String get obGroupsTitle => 'כפתורי קבוצות ופריטים';
+  String get obGroupsTitle => 'מעבר בין קבוצות';
 
   @override
   String get obGroupsBody =>
-      'הכפתורים מסננים את המשימות שמתחת. ב\'הכל\' רואים את הקבוצות; בבחירת קבוצה השורה מציגה את הפריטים שלה, ו\'הכל ›\' בכותרת חוזר למעלה. לחיצה חוזרת על כפתור מסומן מקפלת או פותחת את הסעיפים, והחלקה על הרשימה עוברת לכפתור הבא. לחיצה ארוכה - עריכה ומחיקה.';
+      'החלקה על הכותרת עוברת בין הקבוצות - אחרי האחרונה חוזרים ל\'הכל\'. בתוך קבוצה הפריטים שלה מופיעים ככפתורים, והחלקה על הרשימה עוברת ביניהם. כפתור החץ בכותרת מקפל או פותח את כל הסעיפים. לחיצה ארוכה על הכותרת או על פריט - עריכה.';
 
   @override
   String get obFabTitle => 'מכאן מוסיפים הכל';

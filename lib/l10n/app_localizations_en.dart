@@ -148,7 +148,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allGroups => 'All groups';
 
   @override
-  String get navAll => 'All';
+  String get sectionsExpandAll => 'Expand all';
+
+  @override
+  String get sectionsCollapseAll => 'Collapse all';
 
   @override
   String get noGroupsYet => 'No groups yet';
@@ -1071,11 +1074,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get obGotIt => 'Got it';
 
   @override
-  String get obGroupsTitle => 'Group and item buttons';
+  String get obGroupsTitle => 'Moving between groups';
 
   @override
   String get obGroupsBody =>
-      'These buttons filter the tasks below. On All you see your groups; pick a group and the row shows its items, and All › in the title takes you back up. Tap the selected button again to collapse or expand the sections, and swipe the list to move to the next one. Long-press to edit or delete.';
+      'Swipe the header to move between your groups - after the last one you\'re back at All. Inside a group its items appear as buttons, and swiping the list moves between them. The arrow button in the header collapses or expands all sections. Long-press the header or an item to edit it.';
 
   @override
   String get obFabTitle => 'Add everything from here';

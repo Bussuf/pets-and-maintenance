@@ -356,11 +356,17 @@ abstract class AppLocalizations {
   /// **'All groups'**
   String get allGroups;
 
-  /// No description provided for @navAll.
+  /// No description provided for @sectionsExpandAll.
   ///
   /// In en, this message translates to:
-  /// **'All'**
-  String get navAll;
+  /// **'Expand all'**
+  String get sectionsExpandAll;
+
+  /// No description provided for @sectionsCollapseAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse all'**
+  String get sectionsCollapseAll;
 
   /// No description provided for @noGroupsYet.
   ///
@@ -1781,13 +1787,13 @@ abstract class AppLocalizations {
   /// No description provided for @obGroupsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Group and item buttons'**
+  /// **'Moving between groups'**
   String get obGroupsTitle;
 
   /// No description provided for @obGroupsBody.
   ///
   /// In en, this message translates to:
-  /// **'These buttons filter the tasks below. On All you see your groups; pick a group and the row shows its items, and All › in the title takes you back up. Tap the selected button again to collapse or expand the sections, and swipe the list to move to the next one. Long-press to edit or delete.'**
+  /// **'Swipe the header to move between your groups - after the last one you\'re back at All. Inside a group its items appear as buttons, and swiping the list moves between them. The arrow button in the header collapses or expands all sections. Long-press the header or an item to edit it.'**
   String get obGroupsBody;
 
   /// No description provided for @obFabTitle.

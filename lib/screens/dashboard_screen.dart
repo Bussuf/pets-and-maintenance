@@ -38,7 +38,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   DateTime _focusDay = DateTime.now(); // היום הנבחר ברצועה; מתאפס להיום בכל פתיחה
   final Set<String> _expandedTaskIds = {};
 
-  final Map<String?, GlobalKey> _chipKeys = {};
   final Map<String?, GlobalKey> _itemChipKeys = {};
 
   @override
@@ -77,9 +76,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     super.dispose();
   }
 
-  void _ensureChipVisible(String? id, [Map<String?, GlobalKey>? keys]) {
+  void _ensureChipVisible(String? itemId) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final key = (keys ?? _chipKeys)[id];
+      final key = _itemChipKeys[itemId];
       if (key?.currentContext != null) {
         Scrollable.ensureVisible(
           key!.currentContext!,
@@ -97,23 +96,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       _selectedCategoryId = categoryId;
       _selectedItemId = null;
     });
-    _ensureChipVisible(categoryId);
   }
 
   void _selectItem(String? itemId) {
     setState(() => _selectedItemId = itemId);
-    _ensureChipVisible(itemId, _itemChipKeys);
+    _ensureChipVisible(itemId);
   }
 
-  /// לחיצה על צ'יפ: בחירה, ואם הוא כבר מסומן - קיפול/פתיחה של הסעיפים המוצגים (#87)
-  void _onChipTap(String? categoryId, List<AgendaKind> shown) {
-    if (categoryId != _selectedCategoryId) {
-      _selectCategory(categoryId);
-      return;
-    }
-    ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown);
-  }
-
+  /// לחיצה על צ'יפ פריט: בחירה, ואם הוא כבר מסומן - קיפול/פתיחה של הסעיפים המוצגים (#87)
   void _onItemChipTap(String? itemId, List<AgendaKind> shown) {
     if (itemId != _selectedItemId) {
       _selectItem(itemId);
@@ -132,160 +122,167 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         .toList();
   }
 
-  /// כותרת הפס העליון (#89): על "הכל" - שם וסיכום; בקבוצה - נתיב "הכל › קבוצה › פריט".
-  /// "הכל ›" עולה לרמה הראשית, ושאר הנתיב פותח בורר קבוצות
-  Widget _buildTitle({
+  /// הכותרת המוגדלת (#90): אייקון, שם מלא, תיאור, סיכום ונקודות מיקום בין הקבוצות.
+  /// החלקה עליה עוברת בין הקבוצות; ^ מקפל/פותח את כל הסעיפים המוצגים; לחיצה ארוכה בקבוצה - עריכה
+  Widget _buildHeader({
     required List<Category> categories,
     required Category? category,
     required String? itemName,
     required int activeCount,
     required int overdueCount,
     required Color accent,
+    required Color background,
+    required List<AgendaKind> shown,
+    required bool allCollapsed,
   }) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final isDark = theme.brightness == Brightness.dark;
-    final titleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : accent);
+    final title = category == null
+        ? l10n.allGroupsAndTasks
+        : (itemName == null ? category.name : '${category.name} › $itemName');
+    final description = category?.description;
+    final positions = <String?>[null, ...categories.map((c) => c.id)];
 
-    final Widget top;
-    if (category == null) {
-      top = Text(l10n.allGroupsAndTasks, maxLines: 1, overflow: TextOverflow.ellipsis, style: titleStyle);
-    } else {
-      top = Row(
-        children: [
-          InkWell(
-            borderRadius: BorderRadius.circular(6),
-            onTap: () => _selectCategory(null),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-              child: Text(
-                '${l10n.navAll} ›',
-                style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Flexible(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(6),
-              onTap: () => _openGroupPicker(categories),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(AppIcons.getIcon(category.icon), size: 16, color: accent),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      itemName == null ? category.name : '${category.name} › $itemName',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: titleStyle,
+    return GestureDetector(
+      key: Onboarding.key(OnboardingTarget.groupChips),
+      behavior: HitTestBehavior.opaque,
+      onHorizontalDragEnd: (details) => _onHeaderSwipe(details, positions),
+      onLongPress: category == null ? null : () => EditCategorySheet.show(context, category),
+      child: Container(
+        width: double.infinity,
+        color: background,
+        padding: const EdgeInsets.fromLTRB(16, 4, 8, 10),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 23,
+                  backgroundColor: accent.withValues(alpha: 0.2),
+                  child: Icon(
+                    category == null ? Icons.grid_view : AppIcons.getIcon(category.icon),
+                    color: accent,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 21,
+                          height: 1.25,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : accent,
+                        ),
+                      ),
+                      if (description?.isNotEmpty ?? false)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 3),
+                          child: Text(
+                            description!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+                          ),
+                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        overdueCount > 0
+                            ? l10n.summaryWithOverdue(activeCount, overdueCount)
+                            : l10n.summaryAllClear(activeCount),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: overdueCount > 0 ? FontWeight.w500 : FontWeight.normal,
+                          color: overdueCount > 0
+                              ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800)
+                              : scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (shown.isNotEmpty)
+                  IconButton(
+                    tooltip: allCollapsed ? l10n.sectionsExpandAll : l10n.sectionsCollapseAll,
+                    style: IconButton.styleFrom(backgroundColor: scheme.onSurface.withValues(alpha: 0.08)),
+                    onPressed: () => ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown),
+                    // ^ יש מה לקפל, v הכל מקופל
+                    icon: AnimatedRotation(
+                      turns: allCollapsed ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: const Icon(Icons.expand_less),
                     ),
                   ),
-                  Icon(Icons.expand_more, size: 18, color: theme.colorScheme.onSurfaceVariant),
+              ],
+            ),
+            if (categories.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              // נקודות מיקום: כמה קבוצות יש, ואיפה אנחנו. אפשר גם ללחוץ עליהן
+              Wrap(
+                alignment: WrapAlignment.center,
+                children: [
+                  for (final id in positions)
+                    GestureDetector(
+                      onTap: () => _selectCategory(id),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: id == _selectedCategoryId ? 18 : 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: scheme.onSurface.withValues(alpha: id == _selectedCategoryId ? 0.9 : 0.3),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    final summary = Text(
-      overdueCount > 0 ? l10n.summaryWithOverdue(activeCount, overdueCount) : l10n.summaryAllClear(activeCount),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        fontSize: 12,
-        fontWeight: overdueCount > 0 ? FontWeight.w500 : FontWeight.normal,
-        color: overdueCount > 0
-            ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800)
-            : theme.colorScheme.onSurfaceVariant,
-      ),
-    );
-
-    // גובה הפס קבוע - בגופן גדול הכותרת גדלה רק עד גבול, והשאר נחתך ב-"…"
-    return MediaQuery.withClampedTextScaling(
-      maxScaleFactor: 1.3,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [top, summary],
-      ),
-    );
-  }
-
-  /// בורר הקבוצות שנפתח מהכותרת
-  void _openGroupPicker(List<Category> categories) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            for (final cat in <Category?>[null, ...categories])
-              ListTile(
-                leading: Icon(
-                  cat == null ? Icons.grid_view : AppIcons.getIcon(cat.icon),
-                  color: cat?.color != null ? Color(cat!.color!) : theme.colorScheme.primary,
-                ),
-                title: Text(cat?.name ?? l10n.allGroups),
-                selected: cat?.id == _selectedCategoryId,
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _selectCategory(cat?.id);
-                },
-              ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  /// החלקה על הרשימה (#89): תמיד בין הצ'יפים של השורה המוצגת - פריטים כשמסומנת קבוצה,
-  /// אחרת קבוצות - בקרוסלה (מהאחרון חוזרים לראשון)
-  void _onListSwipe(DragEndDetails details, List<Category> categories, List<Item>? items) {
+  /// כיוון החלקה: 1 = הבא, 1- = הקודם, 0 = לא החלקה. ב-RTL החלקה ימינה = הבא; ב-LTR הכיוון מתהפך
+  int _swipeDelta(DragEndDetails details) {
     final velocity = details.primaryVelocity;
-    if (velocity == null || velocity.abs() < 200) return;
-    // ב-RTL החלקה ימינה = הצ'יפ הבא; ב-LTR הכיוון מתהפך
-    final forward = (velocity > 0) == (Directionality.of(context) == TextDirection.rtl);
-    final delta = forward ? 1 : -1;
+    if (velocity == null || velocity.abs() < 200) return 0;
+    return (velocity > 0) == (Directionality.of(context) == TextDirection.rtl) ? 1 : -1;
+  }
 
-    if (_selectedCategoryId != null) {
-      final ids = <String?>[null, ...?items?.map((i) => i.id)];
-      final index = ids.indexOf(_selectedItemId);
-      if (ids.length < 2 || index == -1) return;
-      _selectItem(ids[wrapIndex(index + delta, ids.length)]);
-    } else {
-      final ids = <String?>[null, ...categories.map((c) => c.id)];
-      final index = ids.indexOf(_selectedCategoryId);
-      if (ids.length < 2 || index == -1) return;
-      _selectCategory(ids[wrapIndex(index + delta, ids.length)]);
-    }
+  /// החלקה על הכותרת (#90): הקבוצה הבאה, בקרוסלה ("הכל" ← הקבוצות ← "הכל")
+  void _onHeaderSwipe(DragEndDetails details, List<String?> positions) {
+    final delta = _swipeDelta(details);
+    final index = positions.indexOf(_selectedCategoryId);
+    if (delta == 0 || positions.length < 2 || index == -1) return;
+    _selectCategory(positions[wrapIndex(index + delta, positions.length)]);
+  }
+
+  /// החלקה על הרשימה (#90): רק בין הפריטים של הקבוצה, בקרוסלה.
+  /// ב"הכל" אין שורת צ'יפים - קבוצות מחליפים בכותרת, כדי שאי אפשר "להיתקע" בתוך קבוצה
+  void _onListSwipe(DragEndDetails details, List<Item>? items) {
+    final delta = _swipeDelta(details);
+    if (delta == 0 || _selectedCategoryId == null) return;
+    final ids = <String?>[null, ...?items?.map((i) => i.id)];
+    final index = ids.indexOf(_selectedItemId);
+    if (ids.length < 2 || index == -1) return;
+    _selectItem(ids[wrapIndex(index + delta, ids.length)]);
   }
 
   /// הצ'יפ שזיכרון הקיפול שלו חל עכשיו (#88): הפריט, הקבוצה, או "הכל"
   String get _collapseScope => _selectedItemId ?? _selectedCategoryId ?? agendaAllScope;
-
-  /// תווית צ'יפ, עם חץ דינמי על הצ'יפ הפעיל: ^ יש מה לקפל, v הכל מקופל
-  Widget _chipLabel(String text, {required bool showArrow, required bool allCollapsed}) {
-    if (!showArrow) return Text(text);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        AnimatedRotation(
-          turns: allCollapsed ? 0.5 : 0,
-          duration: const Duration(milliseconds: 200),
-          child: const Icon(Icons.expand_less, size: 18),
-        ),
-        const SizedBox(width: 2),
-        Flexible(child: Text(text)),
-      ],
-    );
-  }
 
   /// תוצאת חיפוש: מסמנים את הקבוצה והפריט, ופותחים את המשימה ואת הסעיף שלה ביומן
   void _openSearchTarget({required String categoryId, String? itemId, String? taskId}) {
@@ -303,7 +300,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   /// שורת צ'יפי הפריטים של הקבוצה המסומנת
-  Widget _buildItemChips(List<Item> items, String categoryId, List<AgendaKind> shown, bool allCollapsed) {
+  Widget _buildItemChips(List<Item> items, String categoryId, List<AgendaKind> shown) {
     _itemChipKeys.putIfAbsent(null, () => GlobalKey());
     final l10n = AppLocalizations.of(context)!;
 
@@ -315,11 +312,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           FilterChip(
             key: _itemChipKeys[null],
             showCheckmark: false,
-            label: _chipLabel(
-              l10n.allWithCount(items.length),
-              showArrow: _selectedItemId == null && shown.isNotEmpty,
-              allCollapsed: allCollapsed,
-            ),
+            label: Text(l10n.allWithCount(items.length)),
             selected: _selectedItemId == null,
             onSelected: (_) => _onItemChipTap(null, shown),
           ),
@@ -335,7 +328,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 child: InputChip(
                   key: _itemChipKeys[item.id],
                   showCheckmark: false,
-                  label: _chipLabel(item.name, showArrow: isSelected && shown.isNotEmpty, allCollapsed: allCollapsed),
+                  label: Text(item.name),
                   selected: isSelected,
                   onSelected: (_) => _onItemChipTap(item.id, shown),
                   deleteIcon: isSelected ? const Icon(Icons.more_vert, size: 16) : null,
@@ -367,6 +360,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final calendarAccent = selectedCategory?.color != null
         ? Color(selectedCategory!.color!)
         : theme.colorScheme.primary;
+    // הפס העליון והכותרת שמתחתיו באותו גוון - נראים כמשטח אחד
+    final headerColor = calendarAccent.withValues(alpha: isDark ? 0.18 : 0.08);
 
     // הסיכום בכותרת - על מה שמוצג עכשיו (הכל / קבוצה / פריט)
     final nowTime = DateTime.now();
@@ -432,15 +427,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: GlobalSearchBar(
-          title: _buildTitle(
-            categories: categoriesAsync.valueOrNull ?? const <Category>[],
-            category: selectedCategory,
-            itemName: selectedItemName,
-            activeCount: activeCount,
-            overdueCount: overdueCount,
-            accent: calendarAccent,
-          ),
-          backgroundColor: calendarAccent.withValues(alpha: isDark ? 0.18 : 0.08),
+          backgroundColor: headerColor,
           actions: [
             // רצועת השבוע (#89) - כפתור גלוי במקום לחיצה על כרטיס הכותרת
             IconButton(
@@ -550,89 +537,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
             return Column(
               children: [
-                // שורת צ'יפים אחת לפי הרמה (#89): בקבוצה - הפריטים שלה, אחרת - הקבוצות
-                if (selectedCategory != null)
-                  _buildItemChips(itemsAsync?.valueOrNull ?? const <Item>[], selectedCategory.id, shownKinds, allCollapsed)
-                else
-                categoriesAsync.when(
-                  data: (cats) {
-                    _chipKeys.putIfAbsent(null, () => GlobalKey());
-
-                    return SingleChildScrollView(
-                      key: Onboarding.key(OnboardingTarget.groupChips),
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 4.0,
-                      ),
-                      child: Row(
-                        children: [
-                          FilterChip(
-                            key: _chipKeys[null],
-                            showCheckmark: false,
-                            label: _chipLabel(
-                              AppLocalizations.of(context)!
-                                  .allWithCount(cats.length),
-                              showArrow: _selectedCategoryId == null && shownKinds.isNotEmpty,
-                              allCollapsed: allCollapsed,
-                            ),
-                            selected: _selectedCategoryId == null,
-                            onSelected: (_) => _onChipTap(null, shownKinds),
-                          ),
-                          const SizedBox(width: 8),
-                          ...cats.map((cat) {
-                            final isSelected = _selectedCategoryId == cat.id;
-                            final catColor = cat.color != null
-                                ? Color(cat.color!)
-                                : theme.colorScheme.primary;
-                            final catIcon = AppIcons.getIcon(cat.icon);
-                            _chipKeys.putIfAbsent(cat.id, () => GlobalKey());
-
-                            return Padding(
-                              padding: const EdgeInsetsDirectional.only(end: 8.0),
-                              child: GestureDetector(
-                                onLongPress: () => EditCategorySheet.show(context, cat),
-                                child: InputChip(
-                                  key: _chipKeys[cat.id],
-                                  avatar: Icon(
-                                    catIcon,
-                                    size: 18,
-                                    color: catColor,
-                                  ),
-                                  showCheckmark: false,
-                                  label: _chipLabel(
-                                    cat.name,
-                                    showArrow: isSelected && shownKinds.isNotEmpty,
-                                    allCollapsed: allCollapsed,
-                                  ),
-                                  selected: isSelected,
-                                  onSelected: (_) => _onChipTap(cat.id, shownKinds),
-                                  deleteIcon: isSelected
-                                      ? const Icon(Icons.more_vert, size: 16)
-                                      : null,
-                                  onDeleted: isSelected
-                                      ? () => EditCategorySheet.show(context, cat)
-                                      : null,
-                                  deleteButtonTooltipMessage:
-                                  AppLocalizations.of(context)!
-                                      .groupOptions,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    );
-                  },
-                  loading: () => const SizedBox(
-                    height: 44,
-                    child: Center(child: LinearProgressIndicator()),
-                  ),
-                  error: (_, _) => const SizedBox.shrink(),
+                _buildHeader(
+                  categories: categories,
+                  category: selectedCategory,
+                  itemName: selectedItemName,
+                  activeCount: activeCount,
+                  overdueCount: overdueCount,
+                  accent: calendarAccent,
+                  background: headerColor,
+                  shown: shownKinds,
+                  allCollapsed: allCollapsed,
                 ),
+                // צ'יפים רק לפריטים בתוך קבוצה (#90); קבוצות מחליפים בהחלקה על הכותרת או מהתפריט הצדדי
+                if (selectedCategory != null)
+                  _buildItemChips(itemsAsync?.valueOrNull ?? const <Item>[], selectedCategory.id, shownKinds),
                 const Divider(height: 1),
 
                 // הזמנה להדרכה עם נתוני דוגמה (#26) - רק כשאין עדיין נתונים של המשתמש
@@ -651,7 +569,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onHorizontalDragEnd: (details) =>
-                        _onListSwipe(details, categories, itemsAsync?.valueOrNull),
+                        _onListSwipe(details, itemsAsync?.valueOrNull),
                     child: flatList.isEmpty
                     // אין במסד כלום (#26) - הסבר + קישור למדריך. אחרת (למשל קבוצה מסוננת בלי משימות) - הטקסט הרגיל
                         ? (tasks.isEmpty && categories.isEmpty

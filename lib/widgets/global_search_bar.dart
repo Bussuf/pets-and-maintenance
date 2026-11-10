@@ -32,7 +32,7 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(56);
 
   @override
   ConsumerState<GlobalSearchBar> createState() => _GlobalSearchBarState();
