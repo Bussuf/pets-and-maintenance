@@ -26,8 +26,8 @@ void main() {
     });
 
     test('לא נוגעת בסעיפים שלא מוצגים', () {
-      final result = toggledSections({AgendaKind.today, AgendaKind.later, AgendaKind.focusDay}, shown);
-      expect(result, {AgendaKind.focusDay});
+      final result = toggledSections({AgendaKind.today, AgendaKind.later, AgendaKind.overdue}, shown);
+      expect(result, {AgendaKind.overdue});
     });
 
     test('בלי סעיפים מוצגים אין "הכל מקופל"', () {
@@ -116,6 +116,27 @@ void main() {
     test('מעבר חודש ושנה', () {
       expect(shiftDay(DateTime(2026, 12, 31), 1), DateTime(2027, 1, 1));
       expect(shiftDay(DateTime(2026, 3, 1), -1), DateTime(2026, 2, 28));
+    });
+  });
+
+  group('סוג הסעיף של יום ברצועה - כמו ביומן (#90)', () {
+    final today = DateTime(2026, 11, 10);
+
+    test('עבר, היום, מחר', () {
+      expect(dayKind(DateTime(2026, 11, 9), today), AgendaKind.past);
+      expect(dayKind(today, today), AgendaKind.today);
+      expect(dayKind(DateTime(2026, 11, 11), today), AgendaKind.tomorrow);
+    });
+
+    test('עוד יומיים עד שישה ימים - השבוע; שבעה ומעלה - מאוחר יותר', () {
+      expect(dayKind(DateTime(2026, 11, 12), today), AgendaKind.week);
+      expect(dayKind(DateTime(2026, 11, 16), today), AgendaKind.week);
+      expect(dayKind(DateTime(2026, 11, 17), today), AgendaKind.later);
+    });
+
+    test('תחילת העמוד של יום', () {
+      expect(weekPageStart(DateTime(2026, 11, 18), today), DateTime(2026, 11, 17));
+      expect(weekPageStart(DateTime(2026, 11, 9), today), DateTime(2026, 11, 3));
     });
   });
 

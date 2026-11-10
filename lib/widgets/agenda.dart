@@ -8,8 +8,8 @@ import '../onboarding/onboarding.dart';
 
 /// סוג סעיף ביומן - המפתח לזכירת קיפול (#84).
 /// כל ימי השבוע הם סוג אחד, כי "שלישי" של היום הוא "שני" של מחר.
-/// focus* - הסעיפים של מיקוד יום (#88), במצב משלהם, כדי ש"מאוחר יותר" מקופל לא יסתיר יום
-enum AgendaKind { overdue, today, tomorrow, week, later, finished, focusOverdue, focusDay }
+/// past - יום שעבר ברצועת השבוע (רק ביצועים). אותם סוגים ביומן וברצועה, עם זיכרון קיפול אחד (#90)
+enum AgendaKind { overdue, today, tomorrow, week, later, finished, past }
 
 /// המפתח של צ'יפ "הכל". לקבוצה ולפריט המפתח הוא המזהה שלהם
 const String agendaAllScope = 'all';
@@ -103,13 +103,24 @@ class AgendaGroup {
   final AgendaKind kind;
   final bool isOverdue;
   final List<Map<String, dynamic>> tasks;
+  final List<Map<String, dynamic>> doneTasks; // ביצועים באותו יום - רק כשהרשימה מסוננת ליום (#90)
 
   AgendaGroup({
     required this.title,
     required this.kind,
     required this.tasks,
+    this.doneTasks = const [],
     this.isOverdue = false,
   });
+
+  int get count => tasks.length + doneTasks.length;
+}
+
+/// שורת "בוצע" ברשימה השטוחה (לעומת משימה, שמוצגת ככרטיס)
+class AgendaDoneEntry {
+  final Map<String, dynamic> task;
+
+  const AgendaDoneEntry(this.task);
 }
 
 /// הרשימה השטוחה של היומן: כותרות, ומשימות של סעיפים פתוחים בלבד
@@ -117,7 +128,10 @@ List<dynamic> flattenAgenda(List<AgendaGroup> groups, Set<AgendaKind> collapsed)
   return [
     for (final group in groups) ...[
       group,
-      if (!collapsed.contains(group.kind)) ...group.tasks,
+      if (!collapsed.contains(group.kind)) ...[
+        ...group.tasks,
+        for (final task in group.doneTasks) AgendaDoneEntry(task),
+      ],
     ],
   ];
 }
@@ -226,7 +240,7 @@ class AgendaSectionHeader extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '${group.tasks.length}',
+                  '${group.count}',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -235,7 +249,7 @@ class AgendaSectionHeader extends ConsumerWidget {
                 ),
               ),
               if (isCollapsed)
-                for (final task in group.tasks.take(_maxDots))
+                for (final task in [...group.tasks, ...group.doneTasks].take(_maxDots))
                   Container(
                     width: 7,
                     height: 7,

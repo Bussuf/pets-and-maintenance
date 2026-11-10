@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import '../l10n/app_localizations.dart';
 import '../models/task_log.dart';
 import '../models/task_status.dart';
-import '../providers/items_provider.dart';
 import 'agenda.dart';
 
 /// שם יום בשבוע לפי מספר (DateTime.monday..sunday), בשפה הנוכחית
@@ -34,13 +32,25 @@ const int weekLength = 7;
 /// יום לפני/אחרי - בחישוב קלנדרי, לא ב-Duration (שעון קיץ/חורף, #37)
 DateTime shiftDay(DateTime day, int days) => DateTime(day.year, day.month, day.day + days);
 
+/// הפרש בימים שלמים בין שני תאריכים.
+/// חישוב ב-UTC: ביום של מעבר לשעון קיץ/חורף הפרש השעות המקומי לא שווה לימים שלמים
+int _daysBetween(DateTime from, DateTime to) =>
+    DateTime.utc(to.year, to.month, to.day).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
+
 /// באיזה עמוד של הרצועה נמצא יום: 0 = היום + 6 הבאים, 1- = 7 הימים שלפני
-int weekPageOf(DateTime day, DateTime today) {
-  // חישוב ב-UTC: ביום של מעבר לשעון קיץ/חורף הפרש השעות המקומי לא שווה לימים שלמים
-  final diff = DateTime.utc(day.year, day.month, day.day)
-      .difference(DateTime.utc(today.year, today.month, today.day))
-      .inDays;
-  return (diff / weekLength).floor();
+int weekPageOf(DateTime day, DateTime today) => (_daysBetween(today, day) / weekLength).floor();
+
+/// היום הראשון בעמוד של הרצועה שבו נמצא [day]
+DateTime weekPageStart(DateTime day, DateTime today) => shiftDay(today, weekPageOf(day, today) * weekLength);
+
+/// סוג הסעיף של יום ברצועה - אותו סוג שהיה לו ביומן, כדי שזיכרון הקיפול יהיה אחד (#90)
+AgendaKind dayKind(DateTime day, DateTime today) {
+  final diff = _daysBetween(today, day);
+  if (diff < 0) return AgendaKind.past;
+  if (diff == 0) return AgendaKind.today;
+  if (diff == 1) return AgendaKind.tomorrow;
+  if (diff < weekLength) return AgendaKind.week;
+  return AgendaKind.later;
 }
 
 /// סוג סימון ביום ברצועת השבוע (#83)
@@ -94,6 +104,34 @@ Map<DateTime, List<CalendarMark>> buildWeekMarks({
   }
 
   return marks;
+}
+
+/// הרשימה כשהרצועה פתוחה (#90): אותם סעיפים כמו ביומן, מסוננים ליום הנבחר.
+/// היום - "באיחור" ו"היום"; מחר - "מחר"; עוד השבוע - שם היום; הלאה ובעבר - התאריך
+List<AgendaGroup> buildDayGroups(BuildContext context, DateTime day, List<CalendarMark> marks, DateTime today) {
+  final l10n = AppLocalizations.of(context)!;
+  final localeTag = Localizations.localeOf(context).toLanguageTag();
+  List<Map<String, dynamic>> of(CalendarMarkKind kind) => [
+    for (final mark in marks)
+      if (mark.kind == kind) mark.task,
+  ];
+  final overdue = of(CalendarMarkKind.overdue);
+  final planned = of(CalendarMarkKind.planned);
+  final done = of(CalendarMarkKind.done);
+
+  final kind = dayKind(day, today);
+  final title = switch (kind) {
+    AgendaKind.today => l10n.today,
+    AgendaKind.tomorrow => l10n.tomorrow,
+    AgendaKind.week => DateFormat.EEEE(localeTag).format(day),
+    _ => DateFormat.MMMMd(localeTag).format(day),
+  };
+
+  return [
+    if (overdue.isNotEmpty)
+      AgendaGroup(title: l10n.overdueTasks, kind: AgendaKind.overdue, tasks: overdue, isOverdue: true),
+    if (planned.isNotEmpty || done.isNotEmpty) AgendaGroup(title: title, kind: kind, tasks: planned, doneTasks: done),
+  ];
 }
 
 /// רשת חודש: שורת ימים בשבוע ותאים לפי התחלת השבוע של השפה (הלוח בדף הניתוח)
@@ -283,11 +321,11 @@ class _DayCell extends StatelessWidget {
   }
 }
 
-/// שורת "בוצע" ברשימת היום - לתצוגה בלבד
-class _DoneRow extends StatelessWidget {
+/// שורת "בוצע" ברשימה המסוננת ליום - לתצוגה בלבד
+class CompletedTaskRow extends StatelessWidget {
   final Map<String, dynamic> task;
 
-  const _DoneRow({required this.task});
+  const CompletedTaskRow({super.key, required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -315,69 +353,55 @@ class _DoneRow extends StatelessWidget {
   }
 }
 
-/// מיקוד יום (#83): רצועת 7 ימים נעוצה למעלה, והמשימות של היום הנבחר נגללות מתחתיה.
-/// הרצועה מתחילה מהיום (ולא מתחילת שבוע), כדי שתמיד יראו את מה שלפנינו.
-/// כרטיס המשימה מגיע מבחוץ, כדי שמצב ההרחבה יישאר משותף עם היומן
-class WeekFocusView extends ConsumerWidget {
-  final List<Map<String, dynamic>> tasks; // כבר מסוננות לפי הצ'יפ
+/// רצועת 7 הימים (#83), נעוצה מעל הרשימה. היא רק בוחרת יום - הרשימה שמתחת
+/// היא היומן הרגיל, מסונן ליום הזה (#90). מתחילה מהיום (ולא מתחילת שבוע),
+/// כדי שתמיד יראו את מה שלפנינו
+class WeekStrip extends StatelessWidget {
+  final DateTime selected; // היום הנבחר (חצות)
+  final Map<DateTime, List<CalendarMark>> marks; // הסימונים של העמוד המוצג
   final Color accent;
-  final Widget Function(Map<String, dynamic> task) taskCardBuilder;
-  final String scope; // הצ'יפ שזיכרון הקיפול שלו חל כאן
-  final DateTime selected; // היום הנבחר (חצות) - נשמר בחוץ, כי הצ'יפים צריכים לדעת מה מוצג
   final ValueChanged<DateTime> onSelectDay;
 
-  const WeekFocusView({
+  const WeekStrip({
     super.key,
-    required this.tasks,
-    required this.accent,
-    required this.taskCardBuilder,
-    required this.scope,
     required this.selected,
+    required this.marks,
+    required this.accent,
     required this.onSelectDay,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final localeTag = Localizations.localeOf(context).toLanguageTag();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final page = weekPageOf(selected, today);
-    DateTime pageStart(int p) => DateTime(today.year, today.month, today.day + p * weekLength);
-    void goToPage(int p) => onSelectDay(pageStart(p)); // בעמוד הנוכחי זה היום עצמו
-    final from = pageStart(page);
-    final lastDay = DateTime(from.year, from.month, from.day + weekLength - 1);
-
-    final logs = ref.watch(weekLogsProvider(from)).valueOrNull ?? const <TaskLog>[];
-    final marks = buildWeekMarks(from: from, tasks: tasks, logs: logs, now: DateTime.now());
-
-    final dayMarks = marks[selected] ?? const <CalendarMark>[];
-    final overdue = dayMarks.where((m) => m.kind == CalendarMarkKind.overdue).toList();
-    final rest = dayMarks.where((m) => m.kind != CalendarMarkKind.overdue).toList();
-    final dayLabel = DateFormat.MMMMd(localeTag).format(selected);
-    final collapsed = ref.watch(agendaCollapseProvider(scope));
+    final from = weekPageStart(selected, today);
+    final lastDay = shiftDay(from, weekLength - 1);
+    void goToPage(int p) => onSelectDay(shiftDay(today, p * weekLength)); // בעמוד הנוכחי זה היום עצמו
     final iconStyle = IconButton.styleFrom(
       visualDensity: VisualDensity.compact,
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
 
     return Column(
-        children: [
-          // החלקה על הרצועה (#89): יום אחד קדימה/אחורה; העמוד עוקב אחרי היום הנבחר.
-          // החלקה על הרשימה שמתחת מטופלת בחוץ - היא מחליפה צ'יפ
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onHorizontalDragEnd: (details) {
-              if (details.primaryVelocity == null) return;
-              // כמו בצ'יפים: ב-RTL החלקה ימינה = הבא; ב-LTR הכיוון מתהפך
-              final velocity = details.primaryVelocity! * (Directionality.of(context) == TextDirection.rtl ? 1 : -1);
-              if (velocity > 200) {
-                onSelectDay(shiftDay(selected, 1));
-              } else if (velocity < -200) {
-                onSelectDay(shiftDay(selected, -1));
-              }
-            },
-            child: Padding(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // החלקה על הרצועה (#89): יום אחד קדימה/אחורה; העמוד עוקב אחרי היום הנבחר
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragEnd: (details) {
+            if (details.primaryVelocity == null) return;
+            // כמו בצ'יפים: ב-RTL החלקה ימינה = הבא; ב-LTR הכיוון מתהפך
+            final velocity = details.primaryVelocity! * (Directionality.of(context) == TextDirection.rtl ? 1 : -1);
+            if (velocity > 200) {
+              onSelectDay(shiftDay(selected, 1));
+            } else if (velocity < -200) {
+              onSelectDay(shiftDay(selected, -1));
+            }
+          },
+          child: Padding(
             padding: const EdgeInsets.fromLTRB(6, 2, 6, 4),
             child: Column(
               children: [
@@ -417,7 +441,7 @@ class WeekFocusView extends ConsumerWidget {
                       Expanded(
                         child: Builder(
                           builder: (context) {
-                            final date = DateTime(from.year, from.month, from.day + i);
+                            final date = shiftDay(from, i);
                             return _DayCell(
                               date: date,
                               marks: marks[date] ?? const [],
@@ -435,46 +459,9 @@ class WeekFocusView extends ConsumerWidget {
               ],
             ),
           ),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.only(bottom: 80 + MediaQuery.paddingOf(context).bottom),
-              children: [
-                if (overdue.isNotEmpty) ...[
-                  AgendaSectionHeader(
-                    scope: scope,
-                    group: AgendaGroup(
-                      title: l10n.overdueTasks,
-                      kind: AgendaKind.focusOverdue,
-                      tasks: [for (final mark in overdue) mark.task],
-                      isOverdue: true,
-                    ),
-                  ),
-                  if (!collapsed.contains(AgendaKind.focusOverdue))
-                    for (final mark in overdue) taskCardBuilder(mark.task),
-                ],
-                AgendaSectionHeader(
-                  scope: scope,
-                  group: AgendaGroup(
-                    title: selected == today ? '${l10n.today} · $dayLabel' : dayLabel,
-                    kind: AgendaKind.focusDay,
-                    tasks: [for (final mark in rest) mark.task],
-                  ),
-                ),
-                if (!collapsed.contains(AgendaKind.focusDay)) ...[
-                  if (dayMarks.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Text(l10n.calEmptyDay, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
-                    ),
-                  for (final mark in rest)
-                    if (mark.kind == CalendarMarkKind.done) _DoneRow(task: mark.task) else taskCardBuilder(mark.task),
-                ],
-              ],
-            ),
-          ),
-        ],
+        ),
+        const Divider(height: 1),
+      ],
     );
   }
 }

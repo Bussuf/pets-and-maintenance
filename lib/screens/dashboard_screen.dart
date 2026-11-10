@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/category.dart';
 import '../models/item.dart';
+import '../models/task_log.dart';
 import '../providers/categories_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
 import '../providers/items_provider.dart';
@@ -511,20 +512,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
             final filteredTasks = _inScope(sortedTasks);
 
-            final agendaGroups = buildAgendaGroups(context, filteredTasks);
-            final flatList = flattenAgenda(agendaGroups, collapsedKinds);
-
             // במסד ריק נשארים ביומן - שם ההסבר והקישור למדריך (#26)
             final showWeek = _weekOpen && tasks.isNotEmpty;
 
+            // רשימה אחת (#90): הרצועה רק מסננת את היומן ליום הנבחר - אותם סעיפים ואותו זיכרון קיפול
+            final weekFrom = weekPageStart(_focusDay, todayStart);
+            final weekLogs = showWeek
+                ? ref.watch(weekLogsProvider(weekFrom)).valueOrNull ?? const <TaskLog>[]
+                : const <TaskLog>[];
+            final weekMarks = showWeek
+                ? buildWeekMarks(from: weekFrom, tasks: filteredTasks, logs: weekLogs, now: DateTime.now())
+                : const <DateTime, List<CalendarMark>>{};
+            final agendaGroups = showWeek
+                ? buildDayGroups(context, _focusDay, weekMarks[_focusDay] ?? const [], todayStart)
+                : buildAgendaGroups(context, filteredTasks);
+            final flatList = flattenAgenda(agendaGroups, collapsedKinds);
+
             // הסעיפים שמוצגים עכשיו - על אלה פועלת לחיצה חוזרת על הצ'יפ, ומהם נקבע החץ שלו
-            final shownKinds = showWeek
-                ? [
-                    if (_focusDay == todayStart && agendaGroups.any((g) => g.kind == AgendaKind.overdue))
-                      AgendaKind.focusOverdue,
-                    AgendaKind.focusDay,
-                  ]
-                : agendaGroups.map((g) => g.kind).toList();
+            final shownKinds = agendaGroups.map((g) => g.kind).toList();
             final allCollapsed = allSectionsCollapsed(collapsedKinds, shownKinds);
 
             Widget buildTaskCard(Map<String, dynamic> taskItem) => TaskCard(
@@ -633,28 +638,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 // הזמנה להדרכה עם נתוני דוגמה (#26) - רק כשאין עדיין נתונים של המשתמש
                 const OnboardingStartCard(),
 
+                if (showWeek)
+                  WeekStrip(
+                    selected: _focusDay,
+                    marks: weekMarks,
+                    accent: calendarAccent,
+                    onSelectDay: (day) => setState(() => _focusDay = day),
+                  ),
+
                 Expanded(
-                  // החלקה על הרשימה (#89) - ביומן ובמיקוד יום; על הרצועה עצמה היא מזיזה יום
+                  // החלקה על הרשימה (#89) - גם כשהרצועה פתוחה; על הרצועה עצמה היא מזיזה יום
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onHorizontalDragEnd: (details) =>
                         _onListSwipe(details, categories, itemsAsync?.valueOrNull),
-                    child: showWeek
-                      ? WeekFocusView(
-                    tasks: filteredTasks,
-                    accent: calendarAccent,
-                    taskCardBuilder: buildTaskCard,
-                    scope: _collapseScope,
-                    selected: _focusDay,
-                    onSelectDay: (day) => setState(() => _focusDay = day),
-                  )
-                      : flatList.isEmpty
+                    child: flatList.isEmpty
                     // אין במסד כלום (#26) - הסבר + קישור למדריך. אחרת (למשל קבוצה מסוננת בלי משימות) - הטקסט הרגיל
                         ? (tasks.isEmpty && categories.isEmpty
                         ? const OnboardingEmptyState()
                         : Center(
                       child: Text(
-                        _selectedCategoryId != null
+                        showWeek
+                            ? AppLocalizations.of(context)!.calEmptyDay
+                            : _selectedCategoryId != null
                             ? AppLocalizations.of(context)!.noTasksInGroup
                             : AppLocalizations.of(context)!.noTasksNow,
                         style: const TextStyle(color: Colors.grey),
@@ -667,6 +673,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       itemCount: flatList.length,
                       itemBuilder: (context, index) {
                         final item = flatList[index];
+                        if (item is AgendaDoneEntry) return CompletedTaskRow(task: item.task);
                         if (item is AgendaGroup) {
                           return AgendaSectionHeader(
                             // הדרכה (#26): הכותרת של הקבוצה שבה משימת הדוגמה ("היום")
