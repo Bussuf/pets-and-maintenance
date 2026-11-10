@@ -148,6 +148,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allGroups => 'All groups';
 
   @override
+  String get navAll => 'All';
+
+  @override
   String get noGroupsYet => 'No groups yet';
 
   @override
@@ -1072,7 +1075,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obGroupsBody =>
-      'These buttons filter the tasks below to the selected group or item. On the main page you see all your groups - long-press a group to open, edit or delete it. On a group page you see all of its items.';
+      'These buttons filter the tasks below. On All you see your groups; pick a group and the row shows its items, and All › in the title takes you back up. Tap the selected button again to collapse or expand the sections, and swipe the list to move to the next one. Long-press to edit or delete.';
 
   @override
   String get obFabTitle => 'Add everything from here';
@@ -1157,7 +1160,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obDrawerBody =>
-      'Quick switching between pages: the All groups page, which is the main page with no filters, and a page for every group you create.';
+      'Jump between your groups, or back to all groups with no filter.';
 
   @override
   String get obBrowse => 'Got it, let me look';

@@ -356,6 +356,12 @@ abstract class AppLocalizations {
   /// **'All groups'**
   String get allGroups;
 
+  /// No description provided for @navAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get navAll;
+
   /// No description provided for @noGroupsYet.
   ///
   /// In en, this message translates to:
@@ -1781,7 +1787,7 @@ abstract class AppLocalizations {
   /// No description provided for @obGroupsBody.
   ///
   /// In en, this message translates to:
-  /// **'These buttons filter the tasks below to the selected group or item. On the main page you see all your groups - long-press a group to open, edit or delete it. On a group page you see all of its items.'**
+  /// **'These buttons filter the tasks below. On All you see your groups; pick a group and the row shows its items, and All › in the title takes you back up. Tap the selected button again to collapse or expand the sections, and swipe the list to move to the next one. Long-press to edit or delete.'**
   String get obGroupsBody;
 
   /// No description provided for @obFabTitle.
@@ -1931,7 +1937,7 @@ abstract class AppLocalizations {
   /// No description provided for @obDrawerBody.
   ///
   /// In en, this message translates to:
-  /// **'Quick switching between pages: the All groups page, which is the main page with no filters, and a page for every group you create.'**
+  /// **'Jump between your groups, or back to all groups with no filter.'**
   String get obDrawerBody;
 
   /// No description provided for @obBrowse.

@@ -147,6 +147,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get allGroups => 'כל הקבוצות';
 
   @override
+  String get navAll => 'הכל';
+
+  @override
   String get noGroupsYet => 'אין קבוצות עדיין';
 
   @override
@@ -1080,7 +1083,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get obGroupsBody =>
-      'הכפתורים מסננים את המשימות שמתחת לקבוצה או לפריט שנבחרו. בדף הראשי רואים לרוחב את כל הקבוצות - לחיצה ארוכה על קבוצה: מעבר לקבוצה, עריכה ומחיקה. בדף של קבוצה מוצגים לרוחב כל הפריטים שלה.';
+      'הכפתורים מסננים את המשימות שמתחת. ב\'הכל\' רואים את הקבוצות; בבחירת קבוצה השורה מציגה את הפריטים שלה, ו\'הכל ›\' בכותרת חוזר למעלה. לחיצה חוזרת על כפתור מסומן מקפלת או פותחת את הסעיפים, והחלקה על הרשימה עוברת לכפתור הבא. לחיצה ארוכה - עריכה ומחיקה.';
 
   @override
   String get obFabTitle => 'מכאן מוסיפים הכל';
@@ -1164,7 +1167,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get obDrawerBody =>
-      'מעבר מהיר בין הדפים: דף כל הקבוצות, שהוא הדף המרכזי בלי מסננים, ודף לכל קבוצה שתפתחו.';
+      'מעבר מהיר בין הקבוצות, או חזרה לכל הקבוצות בלי מסננים.';
 
   @override
   String get obBrowse => 'הבנתי, אעיין';

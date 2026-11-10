@@ -6,8 +6,11 @@ import '../screens/settings_screen.dart';
 import '../screens/organization_screen.dart';
 import '../l10n/app_localizations.dart';
 
+/// הפס העליון (#89): ☰, כותרת דינמית, 🔍 (חיפוש מלא), פעולות נוספות ו-⋮ - הכל בשורה אחת
 class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
-  final List<Widget>? actions;
+  final Widget? title; // הכותרת שבאמצע - נבנית במסך (נתיב, סיכום)
+  final Color? backgroundColor; // גוון הקבוצה המסומנת
+  final List<Widget>? actions; // לפני ה-⋮ (למשל כפתור רצועת השבוע)
   final bool showSettingsMenu;
   final VoidCallback? onAddItem; // אם קיים - מוצג 'הוסף פריט לקבוצה' בתפריט
   final VoidCallback? onEditGroup; // אם קיים - מוצג 'עריכת קבוצה' בתפריט
@@ -17,6 +20,8 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
 
   const GlobalSearchBar({
     super.key,
+    this.title,
+    this.backgroundColor,
     this.actions,
     this.showSettingsMenu = false,
     this.onAddItem,
@@ -27,7 +32,7 @@ class GlobalSearchBar extends ConsumerStatefulWidget implements PreferredSizeWid
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(68);
+  Size get preferredSize => const Size.fromHeight(64);
 
   @override
   ConsumerState<GlobalSearchBar> createState() => _GlobalSearchBarState();
@@ -60,226 +65,228 @@ class _GlobalSearchBarState extends ConsumerState<GlobalSearchBar> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-        child: SearchAnchor(
-          searchController: _searchController,
-          builder: (context, controller) {
-            return SearchBar(
-              // השורה משמשת רק כמפעיל - ההקלדה בתצוגת החיפוש המלאה. כך פוקוס שחוזר אליה לא מקפיץ מקלדת
-              readOnly: true,
-              controller: controller,
-              elevation: const WidgetStatePropertyAll(1),
-              backgroundColor: WidgetStatePropertyAll(theme.colorScheme.surfaceContainerHigh),
-              leading: IconButton(
-                key: widget.drawerKey,
-                icon: const Icon(Icons.menu),
-                tooltip: l10n.openMenu,
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
-              hintText: l10n.searchHint,
-              trailing: [
-                if (widget.actions != null) ...widget.actions!,
-                if (widget.showSettingsMenu)
-                  PopupMenuButton<String>(
-                    key: widget.menuKey,
-                    icon: const Icon(Icons.more_vert),
-                    // נפתח מתחת לשורת החיפוש - הכפתור נשאר גלוי ולחיצה נוספת עליו סוגרת
-                    position: PopupMenuPosition.under,
-                    offset: const Offset(0, 8),
-                    tooltip: l10n.settingsTitle,
-                    onSelected: (value) {
-                      if (value == 'add_item') {
-                        widget.onAddItem?.call();
-                        return;
-                      }
-                      if (value == 'edit_group') {
-                        widget.onEditGroup?.call();
-                        return;
-                      }
-                      if (value == 'organize') {
-                        if (controller.isOpen) controller.closeView('');
-                        // נפתח מעל המסך הנוכחי - 'חזור' מחזיר לכאן ולא להגדרות
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const OrganizationScreen()),
-                        );
-                        return;
-                      }
-                      if (value == 'settings') {
-                        // סוגרים את החיפוש אך ורק אם הוא פתוח כרגע
-                        if (controller.isOpen) {
-                          controller.closeView('');
+    return Material(
+      color: widget.backgroundColor ?? Colors.transparent,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+          child: SearchAnchor(
+            searchController: _searchController,
+            viewHintText: l10n.searchHint,
+            builder: (context, controller) {
+              return Row(
+                children: [
+                  IconButton(
+                    key: widget.drawerKey,
+                    icon: const Icon(Icons.menu),
+                    tooltip: l10n.openMenu,
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                  Expanded(child: widget.title ?? const SizedBox.shrink()),
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    tooltip: l10n.searchHint,
+                    onPressed: () => controller.openView(),
+                  ),
+                  if (widget.actions != null) ...widget.actions!,
+                  if (widget.showSettingsMenu)
+                    PopupMenuButton<String>(
+                      key: widget.menuKey,
+                      icon: const Icon(Icons.more_vert),
+                      // נפתח מתחת לפס - הכפתור נשאר גלוי ולחיצה נוספת עליו סוגרת
+                      position: PopupMenuPosition.under,
+                      offset: const Offset(0, 8),
+                      tooltip: l10n.settingsTitle,
+                      onSelected: (value) {
+                        if (value == 'add_item') {
+                          widget.onAddItem?.call();
+                          return;
                         }
+                        if (value == 'edit_group') {
+                          widget.onEditGroup?.call();
+                          return;
+                        }
+                        if (value == 'organize') {
+                          if (controller.isOpen) controller.closeView('');
+                          // נפתח מעל המסך הנוכחי - 'חזור' מחזיר לכאן ולא להגדרות
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const OrganizationScreen()),
+                          );
+                          return;
+                        }
+                        if (value == 'settings') {
+                          // סוגרים את החיפוש אך ורק אם הוא פתוח כרגע
+                          if (controller.isOpen) {
+                            controller.closeView('');
+                          }
 
-                        // ניווט טבעי ובטוח
-                        Navigator.push(
-                          context, // שימוש בקונטקסט המקומי של ה-SearchBar המבטיח שמירה על היסטוריית הניווט
-                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                        );
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      if (widget.onAddItem != null)
+                          // ניווט טבעי ובטוח
+                          Navigator.push(
+                            context, // שימוש בקונטקסט המקומי של הפס המבטיח שמירה על היסטוריית הניווט
+                            MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                          );
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        if (widget.onAddItem != null)
+                          PopupMenuItem(
+                            value: 'add_item',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.add_box_outlined, size: 20),
+                                const SizedBox(width: 12),
+                                Flexible(child: Text(AppLocalizations.of(context)!.addItemToGroup)),
+                              ],
+                            ),
+                          ),
+                        if (widget.onEditGroup != null)
+                          PopupMenuItem(
+                            value: 'edit_group',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.edit_outlined, size: 20),
+                                const SizedBox(width: 12),
+                                Flexible(child: Text(l10n.editGroup)),
+                              ],
+                            ),
+                          ),
                         PopupMenuItem(
-                          value: 'add_item',
+                          value: 'organize',
                           child: Row(
                             children: [
-                              const Icon(Icons.add_box_outlined, size: 20),
+                              const Icon(Icons.edit_note, size: 20),
                               const SizedBox(width: 12),
-                              Flexible(child: Text(AppLocalizations.of(context)!.addItemToGroup)),
+                              Flexible(child: Text(l10n.organizeGroupsItems)),
                             ],
                           ),
                         ),
-                      if (widget.onEditGroup != null)
+                        const PopupMenuDivider(),
                         PopupMenuItem(
-                          value: 'edit_group',
+                          value: 'settings',
                           child: Row(
                             children: [
-                              const Icon(Icons.edit_outlined, size: 20),
+                              const Icon(Icons.settings_outlined, size: 20),
                               const SizedBox(width: 12),
-                              Flexible(child: Text(l10n.editGroup)),
+                              Flexible(child: Text(l10n.settingsTitle)),
                             ],
                           ),
                         ),
-                      PopupMenuItem(
-                        value: 'organize',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.edit_note, size: 20),
-                            const SizedBox(width: 12),
-                            Flexible(child: Text(l10n.organizeGroupsItems)),
-                          ],
-                        ),
+                      ],
+                    ),
+                ],
+              );
+            },
+            suggestionsBuilder: (context, controller) async {
+              final query = controller.text.trim();
+              if (query.isEmpty) {
+                return [
+                  Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Text(
+                        l10n.searchPrompt,
+                        style: const TextStyle(color: Colors.grey, fontSize: 16),
                       ),
-                      const PopupMenuDivider(),
-                      PopupMenuItem(
-                        value: 'settings',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.settings_outlined, size: 20),
-                            const SizedBox(width: 12),
-                            Flexible(child: Text(l10n.settingsTitle)),
-                          ],
-                        ),
+                    ),
+                  ),
+                ];
+              }
+
+              final db = ref.read(databaseProvider);
+              final results = await db.searchAll(query);
+
+              final categories = results['categories'] ?? [];
+              final items = results['items'] ?? [];
+              final tasks = results['tasks'] ?? [];
+
+              if (categories.isEmpty && items.isEmpty && tasks.isEmpty) {
+                return [
+                  Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Text(l10n.noResults, style: const TextStyle(color: Colors.grey, fontSize: 16)),
+                    ),
+                  )
+                ];
+              }
+
+              final List<Widget> tiles = [];
+
+              if (tasks.isNotEmpty) {
+                tiles.add(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Text(l10n.tasksHeader, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                  ),
+                );
+                for (final task in tasks) {
+                  tiles.add(
+                    ListTile(
+                      leading: Icon(Icons.task_alt, color: theme.colorScheme.primary),
+                      title: Text(task['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                        l10n.searchTaskSubtitle('${task['item_name']}', '${task['category_name']}'),
+                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
                       ),
-                    ],
-                  ),
-              ],
-              onTap: () => controller.openView(),
-              onChanged: (_) => controller.openView(),
-            );
-          },
-          suggestionsBuilder: (context, controller) async {
-            final query = controller.text.trim();
-            if (query.isEmpty) {
-              return [
-                Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Center(
-                    child: Text(
-                      l10n.searchPrompt,
-                      style: const TextStyle(color: Colors.grey, fontSize: 16),
+                      onTap: () => _navigateToTarget(controller, task),
                     ),
-                  ),
-                ),
-              ];
-            }
+                  );
+                }
+              }
 
-            final db = ref.read(databaseProvider);
-            final results = await db.searchAll(query);
-
-            final categories = results['categories'] ?? [];
-            final items = results['items'] ?? [];
-            final tasks = results['tasks'] ?? [];
-
-            if (categories.isEmpty && items.isEmpty && tasks.isEmpty) {
-              return [
-                Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Center(
-                    child: Text(l10n.noResults, style: const TextStyle(color: Colors.grey, fontSize: 16)),
-                  ),
-                )
-              ];
-            }
-
-            final List<Widget> tiles = [];
-
-            if (tasks.isNotEmpty) {
-              tiles.add(
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text(l10n.tasksHeader, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                ),
-              );
-              for (final task in tasks) {
+              if (items.isNotEmpty) {
                 tiles.add(
-                  ListTile(
-                    leading: Icon(Icons.task_alt, color: theme.colorScheme.primary),
-                    title: Text(task['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(
-                      l10n.searchTaskSubtitle('${task['item_name']}', '${task['category_name']}'),
-                      style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
-                    ),
-                    onTap: () => _navigateToTarget(controller, task),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Text(l10n.itemsHeader, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                   ),
                 );
-              }
-            }
-
-            if (items.isNotEmpty) {
-              tiles.add(
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text(l10n.itemsHeader, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                ),
-              );
-              for (final item in items) {
-                tiles.add(
-                  ListTile(
-                    leading: Icon(Icons.inventory_2_outlined, color: theme.colorScheme.secondary),
-                    title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(
-                      l10n.searchItemSubtitle('${item['category_name']}'),
-                      style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
+                for (final item in items) {
+                  tiles.add(
+                    ListTile(
+                      leading: Icon(Icons.inventory_2_outlined, color: theme.colorScheme.secondary),
+                      title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                        l10n.searchItemSubtitle('${item['category_name']}'),
+                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                      onTap: () => _navigateToTarget(controller, item),
                     ),
-                    onTap: () => _navigateToTarget(controller, item),
+                  );
+                }
+              }
+
+              if (categories.isNotEmpty) {
+                tiles.add(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Text(l10n.groupsHeader, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                   ),
                 );
-              }
-            }
+                for (final cat in categories) {
+                  final catColor = cat['color'] != null ? Color(cat['color']) : theme.colorScheme.primary;
+                  final catIcon = AppIcons.getIcon(cat['icon']);
 
-            if (categories.isNotEmpty) {
-              tiles.add(
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text(l10n.groupsHeader, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                ),
-              );
-              for (final cat in categories) {
-                final catColor = cat['color'] != null ? Color(cat['color']) : theme.colorScheme.primary;
-                final catIcon = AppIcons.getIcon(cat['icon']);
-
-                tiles.add(
-                  ListTile(
-                    leading: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: catColor.withValues(alpha: 0.2),
-                      child: Icon(catIcon, color: catColor, size: 20),
+                  tiles.add(
+                    ListTile(
+                      leading: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: catColor.withValues(alpha: 0.2),
+                        child: Icon(catIcon, color: catColor, size: 20),
+                      ),
+                      title: Text(cat['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(l10n.mainGroup, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                      onTap: () => _navigateToTarget(controller, cat),
                     ),
-                    title: Text(cat['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(l10n.mainGroup, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                    onTap: () => _navigateToTarget(controller, cat),
-                  ),
-                );
+                  );
+                }
               }
-            }
 
-            return tiles;
-          },
+              return tiles;
+            },
+          ),
         ),
       ),
     );
