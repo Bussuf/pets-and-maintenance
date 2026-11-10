@@ -23,6 +23,9 @@ bool allSectionsCollapsed(Set<AgendaKind> collapsed, Iterable<AgendaKind> shown)
 Set<AgendaKind> toggledSections(Set<AgendaKind> collapsed, Iterable<AgendaKind> shown) =>
     allSectionsCollapsed(collapsed, shown) ? collapsed.difference(shown.toSet()) : {...collapsed, ...shown};
 
+/// מיקום בקרוסלה (#89): אחרי האחרון חוזרים לראשון, ולפני הראשון - לאחרון
+int wrapIndex(int index, int length) => ((index % length) + length) % length;
+
 /// מחיקת הזיכרון של קבוצות/פריטים שנמחקו
 Future<void> clearAgendaCollapse(Iterable<String> scopes) async {
   try {

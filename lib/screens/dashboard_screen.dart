@@ -121,6 +121,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown);
   }
 
+  /// החלקה על הרשימה (#89): תמיד בין הצ'יפים של השורה המוצגת - פריטים כשמסומנת קבוצה,
+  /// אחרת קבוצות - בקרוסלה (מהאחרון חוזרים לראשון)
+  void _onListSwipe(DragEndDetails details, List<Category> categories, List<Item>? items) {
+    final velocity = details.primaryVelocity;
+    if (velocity == null || velocity.abs() < 200) return;
+    // ב-RTL החלקה ימינה = הצ'יפ הבא; ב-LTR הכיוון מתהפך
+    final forward = (velocity > 0) == (Directionality.of(context) == TextDirection.rtl);
+    final delta = forward ? 1 : -1;
+
+    if (_selectedCategoryId != null) {
+      final ids = <String?>[null, ...?items?.map((i) => i.id)];
+      final index = ids.indexOf(_selectedItemId);
+      if (ids.length < 2 || index == -1) return;
+      _selectItem(ids[wrapIndex(index + delta, ids.length)]);
+    } else {
+      final ids = <String?>[null, ...categories.map((c) => c.id)];
+      final index = ids.indexOf(_selectedCategoryId);
+      if (ids.length < 2 || index == -1) return;
+      _selectCategory(ids[wrapIndex(index + delta, ids.length)]);
+    }
+  }
+
   /// הצ'יפ שזיכרון הקיפול שלו חל עכשיו (#88): הפריט, הקבוצה, או "הכל"
   String get _collapseScope => _selectedItemId ?? _selectedCategoryId ?? agendaAllScope;
 
@@ -594,7 +616,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 const OnboardingStartCard(),
 
                 Expanded(
-                  child: showWeek
+                  // החלקה על הרשימה (#89) - ביומן ובמיקוד יום; על הרצועה עצמה היא מזיזה יום
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onHorizontalDragEnd: (details) =>
+                        _onListSwipe(details, categories, itemsAsync?.valueOrNull),
+                    child: showWeek
                       ? WeekFocusView(
                     tasks: filteredTasks,
                     accent: calendarAccent,
@@ -603,32 +630,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     selected: _focusDay,
                     onSelectDay: (day) => setState(() => _focusDay = day),
                   )
-                      : GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onHorizontalDragEnd: (details) {
-                      if (categories.isEmpty) return;
-                      final allCatIds = [null, ...categories.map((c) => c.id)];
-                      final currentIndex = allCatIds.indexOf(
-                        _selectedCategoryId,
-                      );
-                      if (currentIndex == -1) return;
-
-                      if (details.primaryVelocity != null) {
-                        // ב-RTL החלקה ימינה = הצ'יפ הבא (כמו היום); ב-LTR הכיוון מתהפך
-                        final velocity =
-                            details.primaryVelocity! *
-                                (Directionality.of(context) == TextDirection.rtl
-                                    ? 1
-                                    : -1);
-                        if (velocity > 200 &&
-                            currentIndex < allCatIds.length - 1) {
-                          _selectCategory(allCatIds[currentIndex + 1]);
-                        } else if (velocity < -200 && currentIndex > 0) {
-                          _selectCategory(allCatIds[currentIndex - 1]);
-                        }
-                      }
-                    },
-                    child: flatList.isEmpty
+                      : flatList.isEmpty
                     // אין במסד כלום (#26) - הסבר + קישור למדריך. אחרת (למשל קבוצה מסוננת בלי משימות) - הטקסט הרגיל
                         ? (tasks.isEmpty && categories.isEmpty
                         ? const OnboardingEmptyState()

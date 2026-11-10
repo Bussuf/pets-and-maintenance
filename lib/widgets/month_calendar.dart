@@ -31,6 +31,9 @@ Color calendarFillColor(Color color) {
 /// מספר הימים ברצועה
 const int weekLength = 7;
 
+/// יום לפני/אחרי - בחישוב קלנדרי, לא ב-Duration (שעון קיץ/חורף, #37)
+DateTime shiftDay(DateTime day, int days) => DateTime(day.year, day.month, day.day + days);
+
 /// באיזה עמוד של הרצועה נמצא יום: 0 = היום + 6 הבאים, 1- = 7 הימים שלפני
 int weekPageOf(DateTime day, DateTime today) {
   // חישוב ב-UTC: ביום של מעבר לשעון קיץ/חורף הפרש השעות המקומי לא שווה לימים שלמים
@@ -358,21 +361,23 @@ class WeekFocusView extends ConsumerWidget {
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onHorizontalDragEnd: (details) {
-        if (details.primaryVelocity == null) return;
-        // כמו בצ'יפים: ב-RTL החלקה ימינה = הבא; ב-LTR הכיוון מתהפך
-        final velocity = details.primaryVelocity! * (Directionality.of(context) == TextDirection.rtl ? 1 : -1);
-        if (velocity > 200) {
-          goToPage(page + 1);
-        } else if (velocity < -200) {
-          goToPage(page - 1);
-        }
-      },
-      child: Column(
+    return Column(
         children: [
-          Padding(
+          // החלקה על הרצועה (#89): יום אחד קדימה/אחורה; העמוד עוקב אחרי היום הנבחר.
+          // החלקה על הרשימה שמתחת מטופלת בחוץ - היא מחליפה צ'יפ
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity == null) return;
+              // כמו בצ'יפים: ב-RTL החלקה ימינה = הבא; ב-LTR הכיוון מתהפך
+              final velocity = details.primaryVelocity! * (Directionality.of(context) == TextDirection.rtl ? 1 : -1);
+              if (velocity > 200) {
+                onSelectDay(shiftDay(selected, 1));
+              } else if (velocity < -200) {
+                onSelectDay(shiftDay(selected, -1));
+              }
+            },
+            child: Padding(
             padding: const EdgeInsets.fromLTRB(6, 2, 6, 4),
             child: Column(
               children: [
@@ -430,6 +435,7 @@ class WeekFocusView extends ConsumerWidget {
               ],
             ),
           ),
+          ),
           const Divider(height: 1),
           Expanded(
             child: ListView(
@@ -469,7 +475,6 @@ class WeekFocusView extends ConsumerWidget {
             ),
           ),
         ],
-      ),
     );
   }
 }

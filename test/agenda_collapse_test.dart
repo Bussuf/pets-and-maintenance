@@ -94,6 +94,31 @@ void main() {
     });
   });
 
+  group('קרוסלת צ\'יפים', () {
+    test('אחרי האחרון חוזרים לראשון', () => expect(wrapIndex(4, 4), 0));
+    test('לפני הראשון עוברים לאחרון', () => expect(wrapIndex(-1, 4), 3));
+    test('באמצע - רגיל', () => expect(wrapIndex(2, 4), 2));
+  });
+
+  group('יום אחד ברצועה', () {
+    final today = DateTime(2026, 11, 10);
+
+    test('יום קדימה מהיום השביעי עובר לעמוד הבא', () {
+      final next = shiftDay(DateTime(2026, 11, 16), 1);
+      expect(next, DateTime(2026, 11, 17));
+      expect(weekPageOf(next, today), 1);
+    });
+
+    test('יום אחורה מהיום עובר לעמוד הקודם', () {
+      expect(weekPageOf(shiftDay(today, -1), today), -1);
+    });
+
+    test('מעבר חודש ושנה', () {
+      expect(shiftDay(DateTime(2026, 12, 31), 1), DateTime(2027, 1, 1));
+      expect(shiftDay(DateTime(2026, 3, 1), -1), DateTime(2026, 2, 28));
+    });
+  });
+
   group('עמוד ברצועה', () {
     final today = DateTime(2026, 11, 10);
 
