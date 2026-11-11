@@ -1,6 +1,8 @@
 /// תנאי סיום של משימה (#51)
 library;
 
+import 'task.dart';
+
 /// האם תנאי הסיום הושג: מספר פעמים שהושלם, או שהמועד הבא אחרי תאריך הסיום
 bool isEndReached(String? condition, String? value, int completedCount, DateTime? nextDate) {
   if (condition == 'count') {
@@ -14,6 +16,20 @@ bool isEndReached(String? condition, String? value, int completedCount, DateTime
     return nextDate.isAfter(DateTime(until.year, until.month, until.day, 23, 59, 59));
   }
   return false;
+}
+
+/// #85 "לדלג הפעם": היעד הבא = היעד הנוכחי + מרווח אחד, בלי ביצוע (המונה לא משתנה).
+/// null = הדילוג עובר את תאריך הסיום - המשימה מסתיימת
+DateTime? skippedDueDate(
+  DateTime due,
+  int amount,
+  String unit,
+  String? condition,
+  String? value,
+  int completedCount,
+) {
+  final next = AppTask.addInterval(due, amount, unit);
+  return isEndReached(condition, value, completedCount, next) ? null : next;
 }
 
 /// משימה שהסתיימה: יש לה תנאי סיום, ואין לה מועד הבא

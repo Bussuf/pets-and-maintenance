@@ -266,6 +266,181 @@ class TaskCard extends ConsumerWidget {
     );
   }
 
+  /// #85 "לדחות": גיליון קצר - מחר / בעוד 3 ימים / בעוד שבוע / תאריך אחר. משנה רק את היעד
+  Future<void> _showPostponeSheet(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final today = DateUtils.dateOnly(DateTime.now());
+    DateTime inDays(int n) => DateTime(today.year, today.month, today.day + n);
+
+    final picked = await showModalBottomSheet<DateTime>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                l10n.postponeTitle(task['name']),
+                style: Theme.of(ctx).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
+            for (final n in const [1, 3, 7])
+              ListTile(
+                leading: const Icon(Icons.event_outlined),
+                title: Text(n == 7 ? l10n.postponeWeek : l10n.postponeInDays(n)),
+                trailing: Text(_formatDate(inDays(n))),
+                onTap: () => Navigator.pop(ctx, inDays(n)),
+              ),
+            ListTile(
+              leading: const Icon(Icons.calendar_month_outlined),
+              title: Text(l10n.postponePickDate),
+              onTap: () async {
+                final d = await showDatePicker(
+                  context: ctx,
+                  initialDate: inDays(1),
+                  firstDate: today,
+                  lastDate: DateTime(today.year + 5),
+                );
+                if (d != null && ctx.mounted) Navigator.pop(ctx, d);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (picked == null || !context.mounted) return;
+    await _moveDueDate(context, ref, picked, l10n.dueMovedTo(_formatDate(picked)));
+  }
+
+  /// #85 "לדלג הפעם": היעד + מרווח אחד, בלי ביצוע. עובר את תאריך הסיום = המשימה מסתיימת
+  Future<void> _skipOnce(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final due = DateTime.tryParse(task['next_due_date']?.toString() ?? '');
+    if (due == null) return;
+    final next = skippedDueDate(
+      due,
+      (task['interval_amount'] as num?)?.toInt() ?? 7,
+      task['interval_unit'] as String? ?? 'days',
+      task['end_condition'],
+      task['end_condition_value']?.toString(),
+      (task['completed_count'] as num?)?.toInt() ?? 0,
+    );
+    await _moveDueDate(context, ref, next, next == null ? l10n.skippedFinished : l10n.skippedTo(_formatDate(next)));
+  }
+
+  /// #85: מזיז את היעד בלי ביצוע (לדחות / לדלג) - יומן, תזכורת, רענון והודעה עם "בטל".
+  /// newDue == null = המשימה מסתיימת (דילוג אחרי תאריך הסיום): האירוע ביומן נמחק, כמו בביצוע האחרון
+  Future<void> _moveDueDate(BuildContext context, WidgetRef ref, DateTime? newDue, String message) async {
+    final l10n = AppLocalizations.of(context)!;
+    final container = ProviderScope.containerOf(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
+    final db = ref.read(databaseProvider);
+    final rawDb = await db.database;
+    final String? oldDue = task['next_due_date']?.toString();
+    final String? eventId = task['google_event_id'];
+    String? newEventId = eventId;
+    bool calendarOk = true;
+
+    if (eventId != null) {
+      if (newDue == null) {
+        calendarOk = await GoogleCalendarService.instance.deleteEvent(eventId);
+        newEventId = null;
+      } else {
+        final current = await db.readTask(task['id']);
+        if (current != null) {
+          final id = await GoogleCalendarService.instance
+              .updateEvent(current.copyWith(nextDueDate: newDue), l10n.calendarUpdatedFromApp);
+          calendarOk = id != null;
+          if (id != null) newEventId = id;
+        }
+      }
+    }
+
+    await rawDb.update(
+      'tasks',
+      {'next_due_date': newDue?.toIso8601String(), 'google_event_id': newEventId},
+      where: 'id = ?',
+      whereArgs: [task['id']],
+    );
+    final updated = await db.readTask(task['id']);
+    if (updated != null) await NotificationService.instance.scheduleTaskReminder(updated);
+
+    container.invalidate(dashboardTasksProvider);
+    container.invalidate(tasksByCategoryProvider(task['category_id']));
+
+    final eventDeleted = newDue == null && eventId != null && calendarOk;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message + (calendarOk ? '' : '\n${l10n.calendarNotUpdated}')),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 6),
+          persist: false,
+          action: SnackBarAction(
+            label: l10n.undo,
+            onPressed: () => _restoreDueDate(
+              container: container,
+              messenger: messenger,
+              l10n: l10n,
+              oldDue: oldDue,
+              eventDeleted: eventDeleted,
+            ),
+          ),
+        ),
+      );
+  }
+
+  /// #85: "בטל" אחרי לדחות / לדלג - מחזיר את היעד הקודם, ואת האירוע ביומן ואת התזכורת איתו
+  Future<void> _restoreDueDate({
+    required ProviderContainer container,
+    required ScaffoldMessengerState messenger,
+    required AppLocalizations l10n,
+    required String? oldDue,
+    required bool eventDeleted,
+  }) async {
+    final db = container.read(databaseProvider);
+    final rawDb = await db.database;
+    final current = await db.readTask(task['id']);
+    if (current == null) return;
+    final restored = current.copyWith(nextDueDate: DateTime.tryParse(oldDue ?? ''));
+
+    String? eventId = current.googleEventId;
+    bool calendarOk = true;
+    if (eventDeleted) {
+      // הדילוג סיים את המשימה ומחק את האירוע - יוצרים אותו מחדש בתאריך הקודם
+      eventId = await GoogleCalendarService.instance.createEvent(restored, l10n.calendarAddedFromApp);
+      calendarOk = eventId != null;
+    } else if (eventId != null) {
+      final id = await GoogleCalendarService.instance.updateEvent(restored, l10n.calendarUpdatedFromApp);
+      calendarOk = id != null;
+      if (id != null) eventId = id;
+    }
+
+    await rawDb.update(
+      'tasks',
+      {'next_due_date': oldDue, 'google_event_id': eventId},
+      where: 'id = ?',
+      whereArgs: [task['id']],
+    );
+    final restoredTask = await db.readTask(task['id']);
+    if (restoredTask != null) await NotificationService.instance.scheduleTaskReminder(restoredTask);
+
+    container.invalidate(dashboardTasksProvider);
+    container.invalidate(tasksByCategoryProvider(task['category_id']));
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(calendarOk ? l10n.dueRestored : '${l10n.dueRestored}\n${l10n.calendarNotUpdated}'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Future<void> _pickManualCompletionDate(
       BuildContext context,
       WidgetRef ref,
@@ -683,6 +858,19 @@ class TaskCard extends ConsumerWidget {
                             label: l10n.manualCompletion,
                             onTap: () => _pickManualCompletionDate(context, ref),
                           ),
+                          // #85: רק למשימה פעילה עם יעד
+                          if (!isFinished && dueDate != null) ...[
+                            _MenuAction(
+                              icon: Icons.snooze,
+                              label: l10n.cardPostpone,
+                              onTap: () => _showPostponeSheet(context, ref),
+                            ),
+                            _MenuAction(
+                              icon: Icons.skip_next_outlined,
+                              label: l10n.cardSkip,
+                              onTap: () => _skipOnce(context, ref),
+                            ),
+                          ],
                           _MenuAction(
                             key: obKey(OnboardingTarget.editButton),
                             icon: Icons.edit_outlined,
