@@ -83,6 +83,7 @@ class TaskCard extends ConsumerWidget {
     );
     final uuid = const Uuid();
     final String? googleEventId = task['google_event_id'];
+    String? newEventId; // #82: אם האירוע נמחק ביומן ונוצר מחדש
 
     // אם המשימה מסונכרנת לגוגל יומן, נעדכן את מועד האירוע לתאריך החדש
     bool calendarOk = true; // #54
@@ -109,10 +110,12 @@ class TaskCard extends ConsumerWidget {
           nextDueDate: nextDate,
           googleEventId: googleEventId,
         );
-        calendarOk = await GoogleCalendarService.instance.updateEvent(
+        final updatedId = await GoogleCalendarService.instance.updateEvent(
           updatedTempTask,
           l10n.calendarUpdatedOnCompletion,
         );
+        calendarOk = updatedId != null;
+        if (updatedId != null && updatedId != googleEventId) newEventId = updatedId;
       } catch (e) {
         debugPrint('Failed to update Google Calendar event on completion: $e');
       }
@@ -123,6 +126,7 @@ class TaskCard extends ConsumerWidget {
       {
         'next_due_date': isLastTime ? null : nextDate.toIso8601String(),
         if (isLastTime) 'google_event_id': null,
+        if (newEventId != null) 'google_event_id': newEventId,
         'last_completed_date': completedDate.toIso8601String(),
         'completed_count': currentCompletedCount + 1,
       },
@@ -201,6 +205,11 @@ class TaskCard extends ConsumerWidget {
     String? eventId = task['google_event_id'];
     bool calendarOk = true;
 
+    if (eventId != null && !eventDeleted) {
+      // #82: בביצוע ייתכן שנוצר אירוע חדש (הישן נמחק ביומן) - מעדכנים את האירוע הנוכחי, לא את הישן
+      eventId = (await db.readTask(task['id']))?.googleEventId ?? eventId;
+    }
+
     if (eventId != null) {
       final restored = AppTask(
         id: task['id'],
@@ -219,7 +228,9 @@ class TaskCard extends ConsumerWidget {
         eventId = await GoogleCalendarService.instance.createEvent(restored, l10n.calendarAddedFromApp);
         calendarOk = eventId != null;
       } else {
-        calendarOk = await GoogleCalendarService.instance.updateEvent(restored, l10n.calendarUpdatedFromApp);
+        final updatedId = await GoogleCalendarService.instance.updateEvent(restored, l10n.calendarUpdatedFromApp);
+        calendarOk = updatedId != null;
+        if (updatedId != null) eventId = updatedId;
       }
     }
 

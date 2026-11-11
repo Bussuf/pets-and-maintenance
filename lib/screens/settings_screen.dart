@@ -55,7 +55,8 @@ class SettingsScreen extends ConsumerWidget {
       ref.invalidate(tasksByCategoryProvider);
       if (context.mounted) _showSnack(context, l10n.backupImportSuccess);
     } catch (e, st) {
-      CrashReporting.recordError(e, st, reason: 'Backup import failed');
+      // #82: קובץ לא תקין (FormatException) = טעות משתמש צפויה - רק הודעה, בלי דיווח
+      if (e is! FormatException) CrashReporting.recordError(e, st, reason: 'Backup import failed');
       if (context.mounted) _showSnack(context, l10n.backupFailed('$e'));
     }
   }

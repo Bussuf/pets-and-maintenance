@@ -708,9 +708,11 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       // נכשל: המשימה נשמרת בלי אירוע, והמתג יופיע כבוי - אפשר לנסות שוב
                       calendarOk = finalGoogleEventId != null;
                     } else {
-                      // האירוע כבר קיים - רק נעדכן אותו
-                      calendarOk = await GoogleCalendarService.instance
+                      // האירוע כבר קיים - רק נעדכן אותו (אם נמחק ביומן - נוצר חדש, #82)
+                      final updatedId = await GoogleCalendarService.instance
                           .updateEvent(tempTask, l10n.calendarUpdatedFromApp);
+                      calendarOk = updatedId != null;
+                      if (updatedId != null) finalGoogleEventId = updatedId;
                     }
                   } else if (!_isGoogleSyncEnabled &&
                       _existingGoogleEventId != null) {
