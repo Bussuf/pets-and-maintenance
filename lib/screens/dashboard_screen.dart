@@ -39,6 +39,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   DateTime _focusDay = DateTime.now(); // היום הנבחר ברצועה; מתאפס להיום בכל פתיחה
   final Set<String> _expandedTaskIds = {};
   Set<TaskView>? _views; // #77: דף התצוגות - null = לא בדף התצוגות; ריק = רשימה ריקה (הכל ב"או")
+  bool _viewsExclusive = false; // #77: בחירה בלעדית (צ'יפ אחד) או מצטברת (ברירת מחדל)
+  final Map<TaskView, GlobalKey> _viewChipKeys = {for (final v in TaskView.values) v: GlobalKey()};
 
   final Map<String?, GlobalKey> _itemChipKeys = {};
 
@@ -108,14 +110,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       _selectedItemId = null;
       _views = {view};
     });
+    // הצ'יפ של התצוגה שנבחרה בסיידבר תמיד גלוי בשורה
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _viewChipKeys[view]?.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(ctx, alignment: 0.5, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+      }
+    });
   }
 
-  /// #77: צ'יפ בדף התצוגות - מוסיף או מוריד מהסינון
+  /// #77: צ'יפ בדף התצוגות - במצב מצטבר מוסיף או מוריד; במצב בלעדי מציג רק אותו
   void _toggleView(TaskView view) {
     setState(() {
+      if (_viewsExclusive) {
+        _views = {view};
+        return;
+      }
       final views = {...?_views};
       if (!views.remove(view)) views.add(view);
       _views = views;
+    });
+  }
+
+  /// #77: הכפתור הקבוע בשורת הצ'יפים - בלעדי / מצטבר. מעבר לבלעדי משאיר רק את הצ'יפ הראשון המסומן
+  void _toggleViewsMode() {
+    setState(() {
+      _viewsExclusive = !_viewsExclusive;
+      if (_viewsExclusive && (_views?.length ?? 0) > 1) {
+        _views = {TaskView.values.firstWhere(_views!.contains)};
+      }
     });
   }
 
@@ -435,26 +458,44 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  /// #77: שורת הצ'יפים של דף התצוגות - כל צ'יפ מוסיף או מוריד מהסינון
+  /// #77: שורת הצ'יפים של דף התצוגות. בתחילת השורה כפתור קבוע (לא נגלל): בלעדי / מצטבר
   Widget _buildViewChips() {
     final l10n = AppLocalizations.of(context)!;
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        children: [
-          for (final view in TaskView.values)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 8.0),
-              child: FilterChip(
-                showCheckmark: false,
-                label: Text(taskViewLabel(l10n, view)),
-                selected: _views!.contains(view),
-                onSelected: (_) => _toggleView(view),
-              ),
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.only(start: 8),
+          child: IconButton(
+            tooltip: _viewsExclusive ? l10n.viewsModeExclusive : l10n.viewsModeCumulative,
+            visualDensity: VisualDensity.compact,
+            isSelected: _viewsExclusive,
+            icon: const Icon(Icons.library_add_check_outlined),
+            selectedIcon: const Icon(Icons.looks_one_outlined),
+            onPressed: _toggleViewsMode,
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsetsDirectional.only(start: 4, end: 16, top: 4, bottom: 4),
+            child: Row(
+              children: [
+                for (final view in TaskView.values)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 8.0),
+                    child: FilterChip(
+                      key: _viewChipKeys[view],
+                      showCheckmark: false,
+                      label: Text(taskViewLabel(l10n, view)),
+                      selected: _views!.contains(view),
+                      onSelected: (_) => _toggleView(view),
+                    ),
+                  ),
+              ],
             ),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 

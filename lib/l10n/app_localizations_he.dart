@@ -363,6 +363,18 @@ class AppLocalizationsHe extends AppLocalizations {
   String get viewYearly => 'שנתיות';
 
   @override
+  String get drawerTasksSection => 'משימות';
+
+  @override
+  String get viewByFrequency => 'לפי תדירות';
+
+  @override
+  String get viewsModeExclusive => 'תצוגה אחת בכל פעם - לחצו לצירוף';
+
+  @override
+  String get viewsModeCumulative => 'התצוגות מצטרפות - לחצו לתצוגה אחת';
+
+  @override
   String get groupOptions => 'אפשרויות קבוצה';
 
   @override

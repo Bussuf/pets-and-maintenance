@@ -704,6 +704,30 @@ abstract class AppLocalizations {
   /// **'Yearly'**
   String get viewYearly;
 
+  /// No description provided for @drawerTasksSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get drawerTasksSection;
+
+  /// No description provided for @viewByFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'By frequency'**
+  String get viewByFrequency;
+
+  /// No description provided for @viewsModeExclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'One view at a time - tap to combine'**
+  String get viewsModeExclusive;
+
+  /// No description provided for @viewsModeCumulative.
+  ///
+  /// In en, this message translates to:
+  /// **'Views combine - tap for one at a time'**
+  String get viewsModeCumulative;
+
   /// No description provided for @groupOptions.
   ///
   /// In en, this message translates to:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/categories_provider.dart';
+import '../providers/dashboard_tasks_provider.dart';
 import '../theme/app_icons.dart';
 import '../models/task_status.dart';
 
@@ -23,7 +24,9 @@ IconData taskViewIcon(TaskView view) => switch (view) {
       _ => Icons.repeat,
     };
 
-class AppDrawer extends ConsumerWidget {
+const _frequencyViews = [TaskView.daily, TaskView.weekly, TaskView.monthly, TaskView.yearly];
+
+class AppDrawer extends ConsumerStatefulWidget {
   final String? currentCategoryId;
   final void Function(String? categoryId) onSelectCategory;
   final Set<TaskView>? currentViews; // #77: null = לא בדף התצוגות
@@ -38,13 +41,79 @@ class AppDrawer extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends ConsumerState<AppDrawer> {
+  // "לפי תדירות" פתוח מראש אם התצוגה הנוכחית היא תדירות
+  late bool _frequencyOpen = widget.currentViews?.any(_frequencyViews.contains) ?? false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (l10n == null) return const SizedBox.shrink();
 
     final categoriesAsync = ref.watch(categoriesProvider);
     final theme = Theme.of(context);
-    final isDashboardActive = currentCategoryId == null && currentViews == null;
+    final views = widget.currentViews;
+    final isDashboardActive = widget.currentCategoryId == null && views == null;
+
+    // #77: מספר המשימות הפעילות ליד כל שורה (משימות שהסתיימו לא נספרות - כמו בכותרת)
+    final active = (ref.watch(dashboardTasksProvider).valueOrNull ?? const <Map<String, dynamic>>[])
+        .where((t) => !isTaskFinished(t))
+        .toList();
+    int countView(TaskView v) => active.where((t) => matchesViews(t, {v})).length;
+    int countCategory(String id) => active.where((t) => t['category_id'] == id).length;
+    bool isOnlyView(TaskView v) => views != null && views.length == 1 && views.contains(v);
+
+    Widget sectionTitle(String text) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text(
+            text,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+
+    // שורה בסיידבר. המספר בתיבה ברוחב קבוע בצד השמאלי - כל המספרים על קו אנכי אחד,
+    // גם בתתי-השורות של האקורדיון (ההזחה רק בצד ההתחלה)
+    Widget row({
+      Widget? leading,
+      required Widget title,
+      required int count,
+      required bool selected,
+      required VoidCallback onTap,
+      bool indent = false,
+      Color? selectedTileColor,
+    }) =>
+        Material(
+          type: MaterialType.transparency,
+          child: ListTile(
+            leading: leading,
+            title: title,
+            contentPadding: EdgeInsetsDirectional.only(start: indent ? 56 : 16, end: 16),
+            trailing: SizedBox(
+              width: 28,
+              child: Text(
+                '$count',
+                textAlign: TextAlign.left,
+                style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ),
+            selected: selected,
+            focusColor: Colors.transparent,
+            selectedTileColor: selectedTileColor ?? theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+            onTap: onTap,
+          ),
+        );
+
+    void pick(VoidCallback action) {
+      Navigator.pop(context);
+      action();
+    }
 
     return Drawer(
       width: 270,
@@ -81,24 +150,13 @@ class AppDrawer extends ConsumerWidget {
               children: [
                 // יעד ראשי: כל הקבוצות (אייקון מלא)
                 // Material שקוף - כדי שצבע הבחירה ייצבע על הפריט ויזוז עם הגלילה
-                Material(
-                  type: MaterialType.transparency,
-                  child: ListTile(
-                  leading: Icon(
-                    Icons.grid_view,
-                    color: isDashboardActive ? theme.colorScheme.primary : null,
-                  ),
+                row(
+                  leading: Icon(Icons.grid_view, color: isDashboardActive ? theme.colorScheme.primary : null),
                   title: Text(l10n.allGroups, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  count: active.length,
                   selected: isDashboardActive,
-                  focusColor: Colors.transparent,
-                  selectedColor: theme.colorScheme.onPrimaryContainer,
                   selectedTileColor: theme.colorScheme.primaryContainer,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onSelectCategory(null);
-                  },
-                  ),
+                  onTap: () => pick(() => widget.onSelectCategory(null)),
                 ),
 
                 const Padding(
@@ -106,49 +164,46 @@ class AppDrawer extends ConsumerWidget {
                   child: Divider(),
                 ),
 
-                // #77: תצוגות - כל תצוגה פותחת את דף התצוגות עם הצ'יפ שלה בלבד
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text(
-                    l10n.viewsTitle,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
-                    ),
+                // #77: משימות לפי סוג - כל שורה פותחת את דף התצוגות עם הצ'יפ שלה בלבד
+                sectionTitle(l10n.drawerTasksSection),
+                for (final view in const [TaskView.reminder, TaskView.calendar, TaskView.endCondition])
+                  row(
+                    leading: Icon(taskViewIcon(view)),
+                    title: Text(taskViewLabel(l10n, view)),
+                    count: countView(view),
+                    selected: isOnlyView(view),
+                    onTap: () => pick(() => widget.onSelectView(view)),
                   ),
+                // "לפי תדירות" - אקורדיון עם 4 תתי-שורות; המספר שלו = סך כל המשימות הפעילות
+                row(
+                  leading: const Icon(Icons.repeat),
+                  title: Row(
+                    children: [
+                      Flexible(child: Text(l10n.viewByFrequency)),
+                      const SizedBox(width: 4),
+                      Icon(_frequencyOpen ? Icons.expand_less : Icons.expand_more, size: 18),
+                    ],
+                  ),
+                  count: active.length,
+                  selected: false,
+                  onTap: () => setState(() => _frequencyOpen = !_frequencyOpen),
                 ),
-                for (final view in TaskView.values)
-                  Material(
-                    type: MaterialType.transparency,
-                    child: ListTile(
-                      leading: Icon(taskViewIcon(view)),
+                if (_frequencyOpen)
+                  for (final view in _frequencyViews)
+                    row(
+                      indent: true,
                       title: Text(taskViewLabel(l10n, view)),
-                      selected: currentViews != null && currentViews!.length == 1 && currentViews!.contains(view),
-                      focusColor: Colors.transparent,
-                      selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                      onTap: () {
-                        Navigator.pop(context);
-                        onSelectView(view);
-                      },
+                      count: countView(view),
+                      selected: isOnlyView(view),
+                      onTap: () => pick(() => widget.onSelectView(view)),
                     ),
-                  ),
 
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                   child: Divider(),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text(
-                    l10n.myGroups,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                sectionTitle(l10n.myGroups),
 
                 ...categoriesAsync.when(
                   data: (categories) {
@@ -161,29 +216,20 @@ class AppDrawer extends ConsumerWidget {
                       ];
                     }
                     return categories.map((cat) {
-                      final isSelected = currentCategoryId == cat.id;
+                      final isSelected = widget.currentCategoryId == cat.id;
                       final catColor = cat.color != null ? Color(cat.color!) : theme.colorScheme.primary;
-                      final catIcon = AppIcons.getIcon(cat.icon);
-
-                      return Material(
-                        type: MaterialType.transparency,
-                        child: ListTile(
-                        leading: Icon(catIcon, color: isSelected ? theme.colorScheme.primary : catColor),
+                      return row(
+                        leading: Icon(AppIcons.getIcon(cat.icon), color: isSelected ? theme.colorScheme.primary : catColor),
                         title: Text(
                           cat.name,
-                          style: TextStyle(
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          ),
+                          style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
                         ),
+                        count: countCategory(cat.id),
                         selected: isSelected,
-                        focusColor: Colors.transparent,
-                        selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          if (!isSelected) onSelectCategory(cat.id);
-                        },
-                      ));
+                        onTap: () => pick(() {
+                          if (!isSelected) widget.onSelectCategory(cat.id);
+                        }),
+                      );
                     }).toList();
                   },
                   loading: () => [const Center(child: CircularProgressIndicator())],

@@ -364,6 +364,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewYearly => 'Yearly';
 
   @override
+  String get drawerTasksSection => 'Tasks';
+
+  @override
+  String get viewByFrequency => 'By frequency';
+
+  @override
+  String get viewsModeExclusive => 'One view at a time - tap to combine';
+
+  @override
+  String get viewsModeCumulative => 'Views combine - tap for one at a time';
+
+  @override
   String get groupOptions => 'Group options';
 
   @override
