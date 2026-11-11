@@ -417,6 +417,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String get edit => 'Edit';
 
   @override
+  String get cardAnalysis => 'Analysis';
+
+  @override
+  String get cardDelete => 'Delete';
+
+  @override
+  String cardCompletions(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Done $n times',
+      one: 'Done once',
+      zero: 'Never done',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cardReminderAt(String time) {
+    return 'Reminder at $time';
+  }
+
+  @override
+  String get cardPostpone => 'Postpone';
+
+  @override
+  String get cardSkip => 'Skip this time';
+
+  @override
+  String postponeTitle(String name) {
+    return 'Postpone \"$name\"';
+  }
+
+  @override
+  String postponeInDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'In $n days',
+      one: 'Tomorrow',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get postponeWeek => 'In a week';
+
+  @override
+  String get postponePickDate => 'Another date';
+
+  @override
+  String dueMovedTo(String date) {
+    return 'Due date moved to $date';
+  }
+
+  @override
+  String skippedTo(String date) {
+    return 'Skipped - next due $date';
+  }
+
+  @override
+  String get skippedFinished => 'Skipped - the task is finished';
+
+  @override
+  String get dueRestored => 'Due date restored';
+
+  @override
   String get newGroup => 'New group';
 
   @override
@@ -838,8 +905,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whenTitle => 'Habits';
 
   @override
-  String whenSentence(String day, String part) {
-    return 'Usually on $day, mostly at the $part';
+  String whenSentenceDay(String day) {
+    return 'Usually on $day';
+  }
+
+  @override
+  String whenSentencePart(String part) {
+    return 'Mostly at the $part';
   }
 
   @override
@@ -1078,7 +1150,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obGroupsBody =>
-      'Swipe the header to move between your groups - after the last one you\'re back at All. Inside a group its items appear as buttons, and swiping the list moves between them. The arrow button in the header collapses or expands all sections. Long-press the header or an item to edit it.';
+      'Swipe the header to move between your groups - after the last one you\'re back at All. Inside a group its items appear as buttons, and swiping the list moves between them. Tapping the group icon collapses or expands all sections. Long-press the header or an item to edit it.';
 
   @override
   String get obFabTitle => 'Add everything from here';
@@ -1154,6 +1226,33 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get obEditBody =>
       'Name, frequency, reminder, calendar and the next due date - and deleting the task.';
+
+  @override
+  String get obOpenCardTitle => 'The open card';
+
+  @override
+  String get obOpenCardBody =>
+      'Actions on the right, task details on the left.';
+
+  @override
+  String get obPostponeTitle => 'Postpone';
+
+  @override
+  String get obPostponeBody =>
+      'Moves the due date without marking a completion. A new window asks when to postpone to, and offers a day or a week.';
+
+  @override
+  String get obSkipTitle => 'Skip this time';
+
+  @override
+  String get obSkipBody =>
+      'Skips this time - the next due date is one interval away.';
+
+  @override
+  String get obDeleteTitle => 'Delete';
+
+  @override
+  String get obDeleteBody => 'Deletes the task, always with confirmation.';
 
   @override
   String get sampleItemCat => 'Cat 🐱';

@@ -420,6 +420,73 @@ class AppLocalizationsHe extends AppLocalizations {
   String get edit => 'ערוך';
 
   @override
+  String get cardAnalysis => 'ניתוח';
+
+  @override
+  String get cardDelete => 'מחק';
+
+  @override
+  String cardCompletions(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'בוצעה $n פעמים',
+      one: 'בוצעה פעם אחת',
+      zero: 'טרם בוצעה',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cardReminderAt(String time) {
+    return 'תזכורת ב-$time';
+  }
+
+  @override
+  String get cardPostpone => 'לדחות';
+
+  @override
+  String get cardSkip => 'לדלג הפעם';
+
+  @override
+  String postponeTitle(String name) {
+    return 'לדחות את \"$name\"';
+  }
+
+  @override
+  String postponeInDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'בעוד $n ימים',
+      one: 'מחר',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get postponeWeek => 'בעוד שבוע';
+
+  @override
+  String get postponePickDate => 'תאריך אחר';
+
+  @override
+  String dueMovedTo(String date) {
+    return 'היעד נדחה ל-$date';
+  }
+
+  @override
+  String skippedTo(String date) {
+    return 'דילגת - היעד הבא $date';
+  }
+
+  @override
+  String get skippedFinished => 'דילגת - המשימה הסתיימה';
+
+  @override
+  String get dueRestored => 'היעד הוחזר';
+
+  @override
   String get newGroup => 'קבוצה חדשה';
 
   @override
@@ -846,8 +913,13 @@ class AppLocalizationsHe extends AppLocalizations {
   String get whenTitle => 'זמני ביצוע';
 
   @override
-  String whenSentence(String day, String part) {
-    return 'בדרך כלל ב$day, ובעיקר ב$part';
+  String whenSentenceDay(String day) {
+    return 'בדרך כלל ב$day';
+  }
+
+  @override
+  String whenSentencePart(String part) {
+    return 'בעיקר ב$part';
   }
 
   @override
@@ -1086,7 +1158,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get obGroupsBody =>
-      'החלקה על הכותרת עוברת בין הקבוצות - אחרי האחרונה חוזרים ל\'הכל\'. בתוך קבוצה הפריטים שלה מופיעים ככפתורים, והחלקה על הרשימה עוברת ביניהם. כפתור החץ בכותרת מקפל או פותח את כל הסעיפים. לחיצה ארוכה על הכותרת או על פריט - עריכה.';
+      'החלקה על הכותרת עוברת בין הקבוצות - אחרי האחרונה חוזרים ל\'הכל\'. בתוך קבוצה הפריטים שלה מופיעים ככפתורים, והחלקה על הרשימה עוברת ביניהם. לחיצה על אייקון הקבוצה מקפלת או פותחת את כל הסעיפים. לחיצה ארוכה על הכותרת או על פריט - עריכה.';
 
   @override
   String get obFabTitle => 'מכאן מוסיפים הכל';
@@ -1161,6 +1233,31 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get obEditBody =>
       'שם, תדירות, תזכורת ויומן, התאריך לביצוע הבא - וגם מחיקת המשימה.';
+
+  @override
+  String get obOpenCardTitle => 'הכרטיס הפתוח';
+
+  @override
+  String get obOpenCardBody => 'פעולות מימין, פרטי המשימה משמאל.';
+
+  @override
+  String get obPostponeTitle => 'לדחות';
+
+  @override
+  String get obPostponeBody =>
+      'מזיז את תאריך היעד בלי לסמן ביצוע. ייפתח חלון חדש שישאל אתכם למתי לדחות, ויציע לדחות ביום או בשבוע.';
+
+  @override
+  String get obSkipTitle => 'לדלג הפעם';
+
+  @override
+  String get obSkipBody => 'מדלג על הפעם הזו - היעד הבא בעוד מרווח אחד.';
+
+  @override
+  String get obDeleteTitle => 'מחיקה';
+
+  @override
+  String get obDeleteBody => 'מוחק את המשימה, תמיד עם אישור.';
 
   @override
   String get sampleItemCat => 'חתול 🐱';

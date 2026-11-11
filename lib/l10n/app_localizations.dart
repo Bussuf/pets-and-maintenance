@@ -746,6 +746,90 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get edit;
 
+  /// No description provided for @cardAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis'**
+  String get cardAnalysis;
+
+  /// No description provided for @cardDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get cardDelete;
+
+  /// No description provided for @cardCompletions.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{Never done} =1{Done once} other{Done {n} times}}'**
+  String cardCompletions(int n);
+
+  /// No description provided for @cardReminderAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder at {time}'**
+  String cardReminderAt(String time);
+
+  /// No description provided for @cardPostpone.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpone'**
+  String get cardPostpone;
+
+  /// No description provided for @cardSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this time'**
+  String get cardSkip;
+
+  /// No description provided for @postponeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpone \"{name}\"'**
+  String postponeTitle(String name);
+
+  /// No description provided for @postponeInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Tomorrow} other{In {n} days}}'**
+  String postponeInDays(int n);
+
+  /// No description provided for @postponeWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'In a week'**
+  String get postponeWeek;
+
+  /// No description provided for @postponePickDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Another date'**
+  String get postponePickDate;
+
+  /// No description provided for @dueMovedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date moved to {date}'**
+  String dueMovedTo(String date);
+
+  /// No description provided for @skippedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped - next due {date}'**
+  String skippedTo(String date);
+
+  /// No description provided for @skippedFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped - the task is finished'**
+  String get skippedFinished;
+
+  /// No description provided for @dueRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date restored'**
+  String get dueRestored;
+
   /// No description provided for @newGroup.
   ///
   /// In en, this message translates to:
@@ -1418,11 +1502,17 @@ abstract class AppLocalizations {
   /// **'Habits'**
   String get whenTitle;
 
-  /// No description provided for @whenSentence.
+  /// No description provided for @whenSentenceDay.
   ///
   /// In en, this message translates to:
-  /// **'Usually on {day}, mostly at the {part}'**
-  String whenSentence(String day, String part);
+  /// **'Usually on {day}'**
+  String whenSentenceDay(String day);
+
+  /// No description provided for @whenSentencePart.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly at the {part}'**
+  String whenSentencePart(String part);
 
   /// No description provided for @whenWeekdays.
   ///
@@ -1793,7 +1883,7 @@ abstract class AppLocalizations {
   /// No description provided for @obGroupsBody.
   ///
   /// In en, this message translates to:
-  /// **'Swipe the header to move between your groups - after the last one you\'re back at All. Inside a group its items appear as buttons, and swiping the list moves between them. The arrow button in the header collapses or expands all sections. Long-press the header or an item to edit it.'**
+  /// **'Swipe the header to move between your groups - after the last one you\'re back at All. Inside a group its items appear as buttons, and swiping the list moves between them. Tapping the group icon collapses or expands all sections. Long-press the header or an item to edit it.'**
   String get obGroupsBody;
 
   /// No description provided for @obFabTitle.
@@ -1927,6 +2017,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name, frequency, reminder, calendar and the next due date - and deleting the task.'**
   String get obEditBody;
+
+  /// No description provided for @obOpenCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The open card'**
+  String get obOpenCardTitle;
+
+  /// No description provided for @obOpenCardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions on the right, task details on the left.'**
+  String get obOpenCardBody;
+
+  /// No description provided for @obPostponeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpone'**
+  String get obPostponeTitle;
+
+  /// No description provided for @obPostponeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves the due date without marking a completion. A new window asks when to postpone to, and offers a day or a week.'**
+  String get obPostponeBody;
+
+  /// No description provided for @obSkipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this time'**
+  String get obSkipTitle;
+
+  /// No description provided for @obSkipBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Skips this time - the next due date is one interval away.'**
+  String get obSkipBody;
+
+  /// No description provided for @obDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get obDeleteTitle;
+
+  /// No description provided for @obDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletes the task, always with confirmation.'**
+  String get obDeleteBody;
 
   /// No description provided for @sampleItemCat.
   ///
