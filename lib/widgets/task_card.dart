@@ -17,6 +17,8 @@ import '../models/task_status.dart';
 import '../utils/duration_text.dart';
 import '../screens/task_analysis_screen.dart';
 import '../onboarding/onboarding.dart';
+import '../providers/settings_provider.dart';
+import '../services/task_actions.dart';
 
 class TaskCard extends ConsumerWidget {
   final Map<String, dynamic> task;
@@ -437,6 +439,35 @@ class TaskCard extends ConsumerWidget {
     final isRemindOn = (task['is_reminder_enabled'] == 1);
     final bool isGoogleSynced = task['google_event_id'] != null;
 
+    // #85: פרטים בכרטיס הפתוח
+    final unit = task['interval_unit'] as String?;
+    final completedCount = (task['completed_count'] as num?)?.toInt() ?? 0;
+    final dueDate = DateTime.tryParse(task['next_due_date']?.toString() ?? '');
+    final String relativeDueStr;
+    if (isFinished) {
+      relativeDueStr = l10n.taskFinishedLabel;
+    } else if (dueDate == null) {
+      relativeDueStr = l10n.notSet;
+    } else if (isOverdue) {
+      relativeDueStr = l10n.overdueBy(DurationText.days(l10n, overdueDays, unit));
+    } else {
+      final daysUntil = (DateTime(dueDate.year, dueDate.month, dueDate.day).difference(todayStart).inHours / 24).round();
+      relativeDueStr = daysUntil == 0
+          ? l10n.statusDueToday
+          : l10n.statusNextIn(DurationText.days(l10n, daysUntil, unit));
+    }
+    final reminderTimeStr =
+        MaterialLocalizations.of(context).formatTimeOfDay(ref.watch(settingsProvider).reminderTime);
+    // תנאי סיום (#51) - null = תמיד
+    final endValue = task['end_condition_value']?.toString();
+    String? endText;
+    if (task['end_condition'] == 'count') {
+      endText = l10n.endCountProgress(completedCount, int.tryParse(endValue ?? '') ?? 0);
+    } else if (task['end_condition'] == 'until_date') {
+      final until = DateTime.tryParse(endValue ?? '');
+      endText = until != null ? l10n.endUntilDate(_formatDate(until)) : l10n.endConditionUntil;
+    }
+
     // הדרכה (#26): מפתחות רק לכרטיס של משימת הדוגמה, ורק בזמן הדרכה
     GlobalKey? obKey(OnboardingTarget target) => Onboarding.keyFor(target, task['id']);
 
@@ -482,13 +513,22 @@ class TaskCard extends ConsumerWidget {
                           size: 18,
                           color: Colors.green,
                         ),
-                        if (isRemindOn) const SizedBox(width: 8),
+                        if (isRemindOn || endText != null) const SizedBox(width: 8),
                       ],
-                      if (isRemindOn)
+                      if (isRemindOn) ...[
                         const Icon(
                           Icons.notifications_active,
                           size: 18,
                           color: Colors.blueAccent,
+                        ),
+                        if (endText != null) const SizedBox(width: 8),
+                      ],
+                      // #85: למשימה יש תנאי סיום (מספר פעמים / עד תאריך)
+                      if (endText != null)
+                        const Icon(
+                          Icons.flag_outlined,
+                          size: 18,
+                          color: Colors.orange,
                         ),
                     ],
                   ),
@@ -606,113 +646,104 @@ class TaskCard extends ConsumerWidget {
                 ],
               ),
 
-              // --- אזור האקורדיון (נפתח בלחיצה) ---
+              // --- אזור האקורדיון (נפתח בלחיצה) - #85: תפריט פעולות אנכי מימין, פרטים משמאל ---
               if (isExpanded) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
                   child: Divider(color: catColor.withValues(alpha: 0.4), height: 1),
                 ),
-                if (task['description'] != null &&
-                    task['description'].toString().isNotEmpty) ...[
-                  Text(
-                    task['description'],
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                Text(
-                  intervalStr,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
                 Row(
-                  children: [
-                    Icon(
-                      Icons.history_toggle_off,
-                      size: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      l10n.lastDoneLabel(lastCompletedStr),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                // #66: "השלם" רחב (ממלא את המקום הפנוי) + 4 אייקונים במרווח קבוע - תמיד שורה אחת.
-                // בגופן ענק הטקסט של "השלם" מתכווץ במקום להיחתך או לשבור שורה
-                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: FilledButton.icon(
-                        key: obKey(OnboardingTarget.completeButton),
-                        style: FilledButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
+                      flex: 9,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _MenuAction(
+                            key: obKey(OnboardingTarget.completeButton),
+                            icon: Icons.check,
+                            label: l10n.complete,
+                            filled: true,
+                            onTap: () => _completeTaskAtDate(context, ref, DateTime.now()),
+                          ),
+                          _MenuAction(
+                            key: obKey(OnboardingTarget.analysisButton),
+                            icon: Icons.insights,
+                            label: l10n.cardAnalysis,
+                            // דף ניתוח מעקב משימה (#25)
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => TaskAnalysisScreen(taskId: task['id'])),
+                            ),
+                          ),
+                          _MenuAction(
+                            key: obKey(OnboardingTarget.manualButton),
+                            icon: Icons.history,
+                            label: l10n.manualCompletion,
+                            onTap: () => _pickManualCompletionDate(context, ref),
+                          ),
+                          _MenuAction(
+                            key: obKey(OnboardingTarget.editButton),
+                            icon: Icons.edit_outlined,
+                            label: l10n.edit,
+                            onTap: () => EditTaskSheet.show(context, task),
+                          ),
+                          _MenuAction(
+                            key: obKey(OnboardingTarget.duplicateButton),
+                            icon: Icons.copy_outlined,
+                            label: l10n.duplicate,
+                            onTap: () => CreateEntityScreen.show(
+                              context,
+                              type: EntityType.task,
+                              categoryId: task['category_id'],
+                              itemId: task['item_id'],
+                              duplicateData: task,
+                            ),
+                          ),
+                          _MenuAction(
+                            icon: Icons.delete_outline,
+                            label: l10n.cardDelete,
+                            color: theme.colorScheme.error,
+                            onTap: () => deleteTaskWithConfirm(context, ref, task), // תמיד באישור
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 11,
+                      child: Container(
+                        padding: const EdgeInsetsDirectional.only(start: 10),
+                        decoration: BoxDecoration(
+                          border: BorderDirectional(
+                            start: BorderSide(color: theme.colorScheme.outlineVariant, width: 0.5),
                           ),
                         ),
-                        onPressed: () =>
-                            _completeTaskAtDate(context, ref, DateTime.now()),
-                        icon: const Icon(Icons.check, size: 16),
-                        label: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(l10n.complete, maxLines: 1),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (task['description'] != null && task['description'].toString().isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Text(task['description'], style: const TextStyle(fontSize: 14)),
+                              ),
+                            _DetailLine(icon: Icons.repeat, text: intervalStr),
+                            _DetailLine(
+                              icon: Icons.hourglass_empty,
+                              text: relativeDueStr,
+                              color: isOverdue ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800) : null,
+                            ),
+                            _DetailLine(icon: Icons.history_toggle_off, text: l10n.lastDoneLabel(lastCompletedStr)),
+                            _DetailLine(icon: Icons.done_all, text: l10n.cardCompletions(completedCount)),
+                            if (isRemindOn)
+                              _DetailLine(icon: Icons.notifications_outlined, text: l10n.cardReminderAt(reminderTimeStr)),
+                            if (isGoogleSynced)
+                              _DetailLine(icon: Icons.event_available, text: l10n.calendarSynced),
+                            if (endText != null) _DetailLine(icon: Icons.flag_outlined, text: endText),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    // כפתור הסטטיסטיקות החדש - ממוקם שני מימין
-                    IconButton.outlined(
-                      key: obKey(OnboardingTarget.analysisButton),
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.insights, size: 18),
-                      tooltip: l10n.statistics,
-                      // דף ניתוח מעקב משימה (#25)
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => TaskAnalysisScreen(taskId: task['id'])),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton.outlined(
-                      key: obKey(OnboardingTarget.manualButton),
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.history, size: 18),
-                      tooltip: l10n.manualCompletion,
-                      onPressed: () => _pickManualCompletionDate(context, ref),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton.outlined(
-                      key: obKey(OnboardingTarget.duplicateButton),
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.copy_outlined, size: 18),
-                      tooltip: l10n.duplicate,
-                      onPressed: () => CreateEntityScreen.show(
-                        context,
-                        type: EntityType.task,
-                        categoryId: task['category_id'],
-                        itemId: task['item_id'],
-                        duplicateData: task,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton.outlined(
-                      key: obKey(OnboardingTarget.editButton),
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.edit_outlined, size: 18),
-                      tooltip: l10n.edit,
-                      onPressed: () => EditTaskSheet.show(context, task),
                     ),
                   ],
                 ),
@@ -720,6 +751,86 @@ class TaskCard extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// #85: שורה בתפריט הפעולות האנכי - אייקון + שם. "השלם" מודגש (filled)
+class _MenuAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool filled;
+  final Color? color;
+
+  const _MenuAction({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.filled = false,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final fg = filled ? scheme.onPrimary : (color ?? scheme.onSurface);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Material(
+        color: filled ? scheme.primary : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 38),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Row(
+                children: [
+                  Icon(icon, size: 18, color: filled ? fg : (color ?? scheme.onSurfaceVariant)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(label, style: TextStyle(fontSize: 13, color: fg, fontWeight: filled ? FontWeight.bold : null)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// #85: שורת פרט בטור הפרטים - אייקון קטן + טקסט (נשבר לשורה נוספת אם צריך)
+class _DetailLine extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color? color;
+
+  const _DetailLine({required this.icon, required this.text, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = color ?? Theme.of(context).colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: Icon(icon, size: 14, color: c),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(text, style: TextStyle(fontSize: 12, color: c, fontWeight: FontWeight.w500)),
+          ),
+        ],
       ),
     );
   }
