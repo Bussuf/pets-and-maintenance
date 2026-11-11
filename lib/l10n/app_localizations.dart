@@ -635,8 +635,26 @@ abstract class AppLocalizations {
   /// No description provided for @summaryAllClear.
   ///
   /// In en, this message translates to:
-  /// **'{active, plural, =1{1 active task} other{{active} active tasks}} • all up to date 🎉'**
+  /// **'{active, plural, =1{1 active task} other{{active} active tasks}} • no overdue tasks'**
   String summaryAllClear(int active);
+
+  /// No description provided for @headerLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Today {today} · This week {week}'**
+  String headerLoad(int today, int week);
+
+  /// No description provided for @headerNextUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Next up: {name} · {when}'**
+  String headerNextUp(String name, String when);
+
+  /// No description provided for @headerNothingPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing planned'**
+  String get headerNothingPlanned;
 
   /// No description provided for @groupOptions.
   ///

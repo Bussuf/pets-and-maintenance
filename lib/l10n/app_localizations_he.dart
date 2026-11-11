@@ -322,8 +322,21 @@ class AppLocalizationsHe extends AppLocalizations {
       other: '$active משימות פעילות',
       one: 'משימה פעילה אחת',
     );
-    return '$_temp0 • כל המשימות מעודכנות 🎉';
+    return '$_temp0 • אין משימות באיחור';
   }
+
+  @override
+  String headerLoad(int today, int week) {
+    return 'היום $today · השבוע $week';
+  }
+
+  @override
+  String headerNextUp(String name, String when) {
+    return 'הבא בתור: $name · $when';
+  }
+
+  @override
+  String get headerNothingPlanned => 'אין משימות מתוכננות';
 
   @override
   String get groupOptions => 'אפשרויות קבוצה';

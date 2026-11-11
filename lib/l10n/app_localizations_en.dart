@@ -323,8 +323,21 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$active active tasks',
       one: '1 active task',
     );
-    return '$_temp0 • all up to date 🎉';
+    return '$_temp0 • no overdue tasks';
   }
+
+  @override
+  String headerLoad(int today, int week) {
+    return 'Today $today · This week $week';
+  }
+
+  @override
+  String headerNextUp(String name, String when) {
+    return 'Next up: $name · $when';
+  }
+
+  @override
+  String get headerNothingPlanned => 'Nothing planned';
 
   @override
   String get groupOptions => 'Group options';

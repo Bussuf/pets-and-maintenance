@@ -21,6 +21,7 @@ import '../widgets/month_calendar.dart';
 import '../models/task_status.dart';
 import '../onboarding/onboarding.dart';
 import '../onboarding/onboarding_card.dart';
+import '../utils/duration_text.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -125,10 +126,54 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   /// הכותרת המוגדלת (#90): אייקון, שם מלא, תיאור, סיכום ונקודות מיקום בין הקבוצות.
   /// החלקה עליה עוברת בין הקבוצות; לחיצה על אייקון הקבוצה (עם ^ מתחתיו, #94) מקפלת/פותחת את כל
   /// הסעיפים המוצגים; לחיצה ארוכה בקבוצה - עריכה
+  /// #97: השורה השנייה בכותרת - תמיד קיימת, כדי שגובה הכותרת יהיה אחיד בכל הדפים.
+  /// "הכל" = עומס (היום / 7 הימים הקרובים כולל היום); קבוצה = התיאור, ובלעדיו - הבא בתור
+  String _headerSecondLine(List<Map<String, dynamic>> scoped, Category? category, DateTime today) {
+    final l10n = AppLocalizations.of(context)!;
+    DateTime? dueOf(Map<String, dynamic> t) {
+      if (isTaskFinished(t)) return null;
+      final d = DateTime.tryParse(t['next_due_date']?.toString() ?? '');
+      return d == null ? null : DateTime(d.year, d.month, d.day);
+    }
+
+    if (category == null) {
+      final weekEnd = DateTime(today.year, today.month, today.day + 7);
+      var todayCount = 0, weekCount = 0;
+      for (final t in scoped) {
+        final d = dueOf(t);
+        if (d == null || d.isBefore(today) || !d.isBefore(weekEnd)) continue;
+        weekCount++;
+        if (d == today) todayCount++;
+      }
+      return l10n.headerLoad(todayCount, weekCount);
+    }
+
+    final description = category.description?.trim() ?? '';
+    if (description.isNotEmpty) return description;
+
+    Map<String, dynamic>? next;
+    DateTime? nextDue;
+    for (final t in scoped) {
+      final d = dueOf(t);
+      if (d != null && (nextDue == null || d.isBefore(nextDue))) {
+        next = t;
+        nextDue = d;
+      }
+    }
+    if (next == null || nextDue == null) return l10n.headerNothingPlanned;
+    final days = (nextDue.difference(today).inHours / 24).round();
+    final unit = next['interval_unit'] as String?;
+    final when = days < 0
+        ? l10n.overdueBy(DurationText.days(l10n, -days, unit))
+        : (days == 0 ? l10n.today : l10n.postponeInDays(days));
+    return l10n.headerNextUp(next['name'] ?? '', when);
+  }
+
   Widget _buildHeader({
     required List<Category> categories,
     required Category? category,
     required String? itemName,
+    required String secondLine,
     required int activeCount,
     required int overdueCount,
     required Color accent,
@@ -143,7 +188,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final title = category == null
         ? l10n.allGroupsAndTasks
         : (itemName == null ? category.name : '${category.name} › $itemName');
-    final description = category?.description;
     final positions = <String?>[null, ...categories.map((c) => c.id)];
 
     return GestureDetector(
@@ -207,11 +251,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           color: isDark ? Colors.white : accent,
                         ),
                       ),
-                      if (description?.isNotEmpty ?? false)
-                        Padding(
+                      // #97: תמיד קיימת - תיאור / עומס / הבא בתור
+                      Padding(
                           padding: const EdgeInsets.only(top: 3),
                           child: Text(
-                            description!,
+                            secondLine,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
@@ -392,6 +436,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       final due = t['next_due_date'] != null ? DateTime.tryParse(t['next_due_date']) : null;
       return due != null && due.isBefore(today);
     }).length;
+    final secondLine = _headerSecondLine(scopedTasks, selectedCategory, today);
 
     return PopScope(
       canPop: false,
@@ -559,6 +604,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   categories: categories,
                   category: selectedCategory,
                   itemName: selectedItemName,
+                  secondLine: secondLine,
                   activeCount: activeCount,
                   overdueCount: overdueCount,
                   accent: calendarAccent,
