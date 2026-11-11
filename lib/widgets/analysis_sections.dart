@@ -162,6 +162,17 @@ class _WeekdayBars extends StatelessWidget {
   }
 }
 
+/// רוחבי האריחים של 'חלק בחודש' (#91): כל אריח מקבל [minWidth], והשארית מתחלקת לפי היחס המדויק
+/// (כמות / סה"כ) - לא לפי האחוז המעוגל, שסכומו יכול לצאת 101% ולחרוג מהשורה.
+/// אם אין מקום אפילו למינימום - חלוקה שווה
+List<double> monthPartWidths({required List<int> counts, required double available, required double minWidth}) {
+  final n = counts.length;
+  if (minWidth * n > available) return List.filled(n, available / n);
+  final total = counts.fold<int>(0, (a, b) => a + b);
+  final extra = available - minWidth * n;
+  return [for (final c in counts) minWidth + (total == 0 ? extra / n : extra * c / total)];
+}
+
 /// שלושה אריחים: תחילת / אמצע / סוף חודש - האחוז ומתחתיו המילה, והנפוץ מודגש.
 /// הרוחב יחסי לאחוזים, אבל כל אריח מקבל קודם את הרוחב שהתוכן שלו צריך - כך שום מילה לא נחתכת.
 /// אם אין מקום אפילו למינימום של שלושתם (מסך צר מאוד / גופן ענק) - שלושה אריחים שווים
@@ -194,7 +205,9 @@ class _MonthPartBar extends StatelessWidget {
         textScaler: textScaler,
         maxLines: 1,
       )..layout();
-      return painter.width;
+      final width = painter.width;
+      painter.dispose();
+      return width;
     }
 
     return LayoutBuilder(
@@ -207,18 +220,7 @@ class _MonthPartBar extends StatelessWidget {
           final w = textWidth(label, labelStyle);
           if (w > widest) widest = w;
         }
-        final mins = List<double>.filled(3, widest + _hPad * 2 + 2);
-        final sumMin = mins.fold<double>(0, (a, b) => a + b);
-
-        final List<double> widths;
-        if (sumMin > available) {
-          widths = List.filled(3, available / 3);
-        } else {
-          final extra = available - sumMin;
-          widths = [
-            for (int i = 0; i < 3; i++) mins[i] + (total == 0 ? extra / 3 : extra * percents[i] / 100),
-          ];
-        }
+        final widths = monthPartWidths(counts: counts, available: available, minWidth: widest + _hPad * 2 + 2);
 
         return Row(
           children: [
