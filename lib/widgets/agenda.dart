@@ -13,6 +13,9 @@ enum AgendaKind { overdue, today, tomorrow, week, later, finished, past }
 
 /// המפתח של צ'יפ "הכל". לקבוצה ולפריט המפתח הוא המזהה שלהם
 const String agendaAllScope = 'all';
+
+/// #77: זיכרון קיפול אחד לדף התצוגות
+const String agendaViewsScope = 'views';
 const String _agendaPrefPrefix = 'agenda_collapsed_';
 
 /// האם כל הסעיפים המוצגים מקופלים (חץ הצ'יפ, וכיוון הלחיצה עליו)

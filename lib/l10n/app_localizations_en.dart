@@ -340,6 +340,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get headerNothingPlanned => 'Nothing planned';
 
   @override
+  String get viewsTitle => 'Views';
+
+  @override
+  String get viewReminder => 'With reminder';
+
+  @override
+  String get viewCalendar => 'In Google Calendar';
+
+  @override
+  String get viewEndCondition => 'With end condition';
+
+  @override
+  String get viewDaily => 'Daily';
+
+  @override
+  String get viewWeekly => 'Weekly';
+
+  @override
+  String get viewMonthly => 'Monthly';
+
+  @override
+  String get viewYearly => 'Yearly';
+
+  @override
   String get groupOptions => 'Group options';
 
   @override

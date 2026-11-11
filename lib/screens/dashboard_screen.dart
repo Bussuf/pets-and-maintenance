@@ -38,6 +38,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   bool _weekOpen = false; // מיקוד יום (#83) - תמיד מתחילים ביומן
   DateTime _focusDay = DateTime.now(); // היום הנבחר ברצועה; מתאפס להיום בכל פתיחה
   final Set<String> _expandedTaskIds = {};
+  Set<TaskView>? _views; // #77: דף התצוגות - null = לא בדף התצוגות; ריק = רשימה ריקה (הכל ב"או")
 
   final Map<String?, GlobalKey> _itemChipKeys = {};
 
@@ -96,6 +97,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     setState(() {
       _selectedCategoryId = categoryId;
       _selectedItemId = null;
+      _views = null; // כל מעבר לקבוצה / "הכל" יוצא מדף התצוגות
+    });
+  }
+
+  /// #77: בחירה בסיידבר - דף התצוגות עם הצ'יפ הזה בלבד
+  void _openView(TaskView view) {
+    setState(() {
+      _selectedCategoryId = null;
+      _selectedItemId = null;
+      _views = {view};
+    });
+  }
+
+  /// #77: צ'יפ בדף התצוגות - מוסיף או מוריד מהסינון
+  void _toggleView(TaskView view) {
+    setState(() {
+      final views = {...?_views};
+      if (!views.remove(view)) views.add(view);
+      _views = views;
     });
   }
 
@@ -115,6 +135,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   /// המשימות של הצ'יפ המסומן: הכל, קבוצה, או פריט בתוכה
   List<Map<String, dynamic>> _inScope(List<Map<String, dynamic>> tasks) {
+    if (_views != null) return tasks.where((t) => matchesViews(t, _views!)).toList();
     if (_selectedCategoryId == null) return tasks;
     return tasks
         .where((t) =>
@@ -185,15 +206,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final isDark = theme.brightness == Brightness.dark;
-    final title = category == null
-        ? l10n.allGroupsAndTasks
-        : (itemName == null ? category.name : '${category.name} › $itemName');
+    final views = _views; // #77: דף התצוגות - בלי החלקות, בלי נקודות, בלי עריכה בלחיצה ארוכה
+    final title = views != null
+        ? (views.isEmpty
+            ? l10n.viewsTitle
+            : TaskView.values.where(views.contains).map((v) => taskViewLabel(l10n, v)).join(' · '))
+        : category == null
+            ? l10n.allGroupsAndTasks
+            : (itemName == null ? category.name : '${category.name} › $itemName');
     final positions = <String?>[null, ...categories.map((c) => c.id)];
 
     return GestureDetector(
       key: Onboarding.key(OnboardingTarget.groupChips),
       behavior: HitTestBehavior.opaque,
-      onHorizontalDragEnd: (details) => _onHeaderSwipe(details, positions),
+      onHorizontalDragEnd: views != null ? null : (details) => _onHeaderSwipe(details, positions),
       onLongPress: category == null ? null : () => EditCategorySheet.show(context, category),
       child: Container(
         width: double.infinity,
@@ -219,7 +245,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           radius: 23,
                           backgroundColor: accent.withValues(alpha: 0.2),
                           child: Icon(
-                            category == null ? Icons.grid_view : AppIcons.getIcon(category.icon),
+                            views != null
+                                ? Icons.filter_list
+                                : (category == null ? Icons.grid_view : AppIcons.getIcon(category.icon)),
                             color: accent,
                             size: 24,
                           ),
@@ -279,7 +307,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
               ],
             ),
-            if (categories.isNotEmpty) ...[
+            if (categories.isNotEmpty && views == null) ...[
               const SizedBox(height: 8),
               // נקודות מיקום: כמה קבוצות יש, ואיפה אנחנו. אפשר גם ללחוץ עליהן
               Wrap(
@@ -338,7 +366,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   /// הצ'יפ שזיכרון הקיפול שלו חל עכשיו (#88): הפריט, הקבוצה, או "הכל"
-  String get _collapseScope => _selectedItemId ?? _selectedCategoryId ?? agendaAllScope;
+  String get _collapseScope =>
+      _views != null ? agendaViewsScope : (_selectedItemId ?? _selectedCategoryId ?? agendaAllScope);
 
   /// תוצאת חיפוש: מסמנים את הקבוצה והפריט, ופותחים את המשימה ואת הסעיף שלה ביומן
   void _openSearchTarget({required String categoryId, String? itemId, String? taskId}) {
@@ -406,6 +435,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
+  /// #77: שורת הצ'יפים של דף התצוגות - כל צ'יפ מוסיף או מוריד מהסינון
+  Widget _buildViewChips() {
+    final l10n = AppLocalizations.of(context)!;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          for (final view in TaskView.values)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8.0),
+              child: FilterChip(
+                showCheckmark: false,
+                label: Text(taskViewLabel(l10n, view)),
+                selected: _views!.contains(view),
+                onSelected: (_) => _toggleView(view),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -448,6 +500,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           return;
         }
 
+        // #77: מדף התצוגות - חזרה ל"הכל"
+        if (_views != null) {
+          _selectCategory(null);
+          return;
+        }
         // רמה אחת למעלה בכל פעם: פריט ← קבוצה ← "הכל" (#89)
         if (_selectedItemId != null) {
           _selectItem(null);
@@ -518,7 +575,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           onEditGroup: selectedCategory == null ? null : () => EditCategorySheet.show(context, selectedCategory),
           onOpenTarget: _openSearchTarget,
         ),
-        drawer: AppDrawer(currentCategoryId: _selectedCategoryId, onSelectCategory: _selectCategory),
+        drawer: AppDrawer(
+          currentCategoryId: _selectedCategoryId,
+          onSelectCategory: _selectCategory,
+          currentViews: _views,
+          onSelectView: _openView,
+        ),
         body: tasksAsync.when(
           data: (tasks) {
             final categories = categoriesAsync.value ?? [];
@@ -615,6 +677,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 // צ'יפים רק לפריטים בתוך קבוצה (#90); קבוצות מחליפים בהחלקה על הכותרת או מהתפריט הצדדי
                 if (selectedCategory != null)
                   _buildItemChips(itemsAsync?.valueOrNull ?? const <Item>[], selectedCategory.id, shownKinds),
+                if (_views != null) _buildViewChips(),
                 const Divider(height: 1),
 
                 // הזמנה להדרכה עם נתוני דוגמה (#26) - רק כשאין עדיין נתונים של המשתמש
@@ -632,8 +695,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   // החלקה על הרשימה (#89) - גם כשהרצועה פתוחה; על הרצועה עצמה היא מזיזה יום
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onHorizontalDragEnd: (details) =>
-                        _onListSwipe(details, itemsAsync?.valueOrNull),
+                    // #77: בדף התצוגות אין החלקות בכלל
+                    onHorizontalDragEnd: _views != null
+                        ? null
+                        : (details) => _onListSwipe(details, itemsAsync?.valueOrNull),
                     child: flatList.isEmpty
                     // אין במסד כלום (#26) - הסבר + קישור למדריך. אחרת (למשל קבוצה מסוננת בלי משימות) - הטקסט הרגיל
                         ? (tasks.isEmpty && categories.isEmpty

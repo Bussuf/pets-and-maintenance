@@ -656,6 +656,54 @@ abstract class AppLocalizations {
   /// **'Nothing planned'**
   String get headerNothingPlanned;
 
+  /// No description provided for @viewsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Views'**
+  String get viewsTitle;
+
+  /// No description provided for @viewReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'With reminder'**
+  String get viewReminder;
+
+  /// No description provided for @viewCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'In Google Calendar'**
+  String get viewCalendar;
+
+  /// No description provided for @viewEndCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'With end condition'**
+  String get viewEndCondition;
+
+  /// No description provided for @viewDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get viewDaily;
+
+  /// No description provided for @viewWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get viewWeekly;
+
+  /// No description provided for @viewMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get viewMonthly;
+
+  /// No description provided for @viewYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get viewYearly;
+
   /// No description provided for @groupOptions.
   ///
   /// In en, this message translates to:

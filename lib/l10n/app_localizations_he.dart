@@ -339,6 +339,30 @@ class AppLocalizationsHe extends AppLocalizations {
   String get headerNothingPlanned => 'אין משימות מתוכננות';
 
   @override
+  String get viewsTitle => 'תצוגות';
+
+  @override
+  String get viewReminder => 'עם תזכורת';
+
+  @override
+  String get viewCalendar => 'ביומן גוגל';
+
+  @override
+  String get viewEndCondition => 'עם תנאי סיום';
+
+  @override
+  String get viewDaily => 'יומיות';
+
+  @override
+  String get viewWeekly => 'שבועיות';
+
+  @override
+  String get viewMonthly => 'חודשיות';
+
+  @override
+  String get viewYearly => 'שנתיות';
+
+  @override
   String get groupOptions => 'אפשרויות קבוצה';
 
   @override

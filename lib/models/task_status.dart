@@ -32,6 +32,31 @@ DateTime? skippedDueDate(
   return isEndReached(condition, value, completedCount, next) ? null : next;
 }
 
+/// #77: התצוגות (צ'יפים בדף התצוגות / שורות בסיידבר)
+enum TaskView { reminder, calendar, endCondition, daily, weekly, monthly, yearly }
+
+const _frequencyViews = {
+  TaskView.daily: 'days',
+  TaskView.weekly: 'weeks',
+  TaskView.monthly: 'months',
+  TaskView.yearly: 'years',
+};
+
+/// #77: האם המשימה עונה על הסינון. כל הצ'יפים ב"או": משימה מוצגת אם היא עונה על
+/// לפחות צ'יפ פעיל אחד. בלי צ'יפים פעילים - הרשימה ריקה (כל צ'יפ רק מוסיף)
+bool matchesViews(Map<String, dynamic> task, Set<TaskView> views) {
+  for (final view in views) {
+    final matches = switch (view) {
+      TaskView.reminder => task['is_reminder_enabled'] == 1,
+      TaskView.calendar => task['google_event_id'] != null,
+      TaskView.endCondition => task['end_condition'] != null && task['end_condition'] != 'always',
+      _ => (task['interval_unit'] ?? 'days') == _frequencyViews[view],
+    };
+    if (matches) return true;
+  }
+  return false;
+}
+
 /// משימה שהסתיימה: יש לה תנאי סיום, ואין לה מועד הבא
 bool isTaskFinished(Map<String, dynamic> task) =>
     task['end_condition'] != null &&
