@@ -123,7 +123,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   /// הכותרת המוגדלת (#90): אייקון, שם מלא, תיאור, סיכום ונקודות מיקום בין הקבוצות.
-  /// החלקה עליה עוברת בין הקבוצות; ^ מקפל/פותח את כל הסעיפים המוצגים; לחיצה ארוכה בקבוצה - עריכה
+  /// החלקה עליה עוברת בין הקבוצות; לחיצה על אייקון הקבוצה (עם ^ מתחתיו, #94) מקפלת/פותחת את כל
+  /// הסעיפים המוצגים; לחיצה ארוכה בקבוצה - עריכה
   Widget _buildHeader({
     required List<Category> categories,
     required Category? category,
@@ -159,13 +160,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 23,
-                  backgroundColor: accent.withValues(alpha: 0.2),
-                  child: Icon(
-                    category == null ? Icons.grid_view : AppIcons.getIcon(category.icon),
-                    color: accent,
-                    size: 24,
+                // #94: אייקון הקבוצה הוא כפתור קיפול/פתיחה של הכל; ה-^ מתחתיו רק חיווי למצב
+                Tooltip(
+                  message: allCollapsed ? l10n.sectionsExpandAll : l10n.sectionsCollapseAll,
+                  child: InkWell(
+                    customBorder: const StadiumBorder(),
+                    onTap: shown.isEmpty
+                        ? null
+                        : () => ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 23,
+                          backgroundColor: accent.withValues(alpha: 0.2),
+                          child: Icon(
+                            category == null ? Icons.grid_view : AppIcons.getIcon(category.icon),
+                            color: accent,
+                            size: 24,
+                          ),
+                        ),
+                        if (shown.isNotEmpty)
+                          // ^ יש מה לקפל, v הכל מקופל
+                          AnimatedRotation(
+                            turns: allCollapsed ? 0.5 : 0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Icon(Icons.expand_less, size: 18, color: scheme.onSurfaceVariant),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -210,18 +233,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ],
                   ),
                 ),
-                if (shown.isNotEmpty)
-                  IconButton(
-                    tooltip: allCollapsed ? l10n.sectionsExpandAll : l10n.sectionsCollapseAll,
-                    style: IconButton.styleFrom(backgroundColor: scheme.onSurface.withValues(alpha: 0.08)),
-                    onPressed: () => ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown),
-                    // ^ יש מה לקפל, v הכל מקופל
-                    icon: AnimatedRotation(
-                      turns: allCollapsed ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: const Icon(Icons.expand_less),
-                    ),
-                  ),
               ],
             ),
             if (categories.isNotEmpty) ...[
@@ -277,7 +288,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (delta == 0 || _selectedCategoryId == null) return;
     final ids = <String?>[null, ...?items?.map((i) => i.id)];
     final index = ids.indexOf(_selectedItemId);
-    if (ids.length < 2 || index == -1) return;
+    // #95: פריט יחיד - אין בין מה לעבור (בלי "הכל")
+    if ((items?.length ?? 0) < 2 || index == -1) return;
     _selectItem(ids[wrapIndex(index + delta, ids.length)]);
   }
 
@@ -303,22 +315,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget _buildItemChips(List<Item> items, String categoryId, List<AgendaKind> shown) {
     _itemChipKeys.putIfAbsent(null, () => GlobalKey());
     final l10n = AppLocalizations.of(context)!;
+    // #95: פריט יחיד - בלי צ'יפ "הכל" (זהה לו). הצ'יפ היחיד תמיד מסומן, ולחיצה עליו רק מקפלת/פותחת
+    final single = items.length == 1;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
         children: [
-          FilterChip(
-            key: _itemChipKeys[null],
-            showCheckmark: false,
-            label: Text(l10n.allWithCount(items.length)),
-            selected: _selectedItemId == null,
-            onSelected: (_) => _onItemChipTap(null, shown),
-          ),
-          const SizedBox(width: 8),
+          if (!single) ...[
+            FilterChip(
+              key: _itemChipKeys[null],
+              showCheckmark: false,
+              label: Text(l10n.allWithCount(items.length)),
+              selected: _selectedItemId == null,
+              onSelected: (_) => _onItemChipTap(null, shown),
+            ),
+            const SizedBox(width: 8),
+          ],
           ...items.map((item) {
-            final isSelected = _selectedItemId == item.id;
+            final isSelected = single || _selectedItemId == item.id;
             _itemChipKeys.putIfAbsent(item.id, () => GlobalKey());
 
             return Padding(
@@ -330,7 +346,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   showCheckmark: false,
                   label: Text(item.name),
                   selected: isSelected,
-                  onSelected: (_) => _onItemChipTap(item.id, shown),
+                  onSelected: (_) => single
+                      ? ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown)
+                      : _onItemChipTap(item.id, shown),
                   deleteIcon: isSelected ? const Icon(Icons.more_vert, size: 16) : null,
                   onDeleted: isSelected ? () => EditItemSheet.show(context, item, categoryId) : null,
                   deleteButtonTooltipMessage: l10n.editItem,

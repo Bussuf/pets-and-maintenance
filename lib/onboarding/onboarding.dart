@@ -18,6 +18,7 @@ import '../l10n/app_localizations.dart';
 enum OnboardingTarget {
   todayHeader, taskCard, completeButton, nextDue, analysisButton, analysisSummary,
   manualButton, duplicateButton, editButton, groupChips, fab, drawer, menu,
+  postponeButton, skipButton, deleteButton, // #93
 }
 
 /// פעולות של המשתמש באפליקציה שמקדמות צעד "אינטראקטיבי"
@@ -92,6 +93,8 @@ class Onboarding {
       body: (l) => l.obCardBody,
       waitFor: OnboardingEvent.cardExpanded,
     ),
+    // #93: כל הכרטיס הפתוח מואר - פעולות מימין, פרטים משמאל
+    _Step(targets: const [OnboardingTarget.taskCard], title: (l) => l.obOpenCardTitle, body: (l) => l.obOpenCardBody),
     _Step(
       targets: const [OnboardingTarget.completeButton],
       preferBelow: true, // לא להסתיר את הכרטיס שזה עתה נפתח
@@ -116,9 +119,13 @@ class Onboarding {
       waitFor: OnboardingEvent.analysisClosed,
       onNext: () => _hidden.value = true,
     ),
+    // #93: כל פריטי התפריט לפי הסדר - רק הסבר ("הבא"), בלי לבצע
     _Step(targets: const [OnboardingTarget.manualButton], title: (l) => l.obManualTitle, body: (l) => l.obManualBody),
-    _Step(targets: const [OnboardingTarget.duplicateButton], title: (l) => l.obDuplicateTitle, body: (l) => l.obDuplicateBody),
+    _Step(targets: const [OnboardingTarget.postponeButton], title: (l) => l.obPostponeTitle, body: (l) => l.obPostponeBody),
+    _Step(targets: const [OnboardingTarget.skipButton], title: (l) => l.obSkipTitle, body: (l) => l.obSkipBody),
     _Step(targets: const [OnboardingTarget.editButton], title: (l) => l.obEditTitle, body: (l) => l.obEditBody),
+    _Step(targets: const [OnboardingTarget.duplicateButton], title: (l) => l.obDuplicateTitle, body: (l) => l.obDuplicateBody),
+    _Step(targets: const [OnboardingTarget.deleteButton], title: (l) => l.obDeleteTitle, body: (l) => l.obDeleteBody),
     // הדרכה חלקית (בלי משימת דוגמה) מתחילה כאן
     _Step(targets: const [OnboardingTarget.fab], title: (l) => l.obFabTitle, body: (l) => l.obFabBody),
     _Step(targets: const [OnboardingTarget.drawer], title: (l) => l.obDrawerTitle, body: (l) => l.obDrawerBody),

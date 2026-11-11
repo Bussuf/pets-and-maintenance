@@ -861,11 +861,13 @@ class TaskCard extends ConsumerWidget {
                           // #85: רק למשימה פעילה עם יעד
                           if (!isFinished && dueDate != null) ...[
                             _MenuAction(
+                              key: obKey(OnboardingTarget.postponeButton),
                               icon: Icons.snooze,
                               label: l10n.cardPostpone,
                               onTap: () => _showPostponeSheet(context, ref),
                             ),
                             _MenuAction(
+                              key: obKey(OnboardingTarget.skipButton),
                               icon: Icons.skip_next_outlined,
                               label: l10n.cardSkip,
                               onTap: () => _skipOnce(context, ref),
@@ -890,6 +892,7 @@ class TaskCard extends ConsumerWidget {
                             ),
                           ),
                           _MenuAction(
+                            key: obKey(OnboardingTarget.deleteButton),
                             icon: Icons.delete_outline,
                             label: l10n.cardDelete,
                             color: theme.colorScheme.error,
