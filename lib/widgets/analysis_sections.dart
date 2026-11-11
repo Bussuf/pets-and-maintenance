@@ -45,10 +45,13 @@ class _SubTitle extends StatelessWidget {
 
 // ---------------- מתי אתה עושה את זה ----------------
 
+/// תצוגה אחת לפי סוג המשימה (#92) - אותו כלל של לוח הביצועים:
+/// ימים/שבועות = ימים בשבוע; חודשים/שנים = חלק בחודש
 class WhenSection extends StatelessWidget {
   final TaskStats stats;
+  final String? unit; // יחידת התדירות של המשימה
 
-  const WhenSection({super.key, required this.stats});
+  const WhenSection({super.key, required this.stats, required this.unit});
 
   @override
   Widget build(BuildContext context) {
@@ -69,11 +72,12 @@ class WhenSection extends StatelessWidget {
 
     final hasData = stats.completions > 0 && topDay != null;
     final dayName = hasData ? weekdayName(context, topDay!) : '';
+    final monthly = DurationText.usesMonths(unit);
 
     return AnalysisSection(
       id: 'when',
       title: Text(l10n.whenTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
-      chip: hasData ? '$dayName · ${partNames[topPart]}' : null,
+      chip: hasData ? (monthly ? partNames[topPart] : dayName) : null,
       child: !hasData
           ? const _NoData()
           : Column(
@@ -89,17 +93,20 @@ class WhenSection extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    l10n.whenSentence(dayName, partNames[topPart]),
+                    monthly ? l10n.whenSentencePart(partNames[topPart]) : l10n.whenSentenceDay(dayName),
                     style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ),
               ],
             ),
           ),
-          _SubTitle(l10n.whenWeekdays),
-          _WeekdayBars(stats: stats, topDay: topDay!),
-          _SubTitle(l10n.whenMonthPart),
-          _MonthPartBar(counts: stats.monthPartCounts, top: topPart, labels: partShort),
+          if (monthly) ...[
+            _SubTitle(l10n.whenMonthPart),
+            _MonthPartBar(counts: stats.monthPartCounts, top: topPart, labels: partShort),
+          ] else ...[
+            _SubTitle(l10n.whenWeekdays),
+            _WeekdayBars(stats: stats, topDay: topDay!),
+          ],
         ],
       ),
     );
