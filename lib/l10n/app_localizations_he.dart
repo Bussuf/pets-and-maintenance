@@ -972,6 +972,38 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
+  String whenSentenceDayOr(String day1, String day2) {
+    return 'בדרך כלל ב$day1 או ב$day2';
+  }
+
+  @override
+  String whenSentencePartOr(String part1, String part2) {
+    return 'בעיקר ב$part1 או ב$part2';
+  }
+
+  @override
+  String get whenNoFixedDay => 'בלי יום קבוע';
+
+  @override
+  String get whenNoFixedPart => 'בלי זמן קבוע בחודש';
+
+  @override
+  String whenDatesTitle(String label, int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n ביצועים',
+      one: 'ביצוע אחד',
+    );
+    return '$label · $_temp0';
+  }
+
+  @override
+  String whenMoreDates(int n) {
+    return 'ועוד $n';
+  }
+
+  @override
   String get whenWeekdays => 'ימים בשבוע';
 
   @override

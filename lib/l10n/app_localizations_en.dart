@@ -964,6 +964,38 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String whenSentenceDayOr(String day1, String day2) {
+    return 'Usually on $day1 or $day2';
+  }
+
+  @override
+  String whenSentencePartOr(String part1, String part2) {
+    return 'Mostly at the $part1 or the $part2';
+  }
+
+  @override
+  String get whenNoFixedDay => 'No fixed day';
+
+  @override
+  String get whenNoFixedPart => 'No fixed time of the month';
+
+  @override
+  String whenDatesTitle(String label, int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n completions',
+      one: '1 completion',
+    );
+    return '$label · $_temp0';
+  }
+
+  @override
+  String whenMoreDates(int n) {
+    return 'and $n more';
+  }
+
+  @override
   String get whenWeekdays => 'Days of the week';
 
   @override

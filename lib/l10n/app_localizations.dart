@@ -1604,6 +1604,42 @@ abstract class AppLocalizations {
   /// **'Mostly at the {part}'**
   String whenSentencePart(String part);
 
+  /// No description provided for @whenSentenceDayOr.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually on {day1} or {day2}'**
+  String whenSentenceDayOr(String day1, String day2);
+
+  /// No description provided for @whenSentencePartOr.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly at the {part1} or the {part2}'**
+  String whenSentencePartOr(String part1, String part2);
+
+  /// No description provided for @whenNoFixedDay.
+  ///
+  /// In en, this message translates to:
+  /// **'No fixed day'**
+  String get whenNoFixedDay;
+
+  /// No description provided for @whenNoFixedPart.
+  ///
+  /// In en, this message translates to:
+  /// **'No fixed time of the month'**
+  String get whenNoFixedPart;
+
+  /// No description provided for @whenDatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} · {n, plural, =1{1 completion} other{{n} completions}}'**
+  String whenDatesTitle(String label, int n);
+
+  /// No description provided for @whenMoreDates.
+  ///
+  /// In en, this message translates to:
+  /// **'and {n} more'**
+  String whenMoreDates(int n);
+
   /// No description provided for @whenWeekdays.
   ///
   /// In en, this message translates to:

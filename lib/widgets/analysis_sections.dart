@@ -45,39 +45,89 @@ class _SubTitle extends StatelessWidget {
 
 // ---------------- מתי אתה עושה את זה ----------------
 
+/// #59: כל המובילים, לפי הסדר הנתון (תיקו = כמה). ריק אם אין ביצועים בכלל
+List<K> leadersOf<K>(List<K> keys, Map<K, int> counts) {
+  final max = keys.fold<int>(0, (a, k) => (counts[k] ?? 0) > a ? counts[k]! : a);
+  if (max == 0) return const [];
+  return [for (final k in keys) if (counts[k] == max) k];
+}
+
 /// תצוגה אחת לפי סוג המשימה (#92) - אותו כלל של לוח הביצועים:
-/// ימים/שבועות = ימים בשבוע; חודשים/שנים = חלק בחודש
-class WhenSection extends StatelessWidget {
+/// ימים/שבועות = ימים בשבוע; חודשים/שנים = חלק בחודש.
+/// #59: תיקו - כל המובילים מודגשים, בלי "מוביל" שרירותי; לחיצה על עמודה/אריח - התאריכים שבוצעו בו
+class WhenSection extends StatefulWidget {
   final TaskStats stats;
   final String? unit; // יחידת התדירות של המשימה
 
   const WhenSection({super.key, required this.stats, required this.unit});
 
   @override
+  State<WhenSection> createState() => _WhenSectionState();
+}
+
+class _WhenSectionState extends State<WhenSection> {
+  int? _selected; // יום בשבוע (DateTime.monday..sunday) או חלק בחודש (0..2), null = כלום
+
+  static int _partOf(DateTime d) => d.day <= 10 ? 0 : (d.day <= 20 ? 1 : 2);
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final stats = widget.stats;
+    final monthly = DurationText.usesMonths(widget.unit);
 
-    // היום והחלק בחודש הכי נפוצים (בתיקו - הראשון)
-    int? topDay;
-    stats.weekdayCounts.forEach((day, count) {
-      if (count > 0 && (topDay == null || count > stats.weekdayCounts[topDay]!)) topDay = day;
-    });
-    int topPart = 0;
-    for (int i = 1; i < 3; i++) {
-      if (stats.monthPartCounts[i] > stats.monthPartCounts[topPart]) topPart = i;
-    }
+    final first = MaterialLocalizations.of(context).firstDayOfWeekIndex; // 0 = ראשון
+    final dayOrder = [for (int i = 0; i < 7; i++) ((first + i) % 7 == 0 ? DateTime.sunday : (first + i) % 7)];
     final partNames = [l10n.monthPartStart, l10n.monthPartMiddle, l10n.monthPartEnd];
     final partShort = [l10n.monthPartStartShort, l10n.monthPartMiddleShort, l10n.monthPartEndShort];
 
-    final hasData = stats.completions > 0 && topDay != null;
-    final dayName = hasData ? weekdayName(context, topDay!) : '';
-    final monthly = DurationText.usesMonths(unit);
+    final topDays = leadersOf(dayOrder, stats.weekdayCounts);
+    final topParts = leadersOf(const [0, 1, 2], {for (int i = 0; i < 3; i++) i: stats.monthPartCounts[i]});
+
+    final hasData = stats.completions > 0 && topDays.isNotEmpty;
+    final String sentence;
+    final String? chip;
+    if (!hasData) {
+      sentence = '';
+      chip = null;
+    } else if (monthly) {
+      final names = [for (final p in topParts) partNames[p]];
+      sentence = switch (names.length) {
+        1 => l10n.whenSentencePart(names[0]),
+        2 => l10n.whenSentencePartOr(names[0], names[1]),
+        _ => l10n.whenNoFixedPart,
+      };
+      chip = names.length > 2 ? l10n.whenNoFixedPart : names.join(' / ');
+    } else {
+      final names = [for (final d in topDays) weekdayName(context, d)];
+      sentence = switch (names.length) {
+        1 => l10n.whenSentenceDay(names[0]),
+        2 => l10n.whenSentenceDayOr(names[0], names[1]),
+        _ => l10n.whenNoFixedDay,
+      };
+      chip = names.length > 2 ? l10n.whenNoFixedDay : names.join(' / ');
+    }
+
+    // לחיצה: בחירה, לחיצה חוזרת - סגירה. בלי ביצועים - לא עושה כלום
+    void onTap(int key, int count) {
+      if (count == 0) return;
+      setState(() => _selected = _selected == key ? null : key);
+    }
+
+    // הביצועים של העמודה/האריח המסומנים - מהחדש לישן
+    final selectedLogs = _selected == null
+        ? const <LogStat>[]
+        : stats.logs.reversed
+            .where((s) => monthly
+                ? _partOf(s.log.completedAt) == _selected
+                : s.log.completedAt.weekday == _selected)
+            .toList();
 
     return AnalysisSection(
       id: 'when',
       title: Text(l10n.whenTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
-      chip: hasData ? (monthly ? partNames[topPart] : dayName) : null,
+      chip: chip,
       child: !hasData
           ? const _NoData()
           : Column(
@@ -92,21 +142,85 @@ class WhenSection extends StatelessWidget {
                 Icon(Icons.lightbulb_outline, size: 18, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    monthly ? l10n.whenSentencePart(partNames[topPart]) : l10n.whenSentenceDay(dayName),
-                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-                  ),
+                  child: Text(sentence, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
                 ),
               ],
             ),
           ),
           if (monthly) ...[
             _SubTitle(l10n.whenMonthPart),
-            _MonthPartBar(counts: stats.monthPartCounts, top: topPart, labels: partShort),
+            _MonthPartBar(
+              counts: stats.monthPartCounts,
+              tops: topParts.toSet(),
+              labels: partShort,
+              selected: _selected,
+              onTap: (i) => onTap(i, stats.monthPartCounts[i]),
+            ),
           ] else ...[
             _SubTitle(l10n.whenWeekdays),
-            _WeekdayBars(stats: stats, topDay: topDay!),
+            _WeekdayBars(
+              stats: stats,
+              order: dayOrder,
+              topDays: topDays.toSet(),
+              selected: _selected,
+              onTap: (d) => onTap(d, stats.weekdayCounts[d] ?? 0),
+            ),
           ],
+          if (_selected != null && selectedLogs.isNotEmpty)
+            _WhenDatesPanel(
+              title: monthly ? partNames[_selected!] : weekdayName(context, _selected!),
+              logs: selectedLogs,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// #59: הפאנל מתחת לגרף - התאריכים שבוצעו ביום/בחלק המסומן, מהחדש לישן (עד 12, ואז "ועוד N")
+class _WhenDatesPanel extends StatelessWidget {
+  final String title;
+  final List<LogStat> logs;
+
+  const _WhenDatesPanel({required this.title, required this.logs});
+
+  static const _max = 12;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final lateColor = isDark ? Colors.orange.shade300 : Colors.orange.shade700;
+    final shown = logs.take(_max).toList();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(border: Border(top: BorderSide(color: scheme.outlineVariant, width: 0.5))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.whenDatesTitle(title, logs.length), style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 12,
+            runSpacing: 6,
+            children: [
+              for (final s in shown)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(s.onTime ? Icons.check : Icons.schedule, size: 14, color: s.onTime ? scheme.primary : lateColor),
+                    const SizedBox(width: 3),
+                    Text(DateFormatNotifier.format(s.log.completedAt), style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+              if (logs.length > _max)
+                Text(l10n.whenMoreDates(logs.length - _max),
+                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+            ],
+          ),
         ],
       ),
     );
@@ -114,18 +228,26 @@ class WhenSection extends StatelessWidget {
 }
 
 /// עמודה לכל יום בשבוע, מסודרות לפי היום הראשון בשבוע של השפה (בעברית - ראשון).
-/// גובה העמודות יחסי לשטח שנשאר - כך שגם גופן גדול לא יחרוג מהגבולות
+/// גובה העמודות יחסי לשטח שנשאר - כך שגם גופן גדול לא יחרוג מהגבולות.
+/// #59: כל המובילים מודגשים; העמודה המסומנת - עם מסגרת
 class _WeekdayBars extends StatelessWidget {
   final TaskStats stats;
-  final int topDay;
+  final List<int> order;
+  final Set<int> topDays;
+  final int? selected;
+  final ValueChanged<int> onTap;
 
-  const _WeekdayBars({required this.stats, required this.topDay});
+  const _WeekdayBars({
+    required this.stats,
+    required this.order,
+    required this.topDays,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final first = MaterialLocalizations.of(context).firstDayOfWeekIndex; // 0 = ראשון
-    final order = [for (int i = 0; i < 7; i++) ((first + i) % 7 == 0 ? DateTime.sunday : (first + i) % 7)];
     final maxCount = stats.weekdayCounts.values.fold<int>(1, (a, b) => a > b ? a : b);
     final labelStyle = TextStyle(fontSize: 11, color: scheme.onSurfaceVariant);
 
@@ -136,30 +258,39 @@ class _WeekdayBars extends StatelessWidget {
         children: [
           for (final day in order)
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
-                child: Column(
-                  children: [
-                    // מספר מעל העמודה (ריק ב-0, כדי שכל העמודות יתחילו באותו גובה)
-                    Text(stats.weekdayCounts[day]! > 0 ? '${stats.weekdayCounts[day]}' : '', style: labelStyle),
-                    const SizedBox(height: 2),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: FractionallySizedBox(
-                          heightFactor: (stats.weekdayCounts[day]! / maxCount).clamp(0.06, 1.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: day == topDay ? scheme.primary : scheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(4),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onTap(day),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: Column(
+                    children: [
+                      // מספר מעל העמודה (ריק ב-0, כדי שכל העמודות יתחילו באותו גובה)
+                      Text(stats.weekdayCounts[day]! > 0 ? '${stats.weekdayCounts[day]}' : '', style: labelStyle),
+                      const SizedBox(height: 2),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: FractionallySizedBox(
+                            heightFactor: (stats.weekdayCounts[day]! / maxCount).clamp(0.06, 1.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: topDays.contains(day) ? scheme.primary : scheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(4),
+                                border: day == selected ? Border.all(color: scheme.onSurface, width: 2) : null,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(weekdayName(context, day, short: true), maxLines: 1, style: labelStyle),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        weekdayName(context, day, short: true),
+                        maxLines: 1,
+                        style: day == selected ? labelStyle.copyWith(fontWeight: FontWeight.bold) : labelStyle,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -185,10 +316,18 @@ List<double> monthPartWidths({required List<int> counts, required double availab
 /// אם אין מקום אפילו למינימום של שלושתם (מסך צר מאוד / גופן ענק) - שלושה אריחים שווים
 class _MonthPartBar extends StatelessWidget {
   final List<int> counts;
-  final int top;
+  final Set<int> tops; // #59: כל המובילים (תיקו = כמה)
   final List<String> labels;
+  final int? selected;
+  final ValueChanged<int> onTap;
 
-  const _MonthPartBar({required this.counts, required this.top, required this.labels});
+  const _MonthPartBar({
+    required this.counts,
+    required this.tops,
+    required this.labels,
+    required this.selected,
+    required this.onTap,
+  });
 
   static const double _gap = 6;
   static const double _hPad = 8;
@@ -227,7 +366,7 @@ class _MonthPartBar extends StatelessWidget {
           final w = textWidth(label, labelStyle);
           if (w > widest) widest = w;
         }
-        final widths = monthPartWidths(counts: counts, available: available, minWidth: widest + _hPad * 2 + 2);
+        final widths = monthPartWidths(counts: counts, available: available, minWidth: widest + _hPad * 2 + 2 + 4); // +4: מסגרת הבחירה (#59)
 
         return Row(
           children: [
@@ -235,27 +374,33 @@ class _MonthPartBar extends StatelessWidget {
               if (i > 0) const SizedBox(width: _gap),
               SizedBox(
                 width: widths[i],
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: _hPad, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: i == top ? scheme.primary : scheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        '${percents[i]}%',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: percentStyle.copyWith(color: i == top ? scheme.onPrimary : scheme.onPrimaryContainer),
-                      ),
-                      Text(
-                        labels[i],
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: labelStyle.copyWith(color: i == top ? scheme.onPrimary : scheme.onPrimaryContainer),
-                      ),
-                    ],
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => onTap(i),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: _hPad, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: tops.contains(i) ? scheme.primary : scheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                      // המסגרת בצבע הרקע של הכרטיס כשלא מסומן - כדי שהגודל לא יקפוץ בבחירה
+                      border: Border.all(color: i == selected ? scheme.onSurface : Colors.transparent, width: 2),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          '${percents[i]}%',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: percentStyle.copyWith(color: tops.contains(i) ? scheme.onPrimary : scheme.onPrimaryContainer),
+                        ),
+                        Text(
+                          labels[i],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: labelStyle.copyWith(color: tops.contains(i) ? scheme.onPrimary : scheme.onPrimaryContainer),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
