@@ -21,6 +21,9 @@ class AppTask {
   // -- מעקב (#25) --
   final DateTime? createdAt; // תאריך יצירת המשימה (ריק במשימות שנוצרו לפני גרסה 7)
 
+  // -- לוח זמנים קבוע (#71) --
+  final DateTime? scheduleAnchor; // null = היעד הבא מיום הביצוע; תאריך = עוגן + מרווחים שלמים
+
   AppTask({
     required this.id,
     required this.itemId,
@@ -37,6 +40,7 @@ class AppTask {
     this.reminderTime,
     this.googleEventId,
     this.createdAt,
+    this.scheduleAnchor,
   });
 
   Map<String, dynamic> toMap() {
@@ -57,6 +61,7 @@ class AppTask {
       'google_event_id': googleEventId,
       // רק אם קיים - כדי ששמירה של משימה ישנה לא תמחק ערך קיים
       if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
+      'schedule_anchor': scheduleAnchor?.toIso8601String(),
     };
   }
 
@@ -82,6 +87,9 @@ class AppTask {
       googleEventId: map['google_event_id'] as String?,
       createdAt: map['created_at'] != null
           ? DateTime.tryParse(map['created_at'] as String)
+          : null,
+      scheduleAnchor: map['schedule_anchor'] != null
+          ? DateTime.tryParse(map['schedule_anchor'] as String)
           : null,
     );
   }
@@ -120,6 +128,7 @@ class AppTask {
     String? reminderTime,
     String? googleEventId,
     DateTime? createdAt,
+    DateTime? scheduleAnchor,
   }) {
     return AppTask(
       id: id ?? this.id,
@@ -137,6 +146,7 @@ class AppTask {
       reminderTime: reminderTime ?? this.reminderTime,
       googleEventId: googleEventId ?? this.googleEventId,
       createdAt: createdAt ?? this.createdAt,
+      scheduleAnchor: scheduleAnchor ?? this.scheduleAnchor,
     );
   }
 }

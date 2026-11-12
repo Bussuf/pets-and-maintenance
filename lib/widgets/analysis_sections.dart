@@ -7,18 +7,9 @@ import '../models/task_stats.dart';
 import 'analysis_widgets.dart';
 import '../utils/duration_text.dart';
 import '../providers/date_format_provider.dart';
+import 'month_calendar.dart';
 
 /// הסקשנים המתקפלים של דף ניתוח מעקב משימה (#25), כל אחד בווידג'ט משלו
-
-/// שם יום בשבוע לפי מספר (DateTime.monday..sunday), בשפה הנוכחית
-String _weekdayName(BuildContext context, int weekday, {bool short = false}) {
-  final localeTag = Localizations.localeOf(context).toLanguageTag();
-  final date = DateTime(2026, 1, 4 + (weekday % 7)); // 4/1/2026 הוא יום ראשון
-  if (!short) return DateFormat.EEEE(localeTag).format(date);
-  // בעברית האות הבודדת ברורה ('א׳'), באנגלית צריך 3 אותיות ('Sun') כי S/T חוזרות
-  final narrow = Localizations.localeOf(context).languageCode == 'he';
-  return narrow ? DateFormat('EEEEE', localeTag).format(date) : DateFormat.E(localeTag).format(date);
-}
 
 /// הודעה כשאין עדיין ביצועים
 class _NoData extends StatelessWidget {
@@ -54,35 +45,89 @@ class _SubTitle extends StatelessWidget {
 
 // ---------------- מתי אתה עושה את זה ----------------
 
-class WhenSection extends StatelessWidget {
-  final TaskStats stats;
+/// #59: כל המובילים, לפי הסדר הנתון (תיקו = כמה). ריק אם אין ביצועים בכלל
+List<K> leadersOf<K>(List<K> keys, Map<K, int> counts) {
+  final max = keys.fold<int>(0, (a, k) => (counts[k] ?? 0) > a ? counts[k]! : a);
+  if (max == 0) return const [];
+  return [for (final k in keys) if (counts[k] == max) k];
+}
 
-  const WhenSection({super.key, required this.stats});
+/// תצוגה אחת לפי סוג המשימה (#92) - אותו כלל של לוח הביצועים:
+/// ימים/שבועות = ימים בשבוע; חודשים/שנים = חלק בחודש.
+/// #59: תיקו - כל המובילים מודגשים, בלי "מוביל" שרירותי; לחיצה על עמודה/אריח - התאריכים שבוצעו בו
+class WhenSection extends StatefulWidget {
+  final TaskStats stats;
+  final String? unit; // יחידת התדירות של המשימה
+
+  const WhenSection({super.key, required this.stats, required this.unit});
+
+  @override
+  State<WhenSection> createState() => _WhenSectionState();
+}
+
+class _WhenSectionState extends State<WhenSection> {
+  int? _selected; // יום בשבוע (DateTime.monday..sunday) או חלק בחודש (0..2), null = כלום
+
+  static int _partOf(DateTime d) => d.day <= 10 ? 0 : (d.day <= 20 ? 1 : 2);
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final stats = widget.stats;
+    final monthly = DurationText.usesMonths(widget.unit);
 
-    // היום והחלק בחודש הכי נפוצים (בתיקו - הראשון)
-    int? topDay;
-    stats.weekdayCounts.forEach((day, count) {
-      if (count > 0 && (topDay == null || count > stats.weekdayCounts[topDay]!)) topDay = day;
-    });
-    int topPart = 0;
-    for (int i = 1; i < 3; i++) {
-      if (stats.monthPartCounts[i] > stats.monthPartCounts[topPart]) topPart = i;
-    }
+    final first = MaterialLocalizations.of(context).firstDayOfWeekIndex; // 0 = ראשון
+    final dayOrder = [for (int i = 0; i < 7; i++) ((first + i) % 7 == 0 ? DateTime.sunday : (first + i) % 7)];
     final partNames = [l10n.monthPartStart, l10n.monthPartMiddle, l10n.monthPartEnd];
     final partShort = [l10n.monthPartStartShort, l10n.monthPartMiddleShort, l10n.monthPartEndShort];
 
-    final hasData = stats.completions > 0 && topDay != null;
-    final dayName = hasData ? _weekdayName(context, topDay!) : '';
+    final topDays = leadersOf(dayOrder, stats.weekdayCounts);
+    final topParts = leadersOf(const [0, 1, 2], {for (int i = 0; i < 3; i++) i: stats.monthPartCounts[i]});
+
+    final hasData = stats.completions > 0 && topDays.isNotEmpty;
+    final String sentence;
+    final String? chip;
+    if (!hasData) {
+      sentence = '';
+      chip = null;
+    } else if (monthly) {
+      final names = [for (final p in topParts) partNames[p]];
+      sentence = switch (names.length) {
+        1 => l10n.whenSentencePart(names[0]),
+        2 => l10n.whenSentencePartOr(names[0], names[1]),
+        _ => l10n.whenNoFixedPart,
+      };
+      chip = names.length > 2 ? l10n.whenNoFixedPart : names.join(' / ');
+    } else {
+      final names = [for (final d in topDays) weekdayName(context, d)];
+      sentence = switch (names.length) {
+        1 => l10n.whenSentenceDay(names[0]),
+        2 => l10n.whenSentenceDayOr(names[0], names[1]),
+        _ => l10n.whenNoFixedDay,
+      };
+      chip = names.length > 2 ? l10n.whenNoFixedDay : names.join(' / ');
+    }
+
+    // לחיצה: בחירה, לחיצה חוזרת - סגירה. בלי ביצועים - לא עושה כלום
+    void onTap(int key, int count) {
+      if (count == 0) return;
+      setState(() => _selected = _selected == key ? null : key);
+    }
+
+    // הביצועים של העמודה/האריח המסומנים - מהחדש לישן
+    final selectedLogs = _selected == null
+        ? const <LogStat>[]
+        : stats.logs.reversed
+            .where((s) => monthly
+                ? _partOf(s.log.completedAt) == _selected
+                : s.log.completedAt.weekday == _selected)
+            .toList();
 
     return AnalysisSection(
       id: 'when',
       title: Text(l10n.whenTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
-      chip: hasData ? '$dayName · ${partNames[topPart]}' : null,
+      chip: chip,
       child: !hasData
           ? const _NoData()
           : Column(
@@ -97,18 +142,85 @@ class WhenSection extends StatelessWidget {
                 Icon(Icons.lightbulb_outline, size: 18, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    l10n.whenSentence(dayName, partNames[topPart]),
-                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-                  ),
+                  child: Text(sentence, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
                 ),
               ],
             ),
           ),
-          _SubTitle(l10n.whenWeekdays),
-          _WeekdayBars(stats: stats, topDay: topDay!),
-          _SubTitle(l10n.whenMonthPart),
-          _MonthPartBar(counts: stats.monthPartCounts, top: topPart, labels: partShort),
+          if (monthly) ...[
+            _SubTitle(l10n.whenMonthPart),
+            _MonthPartBar(
+              counts: stats.monthPartCounts,
+              tops: topParts.toSet(),
+              labels: partShort,
+              selected: _selected,
+              onTap: (i) => onTap(i, stats.monthPartCounts[i]),
+            ),
+          ] else ...[
+            _SubTitle(l10n.whenWeekdays),
+            _WeekdayBars(
+              stats: stats,
+              order: dayOrder,
+              topDays: topDays.toSet(),
+              selected: _selected,
+              onTap: (d) => onTap(d, stats.weekdayCounts[d] ?? 0),
+            ),
+          ],
+          if (_selected != null && selectedLogs.isNotEmpty)
+            _WhenDatesPanel(
+              title: monthly ? partNames[_selected!] : weekdayName(context, _selected!),
+              logs: selectedLogs,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// #59: הפאנל מתחת לגרף - התאריכים שבוצעו ביום/בחלק המסומן, מהחדש לישן (עד 12, ואז "ועוד N")
+class _WhenDatesPanel extends StatelessWidget {
+  final String title;
+  final List<LogStat> logs;
+
+  const _WhenDatesPanel({required this.title, required this.logs});
+
+  static const _max = 12;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final lateColor = isDark ? Colors.orange.shade300 : Colors.orange.shade700;
+    final shown = logs.take(_max).toList();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(border: Border(top: BorderSide(color: scheme.outlineVariant, width: 0.5))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.whenDatesTitle(title, logs.length), style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 12,
+            runSpacing: 6,
+            children: [
+              for (final s in shown)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(s.onTime ? Icons.check : Icons.schedule, size: 14, color: s.onTime ? scheme.primary : lateColor),
+                    const SizedBox(width: 3),
+                    Text(DateFormatNotifier.format(s.log.completedAt), style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+              if (logs.length > _max)
+                Text(l10n.whenMoreDates(logs.length - _max),
+                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+            ],
+          ),
         ],
       ),
     );
@@ -116,18 +228,26 @@ class WhenSection extends StatelessWidget {
 }
 
 /// עמודה לכל יום בשבוע, מסודרות לפי היום הראשון בשבוע של השפה (בעברית - ראשון).
-/// גובה העמודות יחסי לשטח שנשאר - כך שגם גופן גדול לא יחרוג מהגבולות
+/// גובה העמודות יחסי לשטח שנשאר - כך שגם גופן גדול לא יחרוג מהגבולות.
+/// #59: כל המובילים מודגשים; העמודה המסומנת - עם מסגרת
 class _WeekdayBars extends StatelessWidget {
   final TaskStats stats;
-  final int topDay;
+  final List<int> order;
+  final Set<int> topDays;
+  final int? selected;
+  final ValueChanged<int> onTap;
 
-  const _WeekdayBars({required this.stats, required this.topDay});
+  const _WeekdayBars({
+    required this.stats,
+    required this.order,
+    required this.topDays,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final first = MaterialLocalizations.of(context).firstDayOfWeekIndex; // 0 = ראשון
-    final order = [for (int i = 0; i < 7; i++) ((first + i) % 7 == 0 ? DateTime.sunday : (first + i) % 7)];
     final maxCount = stats.weekdayCounts.values.fold<int>(1, (a, b) => a > b ? a : b);
     final labelStyle = TextStyle(fontSize: 11, color: scheme.onSurfaceVariant);
 
@@ -138,30 +258,39 @@ class _WeekdayBars extends StatelessWidget {
         children: [
           for (final day in order)
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
-                child: Column(
-                  children: [
-                    // מספר מעל העמודה (ריק ב-0, כדי שכל העמודות יתחילו באותו גובה)
-                    Text(stats.weekdayCounts[day]! > 0 ? '${stats.weekdayCounts[day]}' : '', style: labelStyle),
-                    const SizedBox(height: 2),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: FractionallySizedBox(
-                          heightFactor: (stats.weekdayCounts[day]! / maxCount).clamp(0.06, 1.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: day == topDay ? scheme.primary : scheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(4),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onTap(day),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: Column(
+                    children: [
+                      // מספר מעל העמודה (ריק ב-0, כדי שכל העמודות יתחילו באותו גובה)
+                      Text(stats.weekdayCounts[day]! > 0 ? '${stats.weekdayCounts[day]}' : '', style: labelStyle),
+                      const SizedBox(height: 2),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: FractionallySizedBox(
+                            heightFactor: (stats.weekdayCounts[day]! / maxCount).clamp(0.06, 1.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: topDays.contains(day) ? scheme.primary : scheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(4),
+                                border: day == selected ? Border.all(color: scheme.onSurface, width: 2) : null,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(_weekdayName(context, day, short: true), maxLines: 1, style: labelStyle),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        weekdayName(context, day, short: true),
+                        maxLines: 1,
+                        style: day == selected ? labelStyle.copyWith(fontWeight: FontWeight.bold) : labelStyle,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -171,15 +300,34 @@ class _WeekdayBars extends StatelessWidget {
   }
 }
 
+/// רוחבי האריחים של 'חלק בחודש' (#91): כל אריח מקבל [minWidth], והשארית מתחלקת לפי היחס המדויק
+/// (כמות / סה"כ) - לא לפי האחוז המעוגל, שסכומו יכול לצאת 101% ולחרוג מהשורה.
+/// אם אין מקום אפילו למינימום - חלוקה שווה
+List<double> monthPartWidths({required List<int> counts, required double available, required double minWidth}) {
+  final n = counts.length;
+  if (minWidth * n > available) return List.filled(n, available / n);
+  final total = counts.fold<int>(0, (a, b) => a + b);
+  final extra = available - minWidth * n;
+  return [for (final c in counts) minWidth + (total == 0 ? extra / n : extra * c / total)];
+}
+
 /// שלושה אריחים: תחילת / אמצע / סוף חודש - האחוז ומתחתיו המילה, והנפוץ מודגש.
 /// הרוחב יחסי לאחוזים, אבל כל אריח מקבל קודם את הרוחב שהתוכן שלו צריך - כך שום מילה לא נחתכת.
 /// אם אין מקום אפילו למינימום של שלושתם (מסך צר מאוד / גופן ענק) - שלושה אריחים שווים
 class _MonthPartBar extends StatelessWidget {
   final List<int> counts;
-  final int top;
+  final Set<int> tops; // #59: כל המובילים (תיקו = כמה)
   final List<String> labels;
+  final int? selected;
+  final ValueChanged<int> onTap;
 
-  const _MonthPartBar({required this.counts, required this.top, required this.labels});
+  const _MonthPartBar({
+    required this.counts,
+    required this.tops,
+    required this.labels,
+    required this.selected,
+    required this.onTap,
+  });
 
   static const double _gap = 6;
   static const double _hPad = 8;
@@ -203,7 +351,9 @@ class _MonthPartBar extends StatelessWidget {
         textScaler: textScaler,
         maxLines: 1,
       )..layout();
-      return painter.width;
+      final width = painter.width;
+      painter.dispose();
+      return width;
     }
 
     return LayoutBuilder(
@@ -216,18 +366,7 @@ class _MonthPartBar extends StatelessWidget {
           final w = textWidth(label, labelStyle);
           if (w > widest) widest = w;
         }
-        final mins = List<double>.filled(3, widest + _hPad * 2 + 2);
-        final sumMin = mins.fold<double>(0, (a, b) => a + b);
-
-        final List<double> widths;
-        if (sumMin > available) {
-          widths = List.filled(3, available / 3);
-        } else {
-          final extra = available - sumMin;
-          widths = [
-            for (int i = 0; i < 3; i++) mins[i] + (total == 0 ? extra / 3 : extra * percents[i] / 100),
-          ];
-        }
+        final widths = monthPartWidths(counts: counts, available: available, minWidth: widest + _hPad * 2 + 2 + 4); // +4: מסגרת הבחירה (#59)
 
         return Row(
           children: [
@@ -235,27 +374,33 @@ class _MonthPartBar extends StatelessWidget {
               if (i > 0) const SizedBox(width: _gap),
               SizedBox(
                 width: widths[i],
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: _hPad, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: i == top ? scheme.primary : scheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        '${percents[i]}%',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: percentStyle.copyWith(color: i == top ? scheme.onPrimary : scheme.onPrimaryContainer),
-                      ),
-                      Text(
-                        labels[i],
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: labelStyle.copyWith(color: i == top ? scheme.onPrimary : scheme.onPrimaryContainer),
-                      ),
-                    ],
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => onTap(i),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: _hPad, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: tops.contains(i) ? scheme.primary : scheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                      // המסגרת בצבע הרקע של הכרטיס כשלא מסומן - כדי שהגודל לא יקפוץ בבחירה
+                      border: Border.all(color: i == selected ? scheme.onSurface : Colors.transparent, width: 2),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          '${percents[i]}%',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: percentStyle.copyWith(color: tops.contains(i) ? scheme.onPrimary : scheme.onPrimaryContainer),
+                        ),
+                        Text(
+                          labels[i],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: labelStyle.copyWith(color: tops.contains(i) ? scheme.onPrimary : scheme.onPrimaryContainer),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -326,7 +471,13 @@ class PaceSection extends StatelessWidget {
               style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
             ),
           ),
-          _PaceChart(points: points, deviations: deviations, yearLabels: DurationText.usesMonths(unit)),
+          _PaceChart(
+            points: points,
+            deviations: deviations,
+            yearLabels: DurationText.usesMonths(unit),
+            unit: unit,
+            targetDays: stats.targetDays,
+          ),
           if (stats.fastestDays != null && stats.slowestDays != null) ...[
             const SizedBox(height: 10),
             Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4)),
@@ -358,12 +509,68 @@ class PaceSection extends StatelessWidget {
 
 /// גרף סטייה מהיעד: הקו המקווקו באמצע הוא היעד. עמודה למעלה (כתומה) = איחור, למטה (כחולה) = הקדמה.
 /// המספר ליד כל עמודה הוא ההפרש ('+3', '−1', '0'). תווית זמן רק כשהחודש (או השנה) מתחלפים
-class _PaceChart extends StatelessWidget {
+/// #59: לחיצה על עמודה - היא מודגשת, השאר מעומעמות, ובועה מעליה עם התאריכים, המרווח והסטייה.
+/// לחיצה חוזרת או בכל מקום אחר בגרף - סוגרת
+class _PaceChart extends StatefulWidget {
   final List<IntervalPoint> points;
   final List<double> deviations;
   final bool yearLabels; // משימות חודשים/שנים - תוויות שנה במקום חודש
+  final String? unit;
+  final double targetDays;
 
-  const _PaceChart({required this.points, required this.deviations, required this.yearLabels});
+  const _PaceChart({
+    required this.points,
+    required this.deviations,
+    required this.yearLabels,
+    required this.unit,
+    required this.targetDays,
+  });
+
+  @override
+  State<_PaceChart> createState() => _PaceChartState();
+}
+
+class _PaceChartState extends State<_PaceChart> {
+  int? _selected;
+
+  List<IntervalPoint> get points => widget.points;
+  List<double> get deviations => widget.deviations;
+  bool get yearLabels => widget.yearLabels;
+
+  /// הבועה: "10/10 ← 17/10" ומתחת "7 ימים · באיחור 3 ימים"
+  Widget _bubble(BuildContext context, int i) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final p = points[i];
+    final from = DateTime(p.completedAt.year, p.completedAt.month, p.completedAt.day - p.days);
+    final d = deviations[i];
+    final diff = (p.days - widget.targetDays).round().abs();
+    final status = d > 0
+        ? l10n.overdueBy(DurationText.days(l10n, diff, widget.unit))
+        : d < 0
+            ? l10n.paceEarlyBy(DurationText.days(l10n, diff, widget.unit))
+            : l10n.statOnTime;
+    final style = TextStyle(fontSize: 12, color: scheme.onInverseSurface, height: 1.35);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(color: scheme.inverseSurface, borderRadius: BorderRadius.circular(8)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            l10n.paceRange(DateFormatNotifier.format(from), DateFormatNotifier.format(p.completedAt)),
+            maxLines: 1,
+            style: style,
+          ),
+          Text(
+            '${DurationText.days(l10n, p.days, widget.unit)} · $status',
+            maxLines: 1,
+            style: style.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
 
   static String _signed(double d) {
     if (d == 0) return '0';
@@ -405,14 +612,36 @@ class _PaceChart extends StatelessWidget {
             builder: (context, constraints) {
               final half = constraints.maxHeight / 2;
               final barMax = half - valueRowHeight; // גובה מקסימלי לעמודה בכל חצי
-              return Stack(
+              // #59: מיקום הבועה - מעל מרכז העמודה המסומנת, בתוך גבולות הגרף
+              const bubbleWidth = 190.0;
+              final colWidth = constraints.maxWidth / points.length;
+              final rtl = Directionality.of(context) == TextDirection.rtl;
+              double? bubbleLeft;
+              if (_selected != null) {
+                final center = rtl
+                    ? constraints.maxWidth - (_selected! + 0.5) * colWidth
+                    : (_selected! + 0.5) * colWidth;
+                bubbleLeft = (center - bubbleWidth / 2).clamp(0.0, (constraints.maxWidth - bubbleWidth).clamp(0.0, double.infinity));
+              }
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _selected = null), // לחיצה מחוץ לעמודה - סוגרת
+                child: Stack(
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      for (final d in deviations)
+                      for (int i = 0; i < deviations.length; i++)
                         Expanded(
-                          child: Padding(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => setState(() => _selected = _selected == i ? null : i),
+                            child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 150),
+                            opacity: _selected == null || _selected == i ? 1 : 0.3,
+                            child: Builder(builder: (context) {
+                            final d = deviations[i];
+                            return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -467,6 +696,9 @@ class _PaceChart extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            );
+                            }),
+                            ),
                           ),
                         ),
                     ],
@@ -476,12 +708,22 @@ class _PaceChart extends StatelessWidget {
                     left: 0,
                     right: 0,
                     top: half,
-                    child: CustomPaint(
-                      size: const Size(double.infinity, 1),
-                      painter: _DashedLinePainter(color: scheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                    child: IgnorePointer(
+                      child: CustomPaint(
+                        size: const Size(double.infinity, 1),
+                        painter: _DashedLinePainter(color: scheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                      ),
                     ),
                   ),
+                  if (_selected != null && bubbleLeft != null)
+                    Positioned(
+                      left: bubbleLeft,
+                      width: bubbleWidth,
+                      top: 0,
+                      child: IgnorePointer(child: Center(child: _bubble(context, _selected!))),
+                    ),
                 ],
+                ),
               );
             },
           ),
@@ -552,6 +794,12 @@ class _CalendarSectionState extends State<CalendarSection> {
   late final bool _yearly = DurationText.usesMonths(widget.unit);
   late DateTime _month; // החודש המוצג (היום הראשון בו)
   late int _year; // השנה המוצגת
+  int? _selected; // #59: היום (בלוח החודשי) או החודש (בלוח השנתי) המסומן; מתאפס בדפדוף
+
+  void _toggle(int key, bool hasLogs) {
+    if (!hasLogs) return; // בלי ביצועים - לחיצה לא עושה כלום
+    setState(() => _selected = _selected == key ? null : key);
+  }
 
   @override
   void initState() {
@@ -640,10 +888,6 @@ class _CalendarSectionState extends State<CalendarSection> {
 
   // --- חודשי ---
   Widget _buildMonth(BuildContext context, String localeTag) {
-    final scheme = Theme.of(context).colorScheme;
-    final first = MaterialLocalizations.of(context).firstDayOfWeekIndex; // 0 = ראשון
-    final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
-    final leading = (_month.weekday % 7 - first + 7) % 7; // תאים ריקים לפני היום הראשון
     final today = DateTime.now();
 
     // ביצועים לפי יום בחודש
@@ -652,48 +896,43 @@ class _CalendarSectionState extends State<CalendarSection> {
       byDay.putIfAbsent(s.log.completedAt.day, () => []).add(s);
     }
 
-    final headerStyle = TextStyle(fontSize: 11, color: scheme.onSurfaceVariant);
-    final weekdayOrder = [for (int i = 0; i < 7; i++) ((first + i) % 7 == 0 ? DateTime.sunday : (first + i) % 7)];
-
     return Column(
       children: [
         _navRow(
           DateFormat.yMMMM(localeTag).format(_month),
           canBack: _month.isAfter(_minMonth),
           canForward: _month.isBefore(_maxMonth),
-          onBack: () => setState(() => _month = DateTime(_month.year, _month.month - 1)),
-          onForward: () => setState(() => _month = DateTime(_month.year, _month.month + 1)),
+          onBack: () => setState(() {
+            _month = DateTime(_month.year, _month.month - 1);
+            _selected = null;
+          }),
+          onForward: () => setState(() {
+            _month = DateTime(_month.year, _month.month + 1);
+            _selected = null;
+          }),
         ),
-        Row(
-          children: [
-            for (final d in weekdayOrder)
-              Expanded(
-                child: Text(_weekdayName(context, d, short: true), textAlign: TextAlign.center, style: headerStyle),
-              ),
-          ],
+        MonthGrid(
+          month: _month,
+          dayBuilder: (day) => _CalendarCell(
+            label: '$day',
+            logs: byDay[day] ?? const [],
+            isToday: today.year == _month.year && today.month == _month.month && today.day == day,
+            isNextDue: widget.nextDue != null &&
+                widget.nextDue!.year == _month.year &&
+                widget.nextDue!.month == _month.month &&
+                widget.nextDue!.day == day,
+            isSelected: _selected == day,
+            onTap: () => _toggle(day, byDay[day] != null),
+          ),
         ),
-        const SizedBox(height: 4),
-        GridView.count(
-          padding: EdgeInsets.zero, // בלי ריפוד אוטומטי של שטח המערכת (שורה ריקה בסוף)
-          crossAxisCount: 7,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 4,
-          crossAxisSpacing: 4,
-          children: [
-            for (int i = 0; i < leading; i++) const SizedBox.shrink(),
-            for (int day = 1; day <= daysInMonth; day++)
-              _CalendarCell(
-                label: '$day',
-                logs: byDay[day] ?? const [],
-                isToday: today.year == _month.year && today.month == _month.month && today.day == day,
-                isNextDue: widget.nextDue != null &&
-                    widget.nextDue!.year == _month.year &&
-                    widget.nextDue!.month == _month.month &&
-                    widget.nextDue!.day == day,
-              ),
-          ],
-        ),
+        if (_selected != null && byDay[_selected] != null)
+          _CalendarLogsPanel(
+            title: '${weekdayName(context, DateTime(_month.year, _month.month, _selected!).weekday)}, '
+                '${DateFormatNotifier.format(DateTime(_month.year, _month.month, _selected!))}',
+            logs: byDay[_selected]!,
+            all: widget.stats.logs,
+            unit: widget.unit,
+          ),
       ],
     );
   }
@@ -707,8 +946,14 @@ class _CalendarSectionState extends State<CalendarSection> {
           '$_year',
           canBack: _year > _minMonth.year,
           canForward: _year < _maxMonth.year,
-          onBack: () => setState(() => _year--),
-          onForward: () => setState(() => _year++),
+          onBack: () => setState(() {
+            _year--;
+            _selected = null;
+          }),
+          onForward: () => setState(() {
+            _year++;
+            _selected = null;
+          }),
         ),
         GridView.count(
           padding: EdgeInsets.zero, // בלי ריפוד אוטומטי של שטח המערכת (שורה ריקה בסוף)
@@ -726,10 +971,97 @@ class _CalendarSectionState extends State<CalendarSection> {
                 showCount: true,
                 isToday: today.year == _year && today.month == m,
                 isNextDue: widget.nextDue != null && widget.nextDue!.year == _year && widget.nextDue!.month == m,
+                isSelected: _selected == m,
+                onTap: () => _toggle(m, _logsBetween(DateTime(_year, m), DateTime(_year, m + 1)).isNotEmpty),
               ),
           ],
         ),
+        if (_selected != null)
+          Builder(builder: (context) {
+            final logs = _logsBetween(DateTime(_year, _selected!), DateTime(_year, _selected! + 1));
+            if (logs.isEmpty) return const SizedBox.shrink();
+            return _CalendarLogsPanel(
+              title: AppLocalizations.of(context)!.whenDatesTitle(
+                DateFormat.yMMMM(localeTag).format(DateTime(_year, _selected!)),
+                logs.length,
+              ),
+              logs: logs,
+              all: widget.stats.logs,
+              unit: widget.unit,
+            );
+          }),
       ],
+    );
+  }
+}
+
+/// #59: הפאנל מתחת ללוח - כל ביצוע ביום/בחודש המסומן: תאריך, בזמן/באיחור, היעד שסגר, מרווח מהקודם
+class _CalendarLogsPanel extends StatelessWidget {
+  final String title;
+  final List<LogStat> logs;
+  final List<LogStat> all; // כל הביצועים - לחישוב המרווח מהקודם
+  final String? unit;
+
+  const _CalendarLogsPanel({required this.title, required this.logs, required this.all, required this.unit});
+
+  static int _dayNumber(DateTime d) => DateTime.utc(d.year, d.month, d.day).millisecondsSinceEpoch ~/ 86400000;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final lateColor = isDark ? Colors.orange.shade300 : Colors.orange.shade700;
+    final muted = TextStyle(fontSize: 12, color: scheme.onSurfaceVariant);
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(border: Border(top: BorderSide(color: scheme.outlineVariant, width: 0.5))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          for (final s in logs) ...[
+            const SizedBox(height: 6),
+            Builder(builder: (context) {
+              final index = all.indexOf(s);
+              final prev = index > 0 ? all[index - 1] : null;
+              final gap = prev == null ? null : _dayNumber(s.log.completedAt) - _dayNumber(prev.log.completedAt);
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(s.onTime ? Icons.check : Icons.schedule, size: 16, color: s.onTime ? scheme.primary : lateColor),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${DateFormatNotifier.format(s.log.completedAt)} · '
+                          '${s.onTime ? l10n.statOnTime : l10n.overdueBy(DurationText.days(l10n, s.lateDays, unit))}',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        if (s.due != null || gap != null)
+                          Text(
+                            [
+                              if (s.due != null) l10n.calDueWas(DateFormatNotifier.format(s.due!)),
+                              if (gap != null) l10n.calGapFromPrev(DurationText.days(l10n, gap, unit)),
+                            ].join(' · '),
+                            style: muted,
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -742,6 +1074,8 @@ class _CalendarCell extends StatelessWidget {
   final bool isToday;
   final bool isNextDue;
   final bool showCount;
+  final bool isSelected; // #59
+  final VoidCallback? onTap;
 
   const _CalendarCell({
     required this.label,
@@ -749,6 +1083,8 @@ class _CalendarCell extends StatelessWidget {
     required this.isToday,
     required this.isNextDue,
     this.showCount = false,
+    this.isSelected = false,
+    this.onTap,
   });
 
   @override
@@ -768,7 +1104,10 @@ class _CalendarCell extends StatelessWidget {
       decoration: BoxDecoration(
         color: fill,
         borderRadius: BorderRadius.circular(6),
-        border: isToday ? Border.all(color: scheme.primary, width: 2) : null,
+        // #59: המסומן - מסגרת כהה (גוברת על מסגרת "היום")
+        border: isSelected
+            ? Border.all(color: scheme.onSurface, width: 2)
+            : (isToday ? Border.all(color: scheme.primary, width: 2) : null),
       ),
       child: Stack(
         children: [
@@ -796,6 +1135,7 @@ class _CalendarCell extends StatelessWidget {
         child: cell,
       );
     }
+    if (onTap != null) cell = GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: cell);
     return cell;
   }
 }
@@ -978,7 +1318,7 @@ class _HistoryRow extends ConsumerWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '${DateFormatNotifier.format(date)} · ${_weekdayName(context, date.weekday)}',
+              '${DateFormatNotifier.format(date)} · ${weekdayName(context, date.weekday)}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

@@ -5,6 +5,7 @@ import '../providers/database_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/items_provider.dart';
+import '../widgets/agenda.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../models/task_log.dart';
 import '../providers/date_format_provider.dart';
@@ -131,6 +132,17 @@ Future<bool> cleanupTasksBeforeDelete(WidgetRef ref, {String? categoryId, String
     [categoryId],
   )
       : await rawDb.query('tasks', columns: ['id', 'google_event_id'], where: 'item_id = ?', whereArgs: [itemId]);
+
+  // זיכרון הקיפול של הצ'יפים שעומדים להיעלם (#88)
+  await clearAgendaCollapse(
+    categoryId != null
+        ? [
+            categoryId,
+            for (final item in await rawDb.query('items', columns: ['id'], where: 'category_id = ?', whereArgs: [categoryId]))
+              item['id'] as String,
+          ]
+        : [itemId!],
+  );
 
   var calendarOk = true;
   for (final task in tasks) {

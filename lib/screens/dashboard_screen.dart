@@ -2,21 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/category.dart';
+import '../models/item.dart';
+import '../models/task_log.dart';
 import '../providers/categories_provider.dart';
 import '../providers/dashboard_tasks_provider.dart';
+import '../providers/items_provider.dart';
 import '../theme/app_icons.dart';
 import '../widgets/animated_fab_menu.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/global_search_bar.dart';
 import 'create_entity_screen.dart';
-import 'category_screen.dart';
 import '../widgets/task_card.dart';
 import '../widgets/edit_category_sheet.dart';
+import '../widgets/edit_item_sheet.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/agenda.dart';
+import '../widgets/month_calendar.dart';
 import '../models/task_status.dart';
 import '../onboarding/onboarding.dart';
 import '../onboarding/onboarding_card.dart';
+import '../utils/duration_text.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -29,9 +34,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   DateTime? _lastBackPressTime;
   String? _selectedCategoryId;
+  String? _selectedItemId; // צ'יפ פריט, כשמסומנת קבוצה (#88)
+  bool _weekOpen = false; // מיקוד יום (#83) - תמיד מתחילים ביומן
+  DateTime _focusDay = DateTime.now(); // היום הנבחר ברצועה; מתאפס להיום בכל פתיחה
   final Set<String> _expandedTaskIds = {};
+  Set<TaskView>? _views; // #77: דף התצוגות - null = לא בדף התצוגות; ריק = רשימה ריקה (הכל ב"או")
+  bool _viewsExclusive = false; // #77: בחירה בלעדית (צ'יפ אחד) או מצטברת (ברירת מחדל)
+  final Map<TaskView, GlobalKey> _viewChipKeys = {for (final v in TaskView.values) v: GlobalKey()};
 
-  final Map<String?, GlobalKey> _chipKeys = {};
+  final Map<String?, GlobalKey> _itemChipKeys = {};
 
   @override
   void initState() {
@@ -51,11 +62,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (mounted) setState(() {});
   }
 
-  /// לפני הדרכה: חוזרים ל"הכל" וסוגרים כרטיסים פתוחים
+  /// לפני הדרכה: חוזרים ליומן ול"הכל", סוגרים כרטיסים פתוחים ופותחים את כל הסעיפים (הכותרת והכרטיס צריכים להיראות)
   void _resetForOnboarding() {
     if (!mounted) return;
-    setState(() => _expandedTaskIds.clear());
+    setState(() {
+      _expandedTaskIds.clear();
+      _weekOpen = false;
+    });
     _selectCategory(null);
+    ref.read(agendaCollapseProvider(agendaAllScope).notifier).expandAll();
   }
 
   @override
@@ -65,9 +80,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     super.dispose();
   }
 
-  void _ensureChipVisible(String? categoryId) {
+  void _ensureChipVisible(String? itemId) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final key = _chipKeys[categoryId];
+      final key = _itemChipKeys[itemId];
       if (key?.currentContext != null) {
         Scrollable.ensureVisible(
           key!.currentContext!,
@@ -81,46 +96,406 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   void _selectCategory(String? categoryId) {
-    setState(() => _selectedCategoryId = categoryId);
-    _ensureChipVisible(categoryId);
+    setState(() {
+      _selectedCategoryId = categoryId;
+      _selectedItemId = null;
+      _views = null; // כל מעבר לקבוצה / "הכל" יוצא מדף התצוגות
+    });
   }
 
-  void _showCategoryChipMenu(Category cat) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
+  /// #77: בחירה בסיידבר - דף התצוגות עם הצ'יפ הזה בלבד
+  void _openView(TaskView view) {
+    setState(() {
+      _selectedCategoryId = null;
+      _selectedItemId = null;
+      _views = {view};
+    });
+    // הצ'יפ של התצוגה שנבחרה בסיידבר תמיד גלוי בשורה
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _viewChipKeys[view]?.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(ctx, alignment: 0.5, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+      }
+    });
+  }
+
+  /// #77: צ'יפ בדף התצוגות - במצב מצטבר מוסיף או מוריד; במצב בלעדי מציג רק אותו
+  void _toggleView(TaskView view) {
+    setState(() {
+      if (_viewsExclusive) {
+        _views = {view};
+        return;
+      }
+      final views = {...?_views};
+      if (!views.remove(view)) views.add(view);
+      _views = views;
+    });
+  }
+
+  /// #77: הכפתור הקבוע בשורת הצ'יפים - בלעדי / מצטבר. מעבר לבלעדי משאיר רק את הצ'יפ הראשון המסומן
+  void _toggleViewsMode() {
+    setState(() {
+      _viewsExclusive = !_viewsExclusive;
+      if (_viewsExclusive && (_views?.length ?? 0) > 1) {
+        _views = {TaskView.values.firstWhere(_views!.contains)};
+      }
+    });
+  }
+
+  void _selectItem(String? itemId) {
+    setState(() => _selectedItemId = itemId);
+    _ensureChipVisible(itemId);
+  }
+
+  /// לחיצה על צ'יפ פריט: בחירה, ואם הוא כבר מסומן - קיפול/פתיחה של הסעיפים המוצגים (#87)
+  void _onItemChipTap(String? itemId, List<AgendaKind> shown) {
+    if (itemId != _selectedItemId) {
+      _selectItem(itemId);
+      return;
+    }
+    ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown);
+  }
+
+  /// המשימות של הצ'יפ המסומן: הכל, קבוצה, או פריט בתוכה
+  List<Map<String, dynamic>> _inScope(List<Map<String, dynamic>> tasks) {
+    if (_views != null) return tasks.where((t) => matchesViews(t, _views!)).toList();
+    if (_selectedCategoryId == null) return tasks;
+    return tasks
+        .where((t) =>
+            t['category_id'] == _selectedCategoryId &&
+            (_selectedItemId == null || t['item_id'] == _selectedItemId))
+        .toList();
+  }
+
+  /// הכותרת המוגדלת (#90): אייקון, שם מלא, תיאור, סיכום ונקודות מיקום בין הקבוצות.
+  /// החלקה עליה עוברת בין הקבוצות; לחיצה על אייקון הקבוצה (עם ^ מתחתיו, #94) מקפלת/פותחת את כל
+  /// הסעיפים המוצגים; לחיצה ארוכה בקבוצה - עריכה
+  /// #97: השורה השנייה בכותרת - תמיד קיימת, כדי שגובה הכותרת יהיה אחיד בכל הדפים.
+  /// "הכל" = עומס (היום / 7 הימים הקרובים כולל היום); קבוצה = התיאור, ובלעדיו - הבא בתור
+  String _headerSecondLine(List<Map<String, dynamic>> scoped, Category? category, DateTime today) {
+    final l10n = AppLocalizations.of(context)!;
+    DateTime? dueOf(Map<String, dynamic> t) {
+      if (isTaskFinished(t)) return null;
+      final d = DateTime.tryParse(t['next_due_date']?.toString() ?? '');
+      return d == null ? null : DateTime(d.year, d.month, d.day);
+    }
+
+    if (category == null) {
+      final weekEnd = DateTime(today.year, today.month, today.day + 7);
+      var todayCount = 0, weekCount = 0;
+      for (final t in scoped) {
+        final d = dueOf(t);
+        if (d == null || d.isBefore(today) || !d.isBefore(weekEnd)) continue;
+        weekCount++;
+        if (d == today) todayCount++;
+      }
+      return l10n.headerLoad(todayCount, weekCount);
+    }
+
+    final description = category.description?.trim() ?? '';
+    if (description.isNotEmpty) return description;
+
+    Map<String, dynamic>? next;
+    DateTime? nextDue;
+    for (final t in scoped) {
+      final d = dueOf(t);
+      if (d != null && (nextDue == null || d.isBefore(nextDue))) {
+        next = t;
+        nextDue = d;
+      }
+    }
+    if (next == null || nextDue == null) return l10n.headerNothingPlanned;
+    final days = (nextDue.difference(today).inHours / 24).round();
+    final unit = next['interval_unit'] as String?;
+    final when = days < 0
+        ? l10n.overdueBy(DurationText.days(l10n, -days, unit))
+        : (days == 0 ? l10n.today : l10n.postponeInDays(days));
+    return l10n.headerNextUp(next['name'] ?? '', when);
+  }
+
+  Widget _buildHeader({
+    required List<Category> categories,
+    required Category? category,
+    required String? itemName,
+    required String secondLine,
+    required int activeCount,
+    required int overdueCount,
+    required Color accent,
+    required Color background,
+    required List<AgendaKind> shown,
+    required bool allCollapsed,
+  }) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = theme.brightness == Brightness.dark;
+    final views = _views; // #77: דף התצוגות - בלי החלקות, בלי נקודות, בלי עריכה בלחיצה ארוכה
+    final title = views != null
+        ? (views.isEmpty
+            ? l10n.viewsTitle
+            : TaskView.values.where(views.contains).map((v) => taskViewLabel(l10n, v)).join(' · '))
+        : category == null
+            ? l10n.allGroupsAndTasks
+            : (itemName == null ? category.name : '${category.name} › $itemName');
+    final positions = <String?>[null, ...categories.map((c) => c.id)];
+
+    return GestureDetector(
+      key: Onboarding.key(OnboardingTarget.groupChips),
+      behavior: HitTestBehavior.opaque,
+      onHorizontalDragEnd: views != null ? null : (details) => _onHeaderSwipe(details, positions),
+      onLongPress: category == null ? null : () => EditCategorySheet.show(context, category),
+      child: Container(
+        width: double.infinity,
+        color: background,
+        padding: const EdgeInsets.fromLTRB(16, 4, 8, 10),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.arrow_forward),
-              title: Text(
-                AppLocalizations.of(context)!.goToGroupNamed(cat.name),
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CategoryScreen(category: cat),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // #94: אייקון הקבוצה הוא כפתור קיפול/פתיחה של הכל; ה-^ מתחתיו רק חיווי למצב
+                Tooltip(
+                  message: allCollapsed ? l10n.sectionsExpandAll : l10n.sectionsCollapseAll,
+                  child: InkWell(
+                    customBorder: const StadiumBorder(),
+                    onTap: shown.isEmpty
+                        ? null
+                        : () => ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 23,
+                          backgroundColor: accent.withValues(alpha: 0.2),
+                          child: Icon(
+                            views != null
+                                ? Icons.filter_list
+                                : (category == null ? Icons.grid_view : AppIcons.getIcon(category.icon)),
+                            color: accent,
+                            size: 24,
+                          ),
+                        ),
+                        if (shown.isNotEmpty)
+                          // ^ יש מה לקפל, v הכל מקופל
+                          AnimatedRotation(
+                            turns: allCollapsed ? 0.5 : 0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Icon(Icons.expand_less, size: 18, color: scheme.onSurfaceVariant),
+                          ),
+                      ],
+                    ),
                   ),
-                );
-              },
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 21,
+                          height: 1.25,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : accent,
+                        ),
+                      ),
+                      // #97: תמיד קיימת - תיאור / עומס / הבא בתור
+                      Padding(
+                          padding: const EdgeInsets.only(top: 3),
+                          child: Text(
+                            secondLine,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+                          ),
+                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        overdueCount > 0
+                            ? l10n.summaryWithOverdue(activeCount, overdueCount)
+                            : l10n.summaryAllClear(activeCount),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: overdueCount > 0 ? FontWeight.w500 : FontWeight.normal,
+                          color: overdueCount > 0
+                              ? (isDark ? Colors.redAccent.shade100 : Colors.red.shade800)
+                              : scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: Text(AppLocalizations.of(context)!.editGroup),
-              onTap: () {
-                Navigator.pop(ctx);
-                EditCategorySheet.show(context, cat);
-              },
-            ),
+            if (categories.isNotEmpty && views == null) ...[
+              const SizedBox(height: 8),
+              // נקודות מיקום: כמה קבוצות יש, ואיפה אנחנו. אפשר גם ללחוץ עליהן
+              Wrap(
+                alignment: WrapAlignment.center,
+                children: [
+                  for (final id in positions)
+                    GestureDetector(
+                      onTap: () => _selectCategory(id),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: id == _selectedCategoryId ? 18 : 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: scheme.onSurface.withValues(alpha: id == _selectedCategoryId ? 0.9 : 0.3),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  /// כיוון החלקה: 1 = הבא, 1- = הקודם, 0 = לא החלקה. ב-RTL החלקה ימינה = הבא; ב-LTR הכיוון מתהפך
+  int _swipeDelta(DragEndDetails details) {
+    final velocity = details.primaryVelocity;
+    if (velocity == null || velocity.abs() < 200) return 0;
+    return (velocity > 0) == (Directionality.of(context) == TextDirection.rtl) ? 1 : -1;
+  }
+
+  /// החלקה על הכותרת (#90): הקבוצה הבאה, בקרוסלה ("הכל" ← הקבוצות ← "הכל")
+  void _onHeaderSwipe(DragEndDetails details, List<String?> positions) {
+    final delta = _swipeDelta(details);
+    final index = positions.indexOf(_selectedCategoryId);
+    if (delta == 0 || positions.length < 2 || index == -1) return;
+    _selectCategory(positions[wrapIndex(index + delta, positions.length)]);
+  }
+
+  /// החלקה על הרשימה (#90): רק בין הפריטים של הקבוצה, בקרוסלה.
+  /// ב"הכל" אין שורת צ'יפים - קבוצות מחליפים בכותרת, כדי שאי אפשר "להיתקע" בתוך קבוצה
+  void _onListSwipe(DragEndDetails details, List<Item>? items) {
+    final delta = _swipeDelta(details);
+    if (delta == 0 || _selectedCategoryId == null) return;
+    final ids = <String?>[null, ...?items?.map((i) => i.id)];
+    final index = ids.indexOf(_selectedItemId);
+    // #95: פריט יחיד - אין בין מה לעבור (בלי "הכל")
+    if ((items?.length ?? 0) < 2 || index == -1) return;
+    _selectItem(ids[wrapIndex(index + delta, ids.length)]);
+  }
+
+  /// הצ'יפ שזיכרון הקיפול שלו חל עכשיו (#88): הפריט, הקבוצה, או "הכל"
+  String get _collapseScope =>
+      _views != null ? agendaViewsScope : (_selectedItemId ?? _selectedCategoryId ?? agendaAllScope);
+
+  /// תוצאת חיפוש: מסמנים את הקבוצה והפריט, ופותחים את המשימה ואת הסעיף שלה ביומן
+  void _openSearchTarget({required String categoryId, String? itemId, String? taskId}) {
+    setState(() {
+      _weekOpen = false;
+      if (taskId != null) _expandedTaskIds.add(taskId);
+    });
+    _selectCategory(categoryId);
+    if (itemId != null) _selectItem(itemId);
+    if (taskId == null) return;
+    final tasks = ref.read(dashboardTasksProvider).valueOrNull ?? const <Map<String, dynamic>>[];
+    final task = tasks.where((t) => t['id'] == taskId).firstOrNull;
+    if (task == null) return;
+    ref.read(agendaCollapseProvider(itemId ?? categoryId).notifier).expand(buildAgendaGroups(context, [task]).first.kind);
+  }
+
+  /// שורת צ'יפי הפריטים של הקבוצה המסומנת
+  Widget _buildItemChips(List<Item> items, String categoryId, List<AgendaKind> shown) {
+    _itemChipKeys.putIfAbsent(null, () => GlobalKey());
+    final l10n = AppLocalizations.of(context)!;
+    // #95: פריט יחיד - בלי צ'יפ "הכל" (זהה לו). הצ'יפ היחיד תמיד מסומן, ולחיצה עליו רק מקפלת/פותחת
+    final single = items.length == 1;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          if (!single) ...[
+            FilterChip(
+              key: _itemChipKeys[null],
+              showCheckmark: false,
+              label: Text(l10n.allWithCount(items.length)),
+              selected: _selectedItemId == null,
+              onSelected: (_) => _onItemChipTap(null, shown),
+            ),
+            const SizedBox(width: 8),
+          ],
+          ...items.map((item) {
+            final isSelected = single || _selectedItemId == item.id;
+            _itemChipKeys.putIfAbsent(item.id, () => GlobalKey());
+
+            return Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8.0),
+              child: GestureDetector(
+                onLongPress: () => EditItemSheet.show(context, item, categoryId),
+                child: InputChip(
+                  key: _itemChipKeys[item.id],
+                  showCheckmark: false,
+                  label: Text(item.name),
+                  selected: isSelected,
+                  onSelected: (_) => single
+                      ? ref.read(agendaCollapseProvider(_collapseScope).notifier).toggleAll(shown)
+                      : _onItemChipTap(item.id, shown),
+                  deleteIcon: isSelected ? const Icon(Icons.more_vert, size: 16) : null,
+                  onDeleted: isSelected ? () => EditItemSheet.show(context, item, categoryId) : null,
+                  deleteButtonTooltipMessage: l10n.editItem,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  /// #77: שורת הצ'יפים של דף התצוגות. בתחילת השורה כפתור קבוע (לא נגלל): בלעדי / מצטבר
+  Widget _buildViewChips() {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.only(start: 8),
+          child: IconButton(
+            tooltip: _viewsExclusive ? l10n.viewsModeExclusive : l10n.viewsModeCumulative,
+            visualDensity: VisualDensity.compact,
+            isSelected: _viewsExclusive,
+            icon: const Icon(Icons.library_add_check_outlined),
+            selectedIcon: const Icon(Icons.looks_one_outlined),
+            onPressed: _toggleViewsMode,
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsetsDirectional.only(start: 4, end: 16, top: 4, bottom: 4),
+            child: Row(
+              children: [
+                for (final view in TaskView.values)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 8.0),
+                    child: FilterChip(
+                      key: _viewChipKeys[view],
+                      showCheckmark: false,
+                      label: Text(taskViewLabel(l10n, view)),
+                      selected: _views!.contains(view),
+                      onSelected: (_) => _toggleView(view),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -130,6 +505,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final categoriesAsync = ref.watch(categoriesProvider);
     final tasksAsync = ref.watch(dashboardTasksProvider);
+    final collapsedKinds = ref.watch(agendaCollapseProvider(_collapseScope));
+    final selectedCategory = (categoriesAsync.valueOrNull ?? const <Category>[])
+        .where((c) => c.id == _selectedCategoryId)
+        .firstOrNull;
+    final itemsAsync = selectedCategory != null ? ref.watch(itemsByCategoryProvider(selectedCategory.id)) : null;
+    final selectedItemName =
+        itemsAsync?.valueOrNull?.where((i) => i.id == _selectedItemId).firstOrNull?.name;
+    final calendarAccent = selectedCategory?.color != null
+        ? Color(selectedCategory!.color!)
+        : theme.colorScheme.primary;
+    // הפס העליון והכותרת שמתחתיו באותו גוון - נראים כמשטח אחד
+    final headerColor = calendarAccent.withValues(alpha: isDark ? 0.18 : 0.08);
+
+    // הסיכום בכותרת - על מה שמוצג עכשיו (הכל / קבוצה / פריט)
+    final nowTime = DateTime.now();
+    final today = DateTime(nowTime.year, nowTime.month, nowTime.day);
+    final allTasks = tasksAsync.valueOrNull ?? const <Map<String, dynamic>>[];
+    final scopedTasks = _inScope(allTasks);
+    // משימות שהסתיימו לא נספרות כפעילות (#51)
+    final activeCount = scopedTasks.where((t) => !isTaskFinished(t)).length;
+    final overdueCount = scopedTasks.where((t) {
+      final due = t['next_due_date'] != null ? DateTime.tryParse(t['next_due_date']) : null;
+      return due != null && due.isBefore(today);
+    }).length;
+    final secondLine = _headerSecondLine(scopedTasks, selectedCategory, today);
 
     return PopScope(
       canPop: false,
@@ -138,6 +538,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
         if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
           _scaffoldKey.currentState?.closeDrawer();
+          return;
+        }
+
+        // #77: מדף התצוגות - חזרה ל"הכל"
+        if (_views != null) {
+          _selectCategory(null);
+          return;
+        }
+        // רמה אחת למעלה בכל פעם: פריט ← קבוצה ← "הכל" (#89)
+        if (_selectedItemId != null) {
+          _selectItem(null);
+          return;
+        }
+        if (_selectedCategoryId != null) {
+          _selectCategory(null);
           return;
         }
 
@@ -173,6 +588,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: GlobalSearchBar(
+          backgroundColor: headerColor,
+          actions: [
+            // רצועת השבוע (#89) - כפתור גלוי במקום לחיצה על כרטיס הכותרת
+            IconButton(
+              tooltip: AppLocalizations.of(context)!.switchView,
+              isSelected: _weekOpen,
+              icon: const Icon(Icons.view_week_outlined),
+              selectedIcon: Icon(Icons.view_week, color: calendarAccent),
+              onPressed: allTasks.isEmpty
+                  ? null
+                  : () => setState(() {
+                        _weekOpen = !_weekOpen;
+                        _focusDay = today;
+                      }),
+            ),
+          ],
           showSettingsMenu: true,
           menuKey: Onboarding.key(OnboardingTarget.menu),
           drawerKey: Onboarding.key(OnboardingTarget.drawer),
@@ -182,8 +613,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             type: EntityType.item,
             categoryId: _selectedCategoryId,
           ),
+          onEditGroup: selectedCategory == null ? null : () => EditCategorySheet.show(context, selectedCategory),
+          onOpenTarget: _openSearchTarget,
         ),
-        drawer: const AppDrawer(),
+        drawer: AppDrawer(
+          currentCategoryId: _selectedCategoryId,
+          onSelectCategory: _selectCategory,
+          currentViews: _views,
+          onSelectView: _openView,
+        ),
         body: tasksAsync.when(
           data: (tasks) {
             final categories = categoriesAsync.value ?? [];
@@ -197,21 +635,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 if (mounted) _selectCategory(null);
               });
             }
-            final now = DateTime.now();
-            final todayStart = DateTime(now.year, now.month, now.day);
 
-            int overdueCount = 0;
-            for (final t in tasks) {
-              if (t['next_due_date'] != null) {
-                final due = DateTime.tryParse(t['next_due_date']);
-                if (due != null && due.isBefore(todayStart)) {
-                  overdueCount++;
-                }
-              }
+            // אותו דבר לפריט המסומן: נמחק או הועבר לקבוצה אחרת - חוזרים ל'הכל' של הקבוצה
+            if (_selectedItemId != null &&
+                itemsAsync != null &&
+                itemsAsync.hasValue &&
+                !itemsAsync.isLoading &&
+                !itemsAsync.value!.any((i) => i.id == _selectedItemId)) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) _selectItem(null);
+              });
             }
-
-            // משימות שהסתיימו לא נספרות כפעילות (#51)
-            final activeCount = tasks.where((t) => !isTaskFinished(t)).length;
+            final todayStart = today;
 
             final sortedTasks = List<Map<String, dynamic>>.from(tasks)
               ..sort((a, b) {
@@ -228,205 +663,94 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 return dateA.compareTo(dateB);
               });
 
-            final filteredTasks = _selectedCategoryId == null
-                ? sortedTasks
-                : sortedTasks
-                .where((t) => t['category_id'] == _selectedCategoryId)
-                .toList();
+            final filteredTasks = _inScope(sortedTasks);
 
-            final agendaGroups = buildAgendaGroups(context, filteredTasks);
-            final List<dynamic> flatList = [];
-            for (final group in agendaGroups) {
-              flatList.add(group);
-              flatList.addAll(group.tasks);
-            }
+            // במסד ריק נשארים ביומן - שם ההסבר והקישור למדריך (#26)
+            final showWeek = _weekOpen && tasks.isNotEmpty;
+
+            // רשימה אחת (#90): הרצועה רק מסננת את היומן ליום הנבחר - אותם סעיפים ואותו זיכרון קיפול
+            final weekFrom = weekPageStart(_focusDay, todayStart);
+            final weekLogs = showWeek
+                ? ref.watch(weekLogsProvider(weekFrom)).valueOrNull ?? const <TaskLog>[]
+                : const <TaskLog>[];
+            final weekMarks = showWeek
+                ? buildWeekMarks(from: weekFrom, tasks: filteredTasks, logs: weekLogs, now: DateTime.now())
+                : const <DateTime, List<CalendarMark>>{};
+            final agendaGroups = showWeek
+                ? buildDayGroups(context, _focusDay, weekMarks[_focusDay] ?? const [], todayStart)
+                : buildAgendaGroups(context, filteredTasks);
+            final flatList = flattenAgenda(agendaGroups, collapsedKinds);
+
+            // הסעיפים שמוצגים עכשיו - על אלה פועלת לחיצה חוזרת על הצ'יפ, ומהם נקבע החץ שלו
+            final shownKinds = agendaGroups.map((g) => g.kind).toList();
+            final allCollapsed = allSectionsCollapsed(collapsedKinds, shownKinds);
+
+            Widget buildTaskCard(Map<String, dynamic> taskItem) => TaskCard(
+              task: taskItem,
+              isExpanded: _expandedTaskIds.contains(taskItem['id']),
+              onToggleExpand: () {
+                setState(() {
+                  if (_expandedTaskIds.contains(taskItem['id'])) {
+                    _expandedTaskIds.remove(taskItem['id']);
+                  } else {
+                    _expandedTaskIds.add(taskItem['id']);
+                  }
+                });
+              },
+              showCategoryLabel: _selectedCategoryId == null,
+              todayStart: todayStart,
+            );
 
             return Column(
               children: [
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(
-                      alpha: isDark ? 0.2 : 0.08,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.25),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: theme.colorScheme.primary.withValues(
-                          alpha: 0.2,
-                        ),
-                        child: Icon(
-                          Icons.grid_view,
-                          color: theme.colorScheme.primary,
-                          size: 30,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)!.allGroupsAndTasks,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: isDark
-                                    ? Colors.white
-                                    : theme.colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              overdueCount > 0
-                                  ? AppLocalizations.of(context)!
-                                  .summaryWithOverdue(
-                                activeCount,
-                                overdueCount,
-                              )
-                                  : AppLocalizations.of(context)!
-                                  .summaryAllClear(activeCount),
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: overdueCount > 0
-                                    ? FontWeight.w500
-                                    : FontWeight.normal,
-                                color: overdueCount > 0
-                                    ? (isDark
-                                    ? Colors.redAccent.shade100
-                                    : Colors.red.shade800)
-                                    : theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                _buildHeader(
+                  categories: categories,
+                  category: selectedCategory,
+                  itemName: selectedItemName,
+                  secondLine: secondLine,
+                  activeCount: activeCount,
+                  overdueCount: overdueCount,
+                  accent: calendarAccent,
+                  background: headerColor,
+                  shown: shownKinds,
+                  allCollapsed: allCollapsed,
                 ),
-
-                categoriesAsync.when(
-                  data: (cats) {
-                    _chipKeys.putIfAbsent(null, () => GlobalKey());
-
-                    return SingleChildScrollView(
-                      key: Onboarding.key(OnboardingTarget.groupChips),
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 4.0,
-                      ),
-                      child: Row(
-                        children: [
-                          FilterChip(
-                            key: _chipKeys[null],
-                            showCheckmark: false,
-                            label: Text(
-                              AppLocalizations.of(context)!
-                                  .allWithCount(cats.length),
-                            ),
-                            selected: _selectedCategoryId == null,
-                            onSelected: (_) => _selectCategory(null),
-                          ),
-                          const SizedBox(width: 8),
-                          ...cats.map((cat) {
-                            final isSelected = _selectedCategoryId == cat.id;
-                            final catColor = cat.color != null
-                                ? Color(cat.color!)
-                                : theme.colorScheme.primary;
-                            final catIcon = AppIcons.getIcon(cat.icon);
-                            _chipKeys.putIfAbsent(cat.id, () => GlobalKey());
-
-                            return Padding(
-                              padding: const EdgeInsetsDirectional.only(end: 8.0),
-                              child: GestureDetector(
-                                onLongPress: () => _showCategoryChipMenu(cat),
-                                child: InputChip(
-                                  key: _chipKeys[cat.id],
-                                  avatar: Icon(
-                                    catIcon,
-                                    size: 18,
-                                    color: catColor,
-                                  ),
-                                  showCheckmark: false,
-                                  label: Text(cat.name),
-                                  selected: isSelected,
-                                  onSelected: (_) => _selectCategory(cat.id),
-                                  deleteIcon: isSelected
-                                      ? const Icon(Icons.more_vert, size: 16)
-                                      : null,
-                                  onDeleted: isSelected
-                                      ? () => _showCategoryChipMenu(cat)
-                                      : null,
-                                  deleteButtonTooltipMessage:
-                                  AppLocalizations.of(context)!
-                                      .groupOptions,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    );
-                  },
-                  loading: () => const SizedBox(
-                    height: 44,
-                    child: Center(child: LinearProgressIndicator()),
-                  ),
-                  error: (_, _) => const SizedBox.shrink(),
-                ),
+                // צ'יפים רק לפריטים בתוך קבוצה (#90); קבוצות מחליפים בהחלקה על הכותרת או מהתפריט הצדדי
+                if (selectedCategory != null)
+                  _buildItemChips(itemsAsync?.valueOrNull ?? const <Item>[], selectedCategory.id, shownKinds),
+                if (_views != null) _buildViewChips(),
                 const Divider(height: 1),
 
                 // הזמנה להדרכה עם נתוני דוגמה (#26) - רק כשאין עדיין נתונים של המשתמש
                 const OnboardingStartCard(),
 
+                if (showWeek)
+                  WeekStrip(
+                    selected: _focusDay,
+                    marks: weekMarks,
+                    accent: calendarAccent,
+                    onSelectDay: (day) => setState(() => _focusDay = day),
+                  ),
+
                 Expanded(
+                  // החלקה על הרשימה (#89) - גם כשהרצועה פתוחה; על הרצועה עצמה היא מזיזה יום
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onHorizontalDragEnd: (details) {
-                      if (categories.isEmpty) return;
-                      final allCatIds = [null, ...categories.map((c) => c.id)];
-                      final currentIndex = allCatIds.indexOf(
-                        _selectedCategoryId,
-                      );
-                      if (currentIndex == -1) return;
-
-                      if (details.primaryVelocity != null) {
-                        // ב-RTL החלקה ימינה = הצ'יפ הבא (כמו היום); ב-LTR הכיוון מתהפך
-                        final velocity =
-                            details.primaryVelocity! *
-                                (Directionality.of(context) == TextDirection.rtl
-                                    ? 1
-                                    : -1);
-                        if (velocity > 200 &&
-                            currentIndex < allCatIds.length - 1) {
-                          _selectCategory(allCatIds[currentIndex + 1]);
-                        } else if (velocity < -200 && currentIndex > 0) {
-                          _selectCategory(allCatIds[currentIndex - 1]);
-                        }
-                      }
-                    },
+                    // #77: בדף התצוגות אין החלקות בכלל
+                    onHorizontalDragEnd: _views != null
+                        ? null
+                        : (details) => _onListSwipe(details, itemsAsync?.valueOrNull),
                     child: flatList.isEmpty
                     // אין במסד כלום (#26) - הסבר + קישור למדריך. אחרת (למשל קבוצה מסוננת בלי משימות) - הטקסט הרגיל
                         ? (tasks.isEmpty && categories.isEmpty
                         ? const OnboardingEmptyState()
                         : Center(
                       child: Text(
-                        AppLocalizations.of(context)!.noTasksNow,
+                        showWeek
+                            ? AppLocalizations.of(context)!.calEmptyDay
+                            : _selectedCategoryId != null
+                            ? AppLocalizations.of(context)!.noTasksInGroup
+                            : AppLocalizations.of(context)!.noTasksNow,
                         style: const TextStyle(color: Colors.grey),
                       ),
                     ))
@@ -437,36 +761,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       itemCount: flatList.length,
                       itemBuilder: (context, index) {
                         final item = flatList[index];
+                        if (item is AgendaDoneEntry) return CompletedTaskRow(task: item.task);
                         if (item is AgendaGroup) {
                           return AgendaSectionHeader(
                             // הדרכה (#26): הכותרת של הקבוצה שבה משימת הדוגמה ("היום")
                             key: item.tasks.any((t) => t['id'] == Onboarding.taskId)
                                 ? Onboarding.keyFor(OnboardingTarget.todayHeader, Onboarding.taskId)
                                 : null,
+                            scope: _collapseScope,
                             group: item,
                           );
                         }
 
-                        final taskItem = item as Map<String, dynamic>;
-                        return TaskCard(
-                          task: taskItem,
-                          isExpanded: _expandedTaskIds.contains(
-                            taskItem['id'],
-                          ),
-                          onToggleExpand: () {
-                            setState(() {
-                              if (_expandedTaskIds.contains(
-                                taskItem['id'],
-                              )) {
-                                _expandedTaskIds.remove(taskItem['id']);
-                              } else {
-                                _expandedTaskIds.add(taskItem['id']);
-                              }
-                            });
-                          },
-                          showCategoryLabel: true,
-                          todayStart: todayStart,
-                        );
+                        return buildTaskCard(item as Map<String, dynamic>);
                       },
                     ),
                   ),
@@ -482,6 +789,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         floatingActionButton: AnimatedFabMenu(
           key: Onboarding.key(OnboardingTarget.fab),
           currentCategoryId: _selectedCategoryId,
+          currentItemId: _selectedItemId,
         ),
       ),
     );

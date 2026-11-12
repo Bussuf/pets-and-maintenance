@@ -356,6 +356,18 @@ abstract class AppLocalizations {
   /// **'All groups'**
   String get allGroups;
 
+  /// No description provided for @sectionsExpandAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand all'**
+  String get sectionsExpandAll;
+
+  /// No description provided for @sectionsCollapseAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse all'**
+  String get sectionsCollapseAll;
+
   /// No description provided for @noGroupsYet.
   ///
   /// In en, this message translates to:
@@ -623,8 +635,140 @@ abstract class AppLocalizations {
   /// No description provided for @summaryAllClear.
   ///
   /// In en, this message translates to:
-  /// **'{active, plural, =1{1 active task} other{{active} active tasks}} • all up to date 🎉'**
+  /// **'{active, plural, =1{1 active task} other{{active} active tasks}} • no overdue tasks'**
   String summaryAllClear(int active);
+
+  /// No description provided for @headerLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Today {today} · This week {week}'**
+  String headerLoad(int today, int week);
+
+  /// No description provided for @headerNextUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Next up: {name} · {when}'**
+  String headerNextUp(String name, String when);
+
+  /// No description provided for @headerNothingPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing planned'**
+  String get headerNothingPlanned;
+
+  /// No description provided for @viewsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Views'**
+  String get viewsTitle;
+
+  /// No description provided for @viewReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'With reminder'**
+  String get viewReminder;
+
+  /// No description provided for @viewCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'In Google Calendar'**
+  String get viewCalendar;
+
+  /// No description provided for @viewEndCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'With end condition'**
+  String get viewEndCondition;
+
+  /// No description provided for @viewDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get viewDaily;
+
+  /// No description provided for @viewWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get viewWeekly;
+
+  /// No description provided for @viewMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get viewMonthly;
+
+  /// No description provided for @viewYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get viewYearly;
+
+  /// No description provided for @drawerTasksSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get drawerTasksSection;
+
+  /// No description provided for @fixedSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed schedule'**
+  String get fixedSchedule;
+
+  /// No description provided for @fixedScheduleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The next due date follows the calendar, even if you did it early or late'**
+  String get fixedScheduleHint;
+
+  /// No description provided for @fixedRuleWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Every {weekday}} other{Every {n} weeks on {weekday}}}'**
+  String fixedRuleWeekly(int n, String weekday);
+
+  /// No description provided for @fixedRuleMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{On day {day} of every month} other{On day {day}, every {n} months}}'**
+  String fixedRuleMonthly(int n, int day);
+
+  /// No description provided for @fixedRuleLastDayNote.
+  ///
+  /// In en, this message translates to:
+  /// **'(or the last day of the month)'**
+  String get fixedRuleLastDayNote;
+
+  /// No description provided for @fixedRuleYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Every year on {date}} other{Every {n} years on {date}}}'**
+  String fixedRuleYearly(int n, String date);
+
+  /// No description provided for @fixedRuleDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Every day, starting {date}} other{Every {n} days, starting {date}}}'**
+  String fixedRuleDaily(int n, String date);
+
+  /// No description provided for @viewByFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'By frequency'**
+  String get viewByFrequency;
+
+  /// No description provided for @viewsModeExclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'One view at a time - tap to combine'**
+  String get viewsModeExclusive;
+
+  /// No description provided for @viewsModeCumulative.
+  ///
+  /// In en, this message translates to:
+  /// **'Views combine - tap for one at a time'**
+  String get viewsModeCumulative;
 
   /// No description provided for @groupOptions.
   ///
@@ -733,6 +877,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit'**
   String get edit;
+
+  /// No description provided for @cardAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis'**
+  String get cardAnalysis;
+
+  /// No description provided for @cardDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get cardDelete;
+
+  /// No description provided for @cardCompletions.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{Never done} =1{Done once} other{Done {n} times}}'**
+  String cardCompletions(int n);
+
+  /// No description provided for @cardReminderAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder at {time}'**
+  String cardReminderAt(String time);
+
+  /// No description provided for @cardPostpone.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpone'**
+  String get cardPostpone;
+
+  /// No description provided for @cardSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this time'**
+  String get cardSkip;
+
+  /// No description provided for @postponeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpone \"{name}\"'**
+  String postponeTitle(String name);
+
+  /// No description provided for @postponeInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Tomorrow} other{In {n} days}}'**
+  String postponeInDays(int n);
+
+  /// No description provided for @postponeWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'In a week'**
+  String get postponeWeek;
+
+  /// No description provided for @postponePickDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Another date'**
+  String get postponePickDate;
+
+  /// No description provided for @dueMovedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date moved to {date}'**
+  String dueMovedTo(String date);
+
+  /// No description provided for @skippedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped - next due {date}'**
+  String skippedTo(String date);
+
+  /// No description provided for @skippedFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped - the task is finished'**
+  String get skippedFinished;
+
+  /// No description provided for @dueRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date restored'**
+  String get dueRestored;
 
   /// No description provided for @newGroup.
   ///
@@ -1142,6 +1370,24 @@ abstract class AppLocalizations {
   /// **'Finished'**
   String get finishedTasks;
 
+  /// No description provided for @calDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get calDone;
+
+  /// No description provided for @calEmptyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing on this day'**
+  String get calEmptyDay;
+
+  /// No description provided for @switchView.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch view'**
+  String get switchView;
+
   /// No description provided for @taskFinishedLabel.
   ///
   /// In en, this message translates to:
@@ -1388,11 +1634,77 @@ abstract class AppLocalizations {
   /// **'Habits'**
   String get whenTitle;
 
-  /// No description provided for @whenSentence.
+  /// No description provided for @whenSentenceDay.
   ///
   /// In en, this message translates to:
-  /// **'Usually on {day}, mostly at the {part}'**
-  String whenSentence(String day, String part);
+  /// **'Usually on {day}'**
+  String whenSentenceDay(String day);
+
+  /// No description provided for @whenSentencePart.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly at the {part}'**
+  String whenSentencePart(String part);
+
+  /// No description provided for @whenSentenceDayOr.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually on {day1} or {day2}'**
+  String whenSentenceDayOr(String day1, String day2);
+
+  /// No description provided for @whenSentencePartOr.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly at the {part1} or the {part2}'**
+  String whenSentencePartOr(String part1, String part2);
+
+  /// No description provided for @whenNoFixedDay.
+  ///
+  /// In en, this message translates to:
+  /// **'No fixed day'**
+  String get whenNoFixedDay;
+
+  /// No description provided for @whenNoFixedPart.
+  ///
+  /// In en, this message translates to:
+  /// **'No fixed time of the month'**
+  String get whenNoFixedPart;
+
+  /// No description provided for @whenDatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} · {n, plural, =1{1 completion} other{{n} completions}}'**
+  String whenDatesTitle(String label, int n);
+
+  /// No description provided for @whenMoreDates.
+  ///
+  /// In en, this message translates to:
+  /// **'and {n} more'**
+  String whenMoreDates(int n);
+
+  /// No description provided for @paceRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} → {to}'**
+  String paceRange(String from, String to);
+
+  /// No description provided for @paceEarlyBy.
+  ///
+  /// In en, this message translates to:
+  /// **'{duration} early'**
+  String paceEarlyBy(String duration);
+
+  /// No description provided for @calDueWas.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String calDueWas(String date);
+
+  /// No description provided for @calGapFromPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'{duration} after the previous one'**
+  String calGapFromPrev(String duration);
 
   /// No description provided for @whenWeekdays.
   ///
@@ -1757,13 +2069,13 @@ abstract class AppLocalizations {
   /// No description provided for @obGroupsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Group and item buttons'**
+  /// **'Moving between groups'**
   String get obGroupsTitle;
 
   /// No description provided for @obGroupsBody.
   ///
   /// In en, this message translates to:
-  /// **'These buttons filter the tasks below to the selected group or item. On the main page you see all your groups - long-press a group to open, edit or delete it. On a group page you see all of its items.'**
+  /// **'Swipe the header to move between your groups - after the last one you\'re back at All. Inside a group its items appear as buttons, and swiping the list moves between them. Tapping the group icon collapses or expands all sections. Long-press the header or an item to edit it.'**
   String get obGroupsBody;
 
   /// No description provided for @obFabTitle.
@@ -1859,7 +2171,7 @@ abstract class AppLocalizations {
   /// No description provided for @obAnalysisBody.
   ///
   /// In en, this message translates to:
-  /// **'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. When you are done, go back and the tour will continue.'**
+  /// **'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. You can also tap the charts - a bar, a day or a month - for more details. When you are done, go back and the tour will continue.'**
   String get obAnalysisBody;
 
   /// No description provided for @obManualTitle.
@@ -1898,6 +2210,54 @@ abstract class AppLocalizations {
   /// **'Name, frequency, reminder, calendar and the next due date - and deleting the task.'**
   String get obEditBody;
 
+  /// No description provided for @obOpenCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The open card'**
+  String get obOpenCardTitle;
+
+  /// No description provided for @obOpenCardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions on the right, task details on the left.'**
+  String get obOpenCardBody;
+
+  /// No description provided for @obPostponeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpone'**
+  String get obPostponeTitle;
+
+  /// No description provided for @obPostponeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves the due date without marking a completion. A new window asks when to postpone to, and offers a day or a week.'**
+  String get obPostponeBody;
+
+  /// No description provided for @obSkipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this time'**
+  String get obSkipTitle;
+
+  /// No description provided for @obSkipBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Skips this time - the next due date is one interval away.'**
+  String get obSkipBody;
+
+  /// No description provided for @obDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get obDeleteTitle;
+
+  /// No description provided for @obDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletes the task, always with confirmation.'**
+  String get obDeleteBody;
+
   /// No description provided for @sampleItemCat.
   ///
   /// In en, this message translates to:
@@ -1913,7 +2273,7 @@ abstract class AppLocalizations {
   /// No description provided for @obDrawerBody.
   ///
   /// In en, this message translates to:
-  /// **'Quick switching between pages: the All groups page, which is the main page with no filters, and a page for every group you create.'**
+  /// **'Jump between your groups, or back to all groups with no filter.'**
   String get obDrawerBody;
 
   /// No description provided for @obBrowse.

@@ -147,6 +147,12 @@ class AppLocalizationsHe extends AppLocalizations {
   String get allGroups => 'כל הקבוצות';
 
   @override
+  String get sectionsExpandAll => 'פתח הכל';
+
+  @override
+  String get sectionsCollapseAll => 'קפל הכל';
+
+  @override
   String get noGroupsYet => 'אין קבוצות עדיין';
 
   @override
@@ -316,8 +322,115 @@ class AppLocalizationsHe extends AppLocalizations {
       other: '$active משימות פעילות',
       one: 'משימה פעילה אחת',
     );
-    return '$_temp0 • כל המשימות מעודכנות 🎉';
+    return '$_temp0 • אין משימות באיחור';
   }
+
+  @override
+  String headerLoad(int today, int week) {
+    return 'היום $today · השבוע $week';
+  }
+
+  @override
+  String headerNextUp(String name, String when) {
+    return 'הבא בתור: $name · $when';
+  }
+
+  @override
+  String get headerNothingPlanned => 'אין משימות מתוכננות';
+
+  @override
+  String get viewsTitle => 'תצוגות';
+
+  @override
+  String get viewReminder => 'עם תזכורת';
+
+  @override
+  String get viewCalendar => 'ביומן גוגל';
+
+  @override
+  String get viewEndCondition => 'עם תנאי סיום';
+
+  @override
+  String get viewDaily => 'יומיות';
+
+  @override
+  String get viewWeekly => 'שבועיות';
+
+  @override
+  String get viewMonthly => 'חודשיות';
+
+  @override
+  String get viewYearly => 'שנתיות';
+
+  @override
+  String get drawerTasksSection => 'משימות';
+
+  @override
+  String get fixedSchedule => 'לוח קבוע';
+
+  @override
+  String get fixedScheduleHint =>
+      'היעד הבא נקבע לפי התאריך, גם אם ביצעתם מוקדם או באיחור';
+
+  @override
+  String fixedRuleWeekly(int n, String weekday) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n שבועות ב$weekday',
+      two: 'כל שבועיים ב$weekday',
+      one: 'כל $weekday',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fixedRuleMonthly(int n, int day) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'ב-$day, כל $n חודשים',
+      two: 'ב-$day, כל חודשיים',
+      one: 'ב-$day לכל חודש',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fixedRuleLastDayNote => '(או היום האחרון בחודש)';
+
+  @override
+  String fixedRuleYearly(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n שנים ב-$date',
+      two: 'כל שנתיים ב-$date',
+      one: 'כל שנה ב-$date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fixedRuleDaily(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n ימים, החל מ-$date',
+      two: 'כל יומיים, החל מ-$date',
+      one: 'כל יום, החל מ-$date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get viewByFrequency => 'לפי תדירות';
+
+  @override
+  String get viewsModeExclusive => 'תצוגה אחת בכל פעם - לחצו לצירוף';
+
+  @override
+  String get viewsModeCumulative => 'התצוגות מצטרפות - לחצו לתצוגה אחת';
 
   @override
   String get groupOptions => 'אפשרויות קבוצה';
@@ -412,6 +525,73 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get edit => 'ערוך';
+
+  @override
+  String get cardAnalysis => 'ניתוח';
+
+  @override
+  String get cardDelete => 'מחק';
+
+  @override
+  String cardCompletions(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'בוצעה $n פעמים',
+      one: 'בוצעה פעם אחת',
+      zero: 'טרם בוצעה',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cardReminderAt(String time) {
+    return 'תזכורת ב-$time';
+  }
+
+  @override
+  String get cardPostpone => 'לדחות';
+
+  @override
+  String get cardSkip => 'לדלג הפעם';
+
+  @override
+  String postponeTitle(String name) {
+    return 'לדחות את \"$name\"';
+  }
+
+  @override
+  String postponeInDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'בעוד $n ימים',
+      one: 'מחר',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get postponeWeek => 'בעוד שבוע';
+
+  @override
+  String get postponePickDate => 'תאריך אחר';
+
+  @override
+  String dueMovedTo(String date) {
+    return 'היעד נדחה ל-$date';
+  }
+
+  @override
+  String skippedTo(String date) {
+    return 'דילגת - היעד הבא $date';
+  }
+
+  @override
+  String get skippedFinished => 'דילגת - המשימה הסתיימה';
+
+  @override
+  String get dueRestored => 'היעד הוחזר';
 
   @override
   String get newGroup => 'קבוצה חדשה';
@@ -634,6 +814,15 @@ class AppLocalizationsHe extends AppLocalizations {
   String get finishedTasks => 'הסתיימו';
 
   @override
+  String get calDone => 'בוצע';
+
+  @override
+  String get calEmptyDay => 'אין משימות ביום הזה';
+
+  @override
+  String get switchView => 'החלפת תצוגה';
+
+  @override
   String get taskFinishedLabel => 'הסתיימה';
 
   @override
@@ -831,8 +1020,65 @@ class AppLocalizationsHe extends AppLocalizations {
   String get whenTitle => 'זמני ביצוע';
 
   @override
-  String whenSentence(String day, String part) {
-    return 'בדרך כלל ב$day, ובעיקר ב$part';
+  String whenSentenceDay(String day) {
+    return 'בדרך כלל ב$day';
+  }
+
+  @override
+  String whenSentencePart(String part) {
+    return 'בעיקר ב$part';
+  }
+
+  @override
+  String whenSentenceDayOr(String day1, String day2) {
+    return 'בדרך כלל ב$day1 או ב$day2';
+  }
+
+  @override
+  String whenSentencePartOr(String part1, String part2) {
+    return 'בעיקר ב$part1 או ב$part2';
+  }
+
+  @override
+  String get whenNoFixedDay => 'בלי יום קבוע';
+
+  @override
+  String get whenNoFixedPart => 'בלי זמן קבוע בחודש';
+
+  @override
+  String whenDatesTitle(String label, int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n ביצועים',
+      one: 'ביצוע אחד',
+    );
+    return '$label · $_temp0';
+  }
+
+  @override
+  String whenMoreDates(int n) {
+    return 'ועוד $n';
+  }
+
+  @override
+  String paceRange(String from, String to) {
+    return '$from ← $to';
+  }
+
+  @override
+  String paceEarlyBy(String duration) {
+    return 'מוקדם ב-$duration';
+  }
+
+  @override
+  String calDueWas(String date) {
+    return 'יעד $date';
+  }
+
+  @override
+  String calGapFromPrev(String duration) {
+    return '$duration אחרי הקודם';
   }
 
   @override
@@ -1067,11 +1313,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get obGotIt => 'הבנתי';
 
   @override
-  String get obGroupsTitle => 'כפתורי קבוצות ופריטים';
+  String get obGroupsTitle => 'מעבר בין קבוצות';
 
   @override
   String get obGroupsBody =>
-      'הכפתורים מסננים את המשימות שמתחת לקבוצה או לפריט שנבחרו. בדף הראשי רואים לרוחב את כל הקבוצות - לחיצה ארוכה על קבוצה: מעבר לקבוצה, עריכה ומחיקה. בדף של קבוצה מוצגים לרוחב כל הפריטים שלה.';
+      'החלקה על הכותרת עוברת בין הקבוצות - אחרי האחרונה חוזרים ל\'הכל\'. בתוך קבוצה הפריטים שלה מופיעים ככפתורים, והחלקה על הרשימה עוברת ביניהם. לחיצה על אייקון הקבוצה מקפלת או פותחת את כל הסעיפים. לחיצה ארוכה על הכותרת או על פריט - עריכה.';
 
   @override
   String get obFabTitle => 'מכאן מוסיפים הכל';
@@ -1124,7 +1370,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get obAnalysisBody =>
-      'זהו דף מעקב ביצועי משימה וניתוח הביצועים שלכם. הוא מציג גרפים ומדדים ביחס למשימה אחת. כל חלק בו נפתח ומכיל מידע נוסף - לחצו על החלקים השונים. כשתסיימו, חזרו אחורה וההדרכה תמשיך.';
+      'זהו דף מעקב ביצועי משימה וניתוח הביצועים שלכם. הוא מציג גרפים ומדדים ביחס למשימה אחת. כל חלק בו נפתח ומכיל מידע נוסף - לחצו על החלקים השונים. אפשר גם ללחוץ על הגרפים - על עמודה, יום או חודש - לקבלת מידע נוסף. כשתסיימו, חזרו אחורה וההדרכה תמשיך.';
 
   @override
   String get obManualTitle => 'הוסף תאריך ביצוע ידנית';
@@ -1148,6 +1394,31 @@ class AppLocalizationsHe extends AppLocalizations {
       'שם, תדירות, תזכורת ויומן, התאריך לביצוע הבא - וגם מחיקת המשימה.';
 
   @override
+  String get obOpenCardTitle => 'הכרטיס הפתוח';
+
+  @override
+  String get obOpenCardBody => 'פעולות מימין, פרטי המשימה משמאל.';
+
+  @override
+  String get obPostponeTitle => 'לדחות';
+
+  @override
+  String get obPostponeBody =>
+      'מזיז את תאריך היעד בלי לסמן ביצוע. ייפתח חלון חדש שישאל אתכם למתי לדחות, ויציע לדחות ביום או בשבוע.';
+
+  @override
+  String get obSkipTitle => 'לדלג הפעם';
+
+  @override
+  String get obSkipBody => 'מדלג על הפעם הזו - היעד הבא בעוד מרווח אחד.';
+
+  @override
+  String get obDeleteTitle => 'מחיקה';
+
+  @override
+  String get obDeleteBody => 'מוחק את המשימה, תמיד עם אישור.';
+
+  @override
   String get sampleItemCat => 'חתול 🐱';
 
   @override
@@ -1155,7 +1426,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get obDrawerBody =>
-      'מעבר מהיר בין הדפים: דף כל הקבוצות, שהוא הדף המרכזי בלי מסננים, ודף לכל קבוצה שתפתחו.';
+      'מעבר מהיר בין הקבוצות, או חזרה לכל הקבוצות בלי מסננים.';
 
   @override
   String get obBrowse => 'הבנתי, אעיין';

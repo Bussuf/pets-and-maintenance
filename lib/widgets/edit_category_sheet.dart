@@ -240,11 +240,16 @@ class _EditCategorySheetState extends ConsumerState<EditCategorySheet> {
                   return;
                 }
 
-                final updated = widget.category.copyWith(
+                // #96: בונים במפורש ולא ב-copyWith - שם null = "בלי שינוי", ולכן תיאור שנמחק חזר
+                final desc = _descController.text.trim();
+                final updated = Category(
+                  id: widget.category.id,
                   name: newName,
-                  description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+                  description: desc.isEmpty ? null : desc,
+                  createdAt: widget.category.createdAt,
                   color: _selectedColor,
                   icon: _selectedIcon,
+                  sortOrder: widget.category.sortOrder,
                 );
 
                 await db.updateCategory(updated);

@@ -1,4 +1,21 @@
+import 'package:intl/intl.dart' show DateFormat;
 import '../l10n/app_localizations.dart';
+import '../providers/date_format_provider.dart';
+
+/// #71: ניסוח הכלל של לוח קבוע מתוך תאריך העוגן - "כל יום ראשון", "ב-1 לכל חודש", "כל שנה ב-1 בדצמבר"
+String fixedScheduleRule(AppLocalizations l10n, String localeTag, DateTime anchor, int amount, String unit) {
+  switch (unit) {
+    case 'weeks':
+      return l10n.fixedRuleWeekly(amount, DateFormat.EEEE(localeTag).format(anchor));
+    case 'months':
+      final rule = l10n.fixedRuleMonthly(amount, anchor.day);
+      return anchor.day > 28 ? '$rule ${l10n.fixedRuleLastDayNote}' : rule;
+    case 'years':
+      return l10n.fixedRuleYearly(amount, DateFormat.MMMMd(localeTag).format(anchor));
+    default:
+      return l10n.fixedRuleDaily(amount, DateFormatNotifier.format(anchor));
+  }
+}
 
 /// ניסוח אנושי של משכים (#25, #55) - לפי יחידת התדירות של המשימה:
 /// משימות ימים/שבועות - תמיד בימים ('22 ימים');

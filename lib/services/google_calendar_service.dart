@@ -1,3 +1,4 @@
+import 'dart:io' show SocketException;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as cal;
 import 'package:http/http.dart' as http;
@@ -78,18 +79,29 @@ class GoogleCalendarService {
       final createdEvent = await api.events.insert(event, 'primary');
       return createdEvent.id;
     } catch (e, st) {
-      CrashReporting.recordError(e, st, reason: 'Google Calendar create failed');
+      _report(e, st, 'Google Calendar create failed');
       return null;
     }
   }
 
-  // עדכון תאריך או פרטי אירוע קיים
-  // מחזיר false אם העדכון נכשל (למשל בלי אינטרנט)
-  Future<bool> updateEvent(AppTask task, String itemAndCategoryDetails) async {
-    if (task.googleEventId == null || task.nextDueDate == null) return true; // אין מה לעדכן
+  /// #82: האירוע כבר לא קיים ביומן (נמחק ידנית) - 404 / 410
+  static bool _isGone(Object e) => e is cal.DetailedApiRequestError && (e.status == 404 || e.status == 410);
+
+  /// #82: אין רשת (למשל "Failed host lookup") - המשתמש כבר מקבל הודעה, אין מה לדווח
+  static bool _isOffline(Object e) => e is SocketException || e is http.ClientException;
+
+  static void _report(Object e, StackTrace st, String reason) {
+    if (!_isOffline(e)) CrashReporting.recordError(e, st, reason: reason);
+  }
+
+  // עדכון תאריך או פרטי אירוע קיים.
+  // מחזיר את מזהה האירוע התקף אחרי העדכון - לשמור אותו במשימה: אותו מזהה, או מזהה חדש אם האירוע
+  // נמחק ביומן ונוצר מחדש (#82). null = העדכון נכשל (למשל בלי אינטרנט) - המזהה הקיים נשאר
+  Future<String?> updateEvent(AppTask task, String itemAndCategoryDetails) async {
+    if (task.googleEventId == null || task.nextDueDate == null) return task.googleEventId; // אין מה לעדכן
 
     final api = await _getCalendarApi();
-    if (api == null) return false;
+    if (api == null) return null;
 
     final event = cal.Event()
       ..summary = LocaleNotifier.l10n.calendarEventTitle(task.name)
@@ -103,10 +115,12 @@ class GoogleCalendarService {
 
     try {
       await api.events.update(event, 'primary', task.googleEventId!);
-      return true;
+      return task.googleEventId;
     } catch (e, st) {
-      CrashReporting.recordError(e, st, reason: 'Google Calendar update failed');
-      return false;
+      // האירוע נמחק ביומן - יוצרים אירוע חדש במקומו, בלי דיווח
+      if (_isGone(e)) return createEvent(task, itemAndCategoryDetails);
+      _report(e, st, 'Google Calendar update failed');
+      return null;
     }
   }
 
@@ -120,7 +134,8 @@ class GoogleCalendarService {
       await api.events.delete('primary', eventId);
       return true;
     } catch (e, st) {
-      CrashReporting.recordError(e, st, reason: 'Google Calendar delete failed');
+      if (_isGone(e)) return true; // #82: כבר נמחק ביומן - זו המטרה
+      _report(e, st, 'Google Calendar delete failed');
       return false;
     }
   }

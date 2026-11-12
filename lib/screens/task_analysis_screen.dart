@@ -107,7 +107,7 @@ class _TaskAnalysisScreenState extends ConsumerState<TaskAnalysisScreen> {
             nextDue: DateTime.tryParse(currentTask['next_due_date']?.toString() ?? ''),
           ),
           PaceSection(stats: stats, unit: currentTask['interval_unit']),
-          WhenSection(stats: stats),
+          WhenSection(stats: stats, unit: currentTask['interval_unit']),
           HistorySection(stats: stats, task: currentTask),
         ],
       ),

@@ -148,6 +148,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allGroups => 'All groups';
 
   @override
+  String get sectionsExpandAll => 'Expand all';
+
+  @override
+  String get sectionsCollapseAll => 'Collapse all';
+
+  @override
   String get noGroupsYet => 'No groups yet';
 
   @override
@@ -317,8 +323,111 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$active active tasks',
       one: '1 active task',
     );
-    return '$_temp0 • all up to date 🎉';
+    return '$_temp0 • no overdue tasks';
   }
+
+  @override
+  String headerLoad(int today, int week) {
+    return 'Today $today · This week $week';
+  }
+
+  @override
+  String headerNextUp(String name, String when) {
+    return 'Next up: $name · $when';
+  }
+
+  @override
+  String get headerNothingPlanned => 'Nothing planned';
+
+  @override
+  String get viewsTitle => 'Views';
+
+  @override
+  String get viewReminder => 'With reminder';
+
+  @override
+  String get viewCalendar => 'In Google Calendar';
+
+  @override
+  String get viewEndCondition => 'With end condition';
+
+  @override
+  String get viewDaily => 'Daily';
+
+  @override
+  String get viewWeekly => 'Weekly';
+
+  @override
+  String get viewMonthly => 'Monthly';
+
+  @override
+  String get viewYearly => 'Yearly';
+
+  @override
+  String get drawerTasksSection => 'Tasks';
+
+  @override
+  String get fixedSchedule => 'Fixed schedule';
+
+  @override
+  String get fixedScheduleHint =>
+      'The next due date follows the calendar, even if you did it early or late';
+
+  @override
+  String fixedRuleWeekly(int n, String weekday) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Every $n weeks on $weekday',
+      one: 'Every $weekday',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fixedRuleMonthly(int n, int day) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'On day $day, every $n months',
+      one: 'On day $day of every month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fixedRuleLastDayNote => '(or the last day of the month)';
+
+  @override
+  String fixedRuleYearly(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Every $n years on $date',
+      one: 'Every year on $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fixedRuleDaily(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Every $n days, starting $date',
+      one: 'Every day, starting $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get viewByFrequency => 'By frequency';
+
+  @override
+  String get viewsModeExclusive => 'One view at a time - tap to combine';
+
+  @override
+  String get viewsModeCumulative => 'Views combine - tap for one at a time';
 
   @override
   String get groupOptions => 'Group options';
@@ -409,6 +518,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get edit => 'Edit';
+
+  @override
+  String get cardAnalysis => 'Analysis';
+
+  @override
+  String get cardDelete => 'Delete';
+
+  @override
+  String cardCompletions(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Done $n times',
+      one: 'Done once',
+      zero: 'Never done',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cardReminderAt(String time) {
+    return 'Reminder at $time';
+  }
+
+  @override
+  String get cardPostpone => 'Postpone';
+
+  @override
+  String get cardSkip => 'Skip this time';
+
+  @override
+  String postponeTitle(String name) {
+    return 'Postpone \"$name\"';
+  }
+
+  @override
+  String postponeInDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'In $n days',
+      one: 'Tomorrow',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get postponeWeek => 'In a week';
+
+  @override
+  String get postponePickDate => 'Another date';
+
+  @override
+  String dueMovedTo(String date) {
+    return 'Due date moved to $date';
+  }
+
+  @override
+  String skippedTo(String date) {
+    return 'Skipped - next due $date';
+  }
+
+  @override
+  String get skippedFinished => 'Skipped - the task is finished';
+
+  @override
+  String get dueRestored => 'Due date restored';
 
   @override
   String get newGroup => 'New group';
@@ -631,6 +807,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get finishedTasks => 'Finished';
 
   @override
+  String get calDone => 'Done';
+
+  @override
+  String get calEmptyDay => 'Nothing on this day';
+
+  @override
+  String get switchView => 'Switch view';
+
+  @override
   String get taskFinishedLabel => 'Finished';
 
   @override
@@ -823,8 +1008,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whenTitle => 'Habits';
 
   @override
-  String whenSentence(String day, String part) {
-    return 'Usually on $day, mostly at the $part';
+  String whenSentenceDay(String day) {
+    return 'Usually on $day';
+  }
+
+  @override
+  String whenSentencePart(String part) {
+    return 'Mostly at the $part';
+  }
+
+  @override
+  String whenSentenceDayOr(String day1, String day2) {
+    return 'Usually on $day1 or $day2';
+  }
+
+  @override
+  String whenSentencePartOr(String part1, String part2) {
+    return 'Mostly at the $part1 or the $part2';
+  }
+
+  @override
+  String get whenNoFixedDay => 'No fixed day';
+
+  @override
+  String get whenNoFixedPart => 'No fixed time of the month';
+
+  @override
+  String whenDatesTitle(String label, int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n completions',
+      one: '1 completion',
+    );
+    return '$label · $_temp0';
+  }
+
+  @override
+  String whenMoreDates(int n) {
+    return 'and $n more';
+  }
+
+  @override
+  String paceRange(String from, String to) {
+    return '$from → $to';
+  }
+
+  @override
+  String paceEarlyBy(String duration) {
+    return '$duration early';
+  }
+
+  @override
+  String calDueWas(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String calGapFromPrev(String duration) {
+    return '$duration after the previous one';
   }
 
   @override
@@ -1059,11 +1301,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get obGotIt => 'Got it';
 
   @override
-  String get obGroupsTitle => 'Group and item buttons';
+  String get obGroupsTitle => 'Moving between groups';
 
   @override
   String get obGroupsBody =>
-      'These buttons filter the tasks below to the selected group or item. On the main page you see all your groups - long-press a group to open, edit or delete it. On a group page you see all of its items.';
+      'Swipe the header to move between your groups - after the last one you\'re back at All. Inside a group its items appear as buttons, and swiping the list moves between them. Tapping the group icon collapses or expands all sections. Long-press the header or an item to edit it.';
 
   @override
   String get obFabTitle => 'Add everything from here';
@@ -1117,7 +1359,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obAnalysisBody =>
-      'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. When you are done, go back and the tour will continue.';
+      'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. You can also tap the charts - a bar, a day or a month - for more details. When you are done, go back and the tour will continue.';
 
   @override
   String get obManualTitle => 'Log a completion date manually';
@@ -1141,6 +1383,33 @@ class AppLocalizationsEn extends AppLocalizations {
       'Name, frequency, reminder, calendar and the next due date - and deleting the task.';
 
   @override
+  String get obOpenCardTitle => 'The open card';
+
+  @override
+  String get obOpenCardBody =>
+      'Actions on the right, task details on the left.';
+
+  @override
+  String get obPostponeTitle => 'Postpone';
+
+  @override
+  String get obPostponeBody =>
+      'Moves the due date without marking a completion. A new window asks when to postpone to, and offers a day or a week.';
+
+  @override
+  String get obSkipTitle => 'Skip this time';
+
+  @override
+  String get obSkipBody =>
+      'Skips this time - the next due date is one interval away.';
+
+  @override
+  String get obDeleteTitle => 'Delete';
+
+  @override
+  String get obDeleteBody => 'Deletes the task, always with confirmation.';
+
+  @override
   String get sampleItemCat => 'Cat 🐱';
 
   @override
@@ -1148,7 +1417,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obDrawerBody =>
-      'Quick switching between pages: the All groups page, which is the main page with no filters, and a page for every group you create.';
+      'Jump between your groups, or back to all groups with no filter.';
 
   @override
   String get obBrowse => 'Got it, let me look';
