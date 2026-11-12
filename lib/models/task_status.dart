@@ -19,6 +19,7 @@ bool isEndReached(String? condition, String? value, int completedCount, DateTime
 }
 
 /// #85 "לדלג הפעם": היעד הבא = היעד הנוכחי + מרווח אחד, בלי ביצוע (המונה לא משתנה).
+/// #71: בלוח קבוע ([anchor]) - התאריך הבא בסדרה אחרי היעד הנוכחי.
 /// null = הדילוג עובר את תאריך הסיום - המשימה מסתיימת
 DateTime? skippedDueDate(
   DateTime due,
@@ -26,10 +27,40 @@ DateTime? skippedDueDate(
   String unit,
   String? condition,
   String? value,
-  int completedCount,
-) {
-  final next = AppTask.addInterval(due, amount, unit);
+  int completedCount, {
+  DateTime? anchor,
+}) {
+  final next = anchor != null ? nextFixedDue(anchor, amount, unit, due) : AppTask.addInterval(due, amount, unit);
   return isEndReached(condition, value, completedCount, next) ? null : next;
+}
+
+/// #71 לוח קבוע: התאריך הראשון בסדרה "עוגן + k × מרווח" שאחרי [after] (לפי ימים שלמים).
+/// כל תאריך מחושב מהעוגן עצמו ולא בשרשור - כך חודשי ב-31 חוזר ל-31 אחרי פברואר.
+/// איחור של כמה תקופות - מדלגים על מה שהוחמץ (לא מצטבר)
+DateTime nextFixedDue(DateTime anchor, int amount, String unit, DateTime after) {
+  final step = amount < 1 ? 1 : amount;
+  final limit = DateTime(after.year, after.month, after.day);
+  var k = 0;
+  while (true) {
+    final candidate = AppTask.addInterval(anchor, step * k, unit);
+    if (DateTime(candidate.year, candidate.month, candidate.day).isAfter(limit)) return candidate;
+    k++;
+  }
+}
+
+/// #71: היעד הבא אחרי ביצוע. בלי עוגן - כמו תמיד: יום הביצוע + מרווח.
+/// בלוח קבוע - התאריך הבא בסדרה אחרי המאוחר מבין יום הביצוע והיעד הנוכחי
+/// (ביצוע מוקדם לא "מבזבז" את היעד הקרוב: תשלום דצמבר ששולם באוקטובר → מרץ)
+DateTime nextDueAfterCompletion({
+  required DateTime completedAt,
+  required int amount,
+  required String unit,
+  DateTime? anchor,
+  DateTime? currentDue,
+}) {
+  if (anchor == null) return AppTask.addInterval(completedAt, amount, unit);
+  final after = currentDue != null && currentDue.isAfter(completedAt) ? currentDue : completedAt;
+  return nextFixedDue(anchor, amount, unit, after);
 }
 
 /// #77: התצוגות (צ'יפים בדף התצוגות / שורות בסיידבר)

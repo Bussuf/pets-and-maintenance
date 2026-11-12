@@ -68,10 +68,13 @@ class TaskCard extends ConsumerWidget {
     final intervalAmount = (task['interval_amount'] as num?)?.toInt() ?? 7;
     final intervalUnit = task['interval_unit'] as String? ?? 'days';
 
-    final nextDate = AppTask.addInterval(
-      completedDate,
-      intervalAmount,
-      intervalUnit,
+    // #71: בלוח קבוע - התאריך הבא בסדרה; אחרת - מיום הביצוע, כמו תמיד
+    final nextDate = nextDueAfterCompletion(
+      completedAt: completedDate,
+      amount: intervalAmount,
+      unit: intervalUnit,
+      anchor: DateTime.tryParse(task['schedule_anchor']?.toString() ?? ''),
+      currentDue: DateTime.tryParse(task['next_due_date']?.toString() ?? ''),
     );
 
     final currentCompletedCount =
@@ -328,6 +331,7 @@ class TaskCard extends ConsumerWidget {
       task['end_condition'],
       task['end_condition_value']?.toString(),
       (task['completed_count'] as num?)?.toInt() ?? 0,
+      anchor: DateTime.tryParse(task['schedule_anchor']?.toString() ?? ''), // #71
     );
     await _moveDueDate(context, ref, next, next == null ? l10n.skippedFinished : l10n.skippedTo(_formatDate(next)));
   }

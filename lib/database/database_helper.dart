@@ -24,9 +24,10 @@ class DatabaseHelper {
     final path = join(dbPath, filePath);
 
     // גרסה 7: תאריך יעד לכל ביצוע ותאריך יצירה למשימה (ניתוח מעקב משימה #25)
+    // גרסה 8: עוגן ללוח זמנים קבוע (#71)
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onConfigure: _onConfigure,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
@@ -81,6 +82,7 @@ class DatabaseHelper {
         reminder_time TEXT,
         google_event_id TEXT,
         created_at TEXT,
+        schedule_anchor TEXT,
         FOREIGN KEY (item_id) REFERENCES items (id) ON DELETE CASCADE
       )
     ''');
@@ -137,6 +139,10 @@ class DatabaseHelper {
       // ערכים קיימים נשארים ריקים - מנוע החישובים משחזר אותם בקירוב
       try { await db.execute('ALTER TABLE tasks ADD COLUMN created_at TEXT;'); } catch (_) {}
       try { await db.execute('ALTER TABLE task_logs ADD COLUMN due_at TEXT;'); } catch (_) {}
+    }
+    if (oldVersion < 8) {
+      // מיגרציה לגרסה 8 (#71): עוגן ללוח זמנים קבוע. ריק = כמו קודם (מיום הביצוע)
+      try { await db.execute('ALTER TABLE tasks ADD COLUMN schedule_anchor TEXT;'); } catch (_) {}
     }
   }
 
