@@ -1640,6 +1640,30 @@ abstract class AppLocalizations {
   /// **'and {n} more'**
   String whenMoreDates(int n);
 
+  /// No description provided for @paceRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} → {to}'**
+  String paceRange(String from, String to);
+
+  /// No description provided for @paceEarlyBy.
+  ///
+  /// In en, this message translates to:
+  /// **'{duration} early'**
+  String paceEarlyBy(String duration);
+
+  /// No description provided for @calDueWas.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String calDueWas(String date);
+
+  /// No description provided for @calGapFromPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'{duration} after the previous one'**
+  String calGapFromPrev(String duration);
+
   /// No description provided for @whenWeekdays.
   ///
   /// In en, this message translates to:
@@ -2105,7 +2129,7 @@ abstract class AppLocalizations {
   /// No description provided for @obAnalysisBody.
   ///
   /// In en, this message translates to:
-  /// **'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. When you are done, go back and the tour will continue.'**
+  /// **'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. You can also tap the charts - a bar, a day or a month - for more details. When you are done, go back and the tour will continue.'**
   String get obAnalysisBody;
 
   /// No description provided for @obManualTitle.

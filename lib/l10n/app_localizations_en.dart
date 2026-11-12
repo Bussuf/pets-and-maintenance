@@ -996,6 +996,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String paceRange(String from, String to) {
+    return '$from → $to';
+  }
+
+  @override
+  String paceEarlyBy(String duration) {
+    return '$duration early';
+  }
+
+  @override
+  String calDueWas(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String calGapFromPrev(String duration) {
+    return '$duration after the previous one';
+  }
+
+  @override
   String get whenWeekdays => 'Days of the week';
 
   @override
@@ -1285,7 +1305,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obAnalysisBody =>
-      'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. When you are done, go back and the tour will continue.';
+      'This page tracks one task and analyzes how you do it, with charts and metrics. Each section opens to show more - tap the different sections. You can also tap the charts - a bar, a day or a month - for more details. When you are done, go back and the tour will continue.';
 
   @override
   String get obManualTitle => 'Log a completion date manually';

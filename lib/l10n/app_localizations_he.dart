@@ -1004,6 +1004,26 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
+  String paceRange(String from, String to) {
+    return '$from ← $to';
+  }
+
+  @override
+  String paceEarlyBy(String duration) {
+    return 'מוקדם ב-$duration';
+  }
+
+  @override
+  String calDueWas(String date) {
+    return 'יעד $date';
+  }
+
+  @override
+  String calGapFromPrev(String duration) {
+    return '$duration אחרי הקודם';
+  }
+
+  @override
   String get whenWeekdays => 'ימים בשבוע';
 
   @override
@@ -1292,7 +1312,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get obAnalysisBody =>
-      'זהו דף מעקב ביצועי משימה וניתוח הביצועים שלכם. הוא מציג גרפים ומדדים ביחס למשימה אחת. כל חלק בו נפתח ומכיל מידע נוסף - לחצו על החלקים השונים. כשתסיימו, חזרו אחורה וההדרכה תמשיך.';
+      'זהו דף מעקב ביצועי משימה וניתוח הביצועים שלכם. הוא מציג גרפים ומדדים ביחס למשימה אחת. כל חלק בו נפתח ומכיל מידע נוסף - לחצו על החלקים השונים. אפשר גם ללחוץ על הגרפים - על עמודה, יום או חודש - לקבלת מידע נוסף. כשתסיימו, חזרו אחורה וההדרכה תמשיך.';
 
   @override
   String get obManualTitle => 'הוסף תאריך ביצוע ידנית';
