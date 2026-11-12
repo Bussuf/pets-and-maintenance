@@ -366,6 +366,64 @@ class AppLocalizationsHe extends AppLocalizations {
   String get drawerTasksSection => 'משימות';
 
   @override
+  String get fixedSchedule => 'לוח קבוע';
+
+  @override
+  String get fixedScheduleHint =>
+      'היעד הבא נקבע לפי התאריך, גם אם ביצעתם מוקדם או באיחור';
+
+  @override
+  String fixedRuleWeekly(int n, String weekday) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n שבועות ב$weekday',
+      two: 'כל שבועיים ב$weekday',
+      one: 'כל $weekday',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fixedRuleMonthly(int n, int day) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'ב-$day, כל $n חודשים',
+      two: 'ב-$day, כל חודשיים',
+      one: 'ב-$day לכל חודש',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fixedRuleLastDayNote => '(או היום האחרון בחודש)';
+
+  @override
+  String fixedRuleYearly(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n שנים ב-$date',
+      two: 'כל שנתיים ב-$date',
+      one: 'כל שנה ב-$date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fixedRuleDaily(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'כל $n ימים, החל מ-$date',
+      two: 'כל יומיים, החל מ-$date',
+      one: 'כל יום, החל מ-$date',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get viewByFrequency => 'לפי תדירות';
 
   @override

@@ -367,6 +367,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get drawerTasksSection => 'Tasks';
 
   @override
+  String get fixedSchedule => 'Fixed schedule';
+
+  @override
+  String get fixedScheduleHint =>
+      'The next due date follows the calendar, even if you did it early or late';
+
+  @override
+  String fixedRuleWeekly(int n, String weekday) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Every $n weeks on $weekday',
+      one: 'Every $weekday',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fixedRuleMonthly(int n, int day) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'On day $day, every $n months',
+      one: 'On day $day of every month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fixedRuleLastDayNote => '(or the last day of the month)';
+
+  @override
+  String fixedRuleYearly(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Every $n years on $date',
+      one: 'Every year on $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fixedRuleDaily(int n, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Every $n days, starting $date',
+      one: 'Every day, starting $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get viewByFrequency => 'By frequency';
 
   @override

@@ -11,6 +11,7 @@ String taskViewLabel(AppLocalizations l10n, TaskView view) => switch (view) {
       TaskView.reminder => l10n.viewReminder,
       TaskView.calendar => l10n.viewCalendar,
       TaskView.endCondition => l10n.viewEndCondition,
+      TaskView.fixedSchedule => l10n.fixedSchedule,
       TaskView.daily => l10n.viewDaily,
       TaskView.weekly => l10n.viewWeekly,
       TaskView.monthly => l10n.viewMonthly,
@@ -21,6 +22,7 @@ IconData taskViewIcon(TaskView view) => switch (view) {
       TaskView.reminder => Icons.notifications_outlined,
       TaskView.calendar => Icons.event_available,
       TaskView.endCondition => Icons.flag_outlined,
+      TaskView.fixedSchedule => Icons.event_repeat,
       _ => Icons.repeat,
     };
 
@@ -166,7 +168,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
                 // #77: משימות לפי סוג - כל שורה פותחת את דף התצוגות עם הצ'יפ שלה בלבד
                 sectionTitle(l10n.drawerTasksSection),
-                for (final view in const [TaskView.reminder, TaskView.calendar, TaskView.endCondition])
+                for (final view in const [
+                  TaskView.reminder,
+                  TaskView.calendar,
+                  TaskView.endCondition,
+                  TaskView.fixedSchedule,
+                ])
                   row(
                     leading: Icon(taskViewIcon(view)),
                     title: Text(taskViewLabel(l10n, view)),

@@ -64,7 +64,7 @@ DateTime nextDueAfterCompletion({
 }
 
 /// #77: התצוגות (צ'יפים בדף התצוגות / שורות בסיידבר)
-enum TaskView { reminder, calendar, endCondition, daily, weekly, monthly, yearly }
+enum TaskView { reminder, calendar, endCondition, fixedSchedule, daily, weekly, monthly, yearly }
 
 const _frequencyViews = {
   TaskView.daily: 'days',
@@ -81,6 +81,7 @@ bool matchesViews(Map<String, dynamic> task, Set<TaskView> views) {
       TaskView.reminder => task['is_reminder_enabled'] == 1,
       TaskView.calendar => task['google_event_id'] != null,
       TaskView.endCondition => task['end_condition'] != null && task['end_condition'] != 'always',
+      TaskView.fixedSchedule => task['schedule_anchor'] != null, // #71
       _ => (task['interval_unit'] ?? 'days') == _frequencyViews[view],
     };
     if (matches) return true;

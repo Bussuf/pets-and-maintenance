@@ -38,6 +38,11 @@ void main() {
     expect(matchesViews(task(), {TaskView.endCondition}), isFalse);
   });
 
+  test('fixed schedule chip keeps only tasks with an anchor (#71)', () {
+    expect(matchesViews({...task(), 'schedule_anchor': '2026-12-01'}, {TaskView.fixedSchedule}), isTrue);
+    expect(matchesViews(task(), {TaskView.fixedSchedule}), isFalse);
+  });
+
   test('frequencies combine with OR', () {
     final views = {TaskView.daily, TaskView.weekly};
     expect(matchesViews(task(unit: 'days'), views), isTrue);

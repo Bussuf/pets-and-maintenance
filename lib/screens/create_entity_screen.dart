@@ -18,6 +18,7 @@ import '../providers/google_auth_provider.dart';
 import '../services/google_calendar_service.dart';
 import '../widgets/quick_add_dialogs.dart';
 import '../providers/date_format_provider.dart';
+import '../utils/duration_text.dart';
 
 enum EntityType { task, item, category }
 
@@ -95,6 +96,25 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
   DateTime? _endConditionDate;
   bool _isReminderEnabled = false;
   bool _isGoogleSyncEnabled = false;
+  bool _isFixedSchedule = false; // #71
+  DateTime? _fixedFirstDue; // #71: היעד הבא שנבחר כשהמתג דלוק - הוא העוגן
+
+  /// #71: היעד הראשון בלוח קבוע - מה שנבחר, או (כברירת מחדל) היום + התדירות
+  DateTime _fixedDue() {
+    final amount = int.tryParse(_intervalAmountController.text) ?? 7;
+    return _fixedFirstDue ?? DateUtils.dateOnly(_calculateInitialDueDate(amount, _selectedIntervalUnit));
+  }
+
+  Future<void> _pickFixedFirstDue() async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _fixedDue(),
+      firstDate: today,
+      lastDate: DateTime(today.year + 5),
+    );
+    if (picked != null) setState(() => _fixedFirstDue = picked);
+  }
 
   final List<Color> _availableColors = [
     Colors.blue,
@@ -139,6 +159,7 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
       }
       _isReminderEnabled = (dup['is_reminder_enabled'] == 1);
       _isGoogleSyncEnabled = (dup['google_event_id'] != null);
+      _isFixedSchedule = (dup['schedule_anchor'] != null);
     }
   }
 
@@ -309,10 +330,10 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
         repositoryName = parentItem.name;
 
         final amount = int.tryParse(_intervalAmountController.text) ?? 7;
-        final initialDueDate = _calculateInitialDueDate(
-          amount,
-          _selectedIntervalUnit,
-        );
+        // #71: בלוח קבוע - התאריך שנבחר (הוא גם העוגן)
+        final initialDueDate = _isFixedSchedule
+            ? _fixedDue()
+            : _calculateInitialDueDate(amount, _selectedIntervalUnit);
 
         String? endVal;
         if (_endCondition == 'count') {
@@ -336,6 +357,8 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
           isReminderEnabled: _isReminderEnabled,
           reminderTime: _isReminderEnabled ? '09:00' : null,
           createdAt: DateTime.now(),
+          // #71: העוגן = תאריך היעד הראשון (בשכפול - העוגן החדש, לא של המקור)
+          scheduleAnchor: _isFixedSchedule ? initialDueDate : null,
         );
 
         // -- יצירת סנכרון ליומן גוגל במידה ואושר --
@@ -683,6 +706,10 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                                   controller: _intervalAmountController,
                                   // לחיצה מסמנת את כל המספר - בעברית הסמן נכנס בצד הלא נכון של הספרות
                                   onTap: () => _intervalAmountController.selection = TextSelection(baseOffset: 0, extentOffset: _intervalAmountController.text.length),
+                                  // #71: שורת הכלל של לוח קבוע מתעדכנת עם המספר
+                                  onChanged: (_) {
+                                    if (_isFixedSchedule) setState(() {});
+                                  },
                                   keyboardType: TextInputType.number,
                                   decoration: InputDecoration(
                                     labelText: l10n.repeatEvery,
@@ -727,7 +754,49 @@ class _CreateEntityScreenState extends ConsumerState<CreateEntityScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          // #71: לוח קבוע - היעד הבא לפי התאריך ולא לפי יום הביצוע
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            secondary: Icon(
+                              Icons.event_repeat,
+                              color: _isFixedSchedule ? theme.colorScheme.primary : Colors.grey,
+                            ),
+                            title: Text(
+                              l10n.fixedSchedule,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            subtitle: Text(l10n.fixedScheduleHint, style: const TextStyle(fontSize: 12)),
+                            value: _isFixedSchedule,
+                            onChanged: (v) => setState(() => _isFixedSchedule = v),
+                          ),
+                          // #71: כשהמתג דלוק - בוחרים את היעד הבא, והכלל נגזר ממנו ומוצג מתחת
+                          if (_isFixedSchedule) ...[
+                            Row(
+                              children: [
+                                Text(l10n.detailNextDue, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                const SizedBox(width: 12),
+                                OutlinedButton.icon(
+                                  onPressed: _pickFixedFirstDue,
+                                  icon: const Icon(Icons.calendar_month, size: 16),
+                                  label: Text(DateFormatNotifier.format(_fixedDue())),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                fixedScheduleRule(
+                                  l10n,
+                                  Localizations.localeOf(context).toLanguageTag(),
+                                  _fixedDue(),
+                                  int.tryParse(_intervalAmountController.text) ?? 7,
+                                  _selectedIntervalUnit,
+                                ),
+                                style: TextStyle(fontSize: 13, color: theme.colorScheme.primary),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 8),
 
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,

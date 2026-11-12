@@ -710,6 +710,48 @@ abstract class AppLocalizations {
   /// **'Tasks'**
   String get drawerTasksSection;
 
+  /// No description provided for @fixedSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed schedule'**
+  String get fixedSchedule;
+
+  /// No description provided for @fixedScheduleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The next due date follows the calendar, even if you did it early or late'**
+  String get fixedScheduleHint;
+
+  /// No description provided for @fixedRuleWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Every {weekday}} other{Every {n} weeks on {weekday}}}'**
+  String fixedRuleWeekly(int n, String weekday);
+
+  /// No description provided for @fixedRuleMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{On day {day} of every month} other{On day {day}, every {n} months}}'**
+  String fixedRuleMonthly(int n, int day);
+
+  /// No description provided for @fixedRuleLastDayNote.
+  ///
+  /// In en, this message translates to:
+  /// **'(or the last day of the month)'**
+  String get fixedRuleLastDayNote;
+
+  /// No description provided for @fixedRuleYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Every year on {date}} other{Every {n} years on {date}}}'**
+  String fixedRuleYearly(int n, String date);
+
+  /// No description provided for @fixedRuleDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Every day, starting {date}} other{Every {n} days, starting {date}}}'**
+  String fixedRuleDaily(int n, String date);
+
   /// No description provided for @viewByFrequency.
   ///
   /// In en, this message translates to:

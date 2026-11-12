@@ -17,6 +17,7 @@ import '../services/google_calendar_service.dart';
 import 'quick_add_dialogs.dart';
 import '../providers/date_format_provider.dart';
 import '../models/task_status.dart';
+import '../utils/duration_text.dart';
 import '../l10n/app_localizations.dart';
 
 class EditTaskSheet extends ConsumerStatefulWidget {
@@ -53,6 +54,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
   bool _manualDue = false; // #72: היעד נבחר ידנית - גובר על החישוב לפי התדירות
   late bool _isReminderEnabled;
   late bool _isGoogleSyncEnabled;
+  late bool _isFixedSchedule; // #71
   String? _existingGoogleEventId;
 
   // שיוכים
@@ -87,6 +89,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
 
     _existingGoogleEventId = t['google_event_id'];
     _isGoogleSyncEnabled = _existingGoogleEventId != null;
+    _isFixedSchedule = t['schedule_anchor'] != null;
 
     _selectedCategoryId = t['category_id'] ?? '';
     _selectedItemId = t['item_id'] ?? '';
@@ -427,7 +430,37 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      // #71: לוח קבוע - העוגן נקבע בשמירה לתאריך היעד שבטופס
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        secondary: Icon(
+                          Icons.event_repeat,
+                          color: _isFixedSchedule ? Theme.of(context).colorScheme.primary : Colors.grey,
+                        ),
+                        title: Text(
+                          l10n.fixedSchedule,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        subtitle: Text(l10n.fixedScheduleHint, style: const TextStyle(fontSize: 12)),
+                        value: _isFixedSchedule,
+                        onChanged: (v) => setState(() => _isFixedSchedule = v),
+                      ),
+                      // #71: הכלל שנגזר מתאריך היעד שבטופס (שדה היעד נמצא למטה)
+                      if (_isFixedSchedule && _nextDueDate != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(
+                            fixedScheduleRule(
+                              l10n,
+                              Localizations.localeOf(context).toLanguageTag(),
+                              _nextDueDate!,
+                              int.tryParse(_intervalAmountController.text) ?? 7,
+                              _selectedUnit,
+                            ),
+                            style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.primary),
+                          ),
+                        ),
+                      const SizedBox(height: 8),
 
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -722,6 +755,16 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                     finalGoogleEventId = null;
                   }
 
+                  // #71: העוגן מתעדכן רק כשהמשתמש קובע את היעד בעצמו - הדליק עכשיו את המתג,
+                  // או שינה את תאריך היעד. עריכה אחרת (שם, תיאור) לא מזיזה את הלוח - גם אחרי "לדחות"
+                  final oldAnchor = widget.taskMap['schedule_anchor']?.toString();
+                  final dueChanged = _nextDueDate?.toIso8601String() != widget.taskMap['next_due_date']?.toString();
+                  final String? scheduleAnchor = !_isFixedSchedule
+                      ? null
+                      : (oldAnchor != null && !dueChanged)
+                          ? oldAnchor
+                          : (_nextDueDate?.toIso8601String() ?? oldAnchor);
+
                   // עדכון מסד הנתונים
                   await rawDb.update(
                     'tasks',
@@ -740,6 +783,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
                       'is_reminder_enabled': _isReminderEnabled ? 1 : 0,
                       'reminder_time': _isReminderEnabled ? '09:00' : null,
                       'google_event_id': finalGoogleEventId,
+                      'schedule_anchor': scheduleAnchor,
                     },
                     where: 'id = ?',
                     whereArgs: [widget.taskMap['id']],

@@ -686,29 +686,17 @@ class TaskCard extends ConsumerWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (isGoogleSynced) ...[
-                        const Icon(
-                          Icons.event_available,
-                          size: 18,
-                          color: Colors.green,
-                        ),
-                        if (isRemindOn || endText != null) const SizedBox(width: 8),
+                      // חיוויים: יומן, תזכורת, תנאי סיום (#85), לוח קבוע (#71) - 8 פיקסלים ביניהם
+                      for (final (i, icon) in [
+                        if (isGoogleSynced) const Icon(Icons.event_available, size: 18, color: Colors.green),
+                        if (isRemindOn) const Icon(Icons.notifications_active, size: 18, color: Colors.blueAccent),
+                        if (endText != null) const Icon(Icons.flag_outlined, size: 18, color: Colors.orange),
+                        if (task['schedule_anchor'] != null)
+                          const Icon(Icons.event_repeat, size: 18, color: Colors.teal),
+                      ].indexed) ...[
+                        if (i > 0) const SizedBox(width: 8),
+                        icon,
                       ],
-                      if (isRemindOn) ...[
-                        const Icon(
-                          Icons.notifications_active,
-                          size: 18,
-                          color: Colors.blueAccent,
-                        ),
-                        if (endText != null) const SizedBox(width: 8),
-                      ],
-                      // #85: למשימה יש תנאי סיום (מספר פעמים / עד תאריך)
-                      if (endText != null)
-                        const Icon(
-                          Icons.flag_outlined,
-                          size: 18,
-                          color: Colors.orange,
-                        ),
                     ],
                   ),
                 ],
@@ -923,7 +911,11 @@ class TaskCard extends ConsumerWidget {
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: Text(task['description'], style: const TextStyle(fontSize: 14)),
                               ),
-                            _DetailLine(icon: Icons.repeat, text: intervalStr),
+                            _DetailLine(
+                              icon: Icons.repeat,
+                              // #71: "כל 3 חודשים · לוח קבוע"
+                              text: task['schedule_anchor'] != null ? '$intervalStr · ${l10n.fixedSchedule}' : intervalStr,
+                            ),
                             _DetailLine(
                               icon: Icons.hourglass_empty,
                               text: relativeDueStr,
